@@ -55,6 +55,7 @@ export type MainContentProps = {
     optimisticTitle?: string,
   ) => void;
   processingSessions: Set<string>;
+  unreadSessionIds?: Set<string>;
   onReplaceTemporarySession: SessionLifecycleHandler;
   onNavigateToSession: (targetSessionId: string) => void;
   onStartNewSession: (project: Project) => void;
@@ -63,6 +64,7 @@ export type MainContentProps = {
   // consumers don't need it.
   onSelectSession?: (project: Project, sessionId: string, fallbackSession?: ProjectSession) => void;
   onShowSettings: () => void;
+  onCreateProject?: () => void;
   onSelectProjectByName?: (projectName: string) => void;
   externalMessageUpdate: number;
 };

@@ -224,9 +224,6 @@ const isValidTab = (tab: string): tab is AppTab => {
 const readPersistedTab = (): AppTab => {
   try {
     const stored = localStorage.getItem('activeTab');
-    if (stored === 'home') {
-      return 'chat';
-    }
     if (stored && isValidTab(stored)) {
       return stored as AppTab;
     }
@@ -326,9 +323,10 @@ export function useProjectsState({
     void fetchProjects();
   }, [fetchProjects]);
 
-  // Auto-select the project when there is only one, so the user lands on the new session page
+  // Deep links own project selection. The root URL is now the dashboard home,
+  // so a single project should no longer pull the user out of `/`.
   useEffect(() => {
-    if (!isLoadingProjects && projects.length === 1 && !selectedProject && !sessionId) {
+    if (!isLoadingProjects && projects.length === 1 && !selectedProject && sessionId) {
       setSelectedProject(projects[0]);
     }
   }, [isLoadingProjects, projects, selectedProject, sessionId]);

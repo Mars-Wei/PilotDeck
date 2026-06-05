@@ -8,6 +8,7 @@ import GitV2 from '../../main-content-v2/GitV2';
 import PluginTabContent from '../../plugins/view/PluginTabContent';
 import DashboardV2 from '../../main-content-v2/DashboardV2';
 import TasksV2 from '../../main-content-v2/TasksV2';
+import HomeConsoleV2 from '../../main-content-v2/home/HomeConsoleV2';
 import { cn } from '../../../lib/utils.js';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
@@ -26,10 +27,10 @@ import {
   clearAlwaysOnPresence,
   sendAlwaysOnPresence,
 } from '../../../utils/alwaysOnPresence';
+import SkillsV2 from '../../main-content-v2/SkillsV2';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
 import MemoryPanel from './memory/MemoryPanel';
-import SkillsV2 from '../../main-content-v2/SkillsV2';
 
 type TaskMasterContextValue = {
   currentProject?: Project | null;
@@ -76,11 +77,13 @@ function MainContent({
   onSessionNotProcessing,
   onSessionActivityBump,
   processingSessions,
+  unreadSessionIds,
   onReplaceTemporarySession,
   onNavigateToSession,
   onStartNewSession,
   onSelectSession,
   onShowSettings,
+  onCreateProject,
   onSelectProjectByName,
   externalMessageUpdate,
 }: MainContentProps) {
@@ -320,7 +323,7 @@ function MainContent({
     );
   }
 
-  if (!selectedProject && activeTab !== 'dashboard') {
+  if (!selectedProject && activeTab !== 'dashboard' && activeTab !== 'home') {
     return (
       <MainContentStateView
         mode="empty"
@@ -352,9 +355,13 @@ function MainContent({
           onSessionNotProcessing={onSessionNotProcessing}
           onSessionActivityBump={onSessionActivityBump}
           processingSessions={processingSessions}
+          unreadSessionIds={unreadSessionIds ?? new Set<string>()}
           onReplaceTemporarySession={onReplaceTemporarySession}
           onNavigateToSession={onNavigateToSession}
+          onStartNewSession={onStartNewSession}
+          onSelectSession={onSelectSession}
           onShowSettings={onShowSettings}
+          onCreateProject={onCreateProject}
           externalMessageUpdate={externalMessageUpdate}
           autoExpandTools={autoExpandTools}
           showRawParameters={showRawParameters}
@@ -425,9 +432,13 @@ type SplitBodyProps = {
     optimisticTitle?: string,
   ) => void;
   processingSessions: any;
+  unreadSessionIds: Set<string>;
   onReplaceTemporarySession: any;
   onNavigateToSession: (sessionId: string) => void;
+  onStartNewSession: (project: Project) => void;
+  onSelectSession?: (project: Project, sessionId: string, fallbackSession?: ProjectSession) => void;
   onShowSettings: any;
+  onCreateProject?: () => void;
   externalMessageUpdate: any;
   autoExpandTools: any;
   showRawParameters: any;
@@ -461,9 +472,13 @@ function SplitBody(props: SplitBodyProps) {
     onSessionNotProcessing,
     onSessionActivityBump,
     processingSessions,
+    unreadSessionIds,
     onReplaceTemporarySession,
     onNavigateToSession,
+    onStartNewSession,
+    onSelectSession,
     onShowSettings,
+    onCreateProject,
     externalMessageUpdate,
     autoExpandTools,
     showRawParameters,
@@ -492,6 +507,7 @@ function SplitBody(props: SplitBodyProps) {
   const isPlugin = typeof activeTab === 'string' && activeTab.startsWith('plugin:');
   const fullScreenToolTabs = new Set([
     'shell',
+    'home',
     'git',
     'always-on',
     'dashboard',
@@ -567,6 +583,23 @@ function SplitBody(props: SplitBodyProps) {
   }, [clampFilesChatWidth, isFilesSplitResizing]);
 
   const renderTool = () => {
+    if (activeTab === 'home') {
+      return (
+        <HomeConsoleV2
+          projects={projects}
+          processingSessions={processingSessions}
+          unreadSessionIds={unreadSessionIds}
+          isConnected={ws?.readyState === WebSocket.OPEN}
+          isLoadingProjects={false}
+          onSelectProjectByName={onSelectProjectByName}
+          onSelectSession={onSelectSession}
+          onStartNewSession={onStartNewSession}
+          onCreateProject={onCreateProject}
+          onShowSettings={onShowSettings}
+          setActiveTab={setActiveTab}
+        />
+      );
+    }
     if (activeTab === 'shell') {
       return (
         <ShellV2
@@ -606,6 +639,7 @@ function SplitBody(props: SplitBodyProps) {
 
   const showFullScreenTool = isFullScreenTool && (activeTab !== 'tasks' || shouldShowTasksTab);
   const showChat = !showFullScreenTool;
+  const keepHiddenChatMounted = showChat || selectedProject !== null;
 
   return (
     <div
@@ -622,51 +656,53 @@ function SplitBody(props: SplitBodyProps) {
       {/* Agent surface — kept mounted even when a full-screen tool is active
           so that the session store, WebSocket subscriptions, and streaming
           state survive tab switches. Hidden via CSS to avoid layout cost. */}
-      <div
-        className={cn(
-          'flex min-h-0 min-w-0 flex-col',
-          showChat
-            ? (isFiles ? 'flex-shrink-0' : 'flex-1')
-            : 'invisible absolute h-0 w-0 overflow-hidden',
-        )}
-        style={showChat && isFiles
-          ? {
-              minWidth: `${FILES_CHAT_MIN_WIDTH}px`,
-              width: `min(${filesChatWidth}px, calc(100% - ${FILES_TREE_MIN_WIDTH}px))`,
-            }
-          : undefined}
-        aria-hidden={!showChat}
-      >
-        <ErrorBoundary showDetails>
-          <ChatInterfaceV2
-            selectedProject={selectedProject}
-            selectedSession={selectedSession}
-            ws={ws}
-            sendMessage={sendMessage}
-            latestMessage={latestMessage}
-            onFileOpen={handleFileOpen}
-            onInputFocusChange={onInputFocusChange}
-            onSessionActive={onSessionActive}
-            onSessionInactive={onSessionInactive}
-            onSessionProcessing={onSessionProcessing}
-            onSessionNotProcessing={onSessionNotProcessing}
-            onSessionActivityBump={onSessionActivityBump}
-            processingSessions={processingSessions}
-            onReplaceTemporarySession={onReplaceTemporarySession}
-            onNavigateToSession={onNavigateToSession}
-            onShowSettings={onShowSettings}
-            autoExpandTools={autoExpandTools}
-            showRawParameters={showRawParameters}
-            showThinking={showThinking}
-            autoScrollToBottom={autoScrollToBottom}
-            sendByCtrlEnter={sendByCtrlEnter}
-            externalMessageUpdate={externalMessageUpdate}
-            onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
-            forceWelcome={false}
-            onExitWelcome={() => setActiveTab('chat')}
-          />
-        </ErrorBoundary>
-      </div>
+      {keepHiddenChatMounted ? (
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-col',
+            showChat
+              ? (isFiles ? 'flex-shrink-0' : 'flex-1')
+              : 'invisible absolute h-0 w-0 overflow-hidden',
+          )}
+          style={showChat && isFiles
+            ? {
+                minWidth: `${FILES_CHAT_MIN_WIDTH}px`,
+                width: `min(${filesChatWidth}px, calc(100% - ${FILES_TREE_MIN_WIDTH}px))`,
+              }
+            : undefined}
+          aria-hidden={!showChat}
+        >
+          <ErrorBoundary showDetails>
+            <ChatInterfaceV2
+              selectedProject={selectedProject}
+              selectedSession={selectedSession}
+              ws={ws}
+              sendMessage={sendMessage}
+              latestMessage={latestMessage}
+              onFileOpen={handleFileOpen}
+              onInputFocusChange={onInputFocusChange}
+              onSessionActive={onSessionActive}
+              onSessionInactive={onSessionInactive}
+              onSessionProcessing={onSessionProcessing}
+              onSessionNotProcessing={onSessionNotProcessing}
+              onSessionActivityBump={onSessionActivityBump}
+              processingSessions={processingSessions}
+              onReplaceTemporarySession={onReplaceTemporarySession}
+              onNavigateToSession={onNavigateToSession}
+              onShowSettings={onShowSettings}
+              autoExpandTools={autoExpandTools}
+              showRawParameters={showRawParameters}
+              showThinking={showThinking}
+              autoScrollToBottom={autoScrollToBottom}
+              sendByCtrlEnter={sendByCtrlEnter}
+              externalMessageUpdate={externalMessageUpdate}
+              onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
+              forceWelcome={false}
+              onExitWelcome={() => setActiveTab('chat')}
+            />
+          </ErrorBoundary>
+        </div>
+      ) : null}
 
       {/* Right half — only mounted when the user is on Files (chat-paired
           file tree + editor). */}

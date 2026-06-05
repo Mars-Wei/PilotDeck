@@ -20,7 +20,6 @@ import {
   type AppTab,
   type Project,
   type ProjectSession,
-  type SessionProvider,
 } from '../../types/app';
 import { api } from '../../utils/api';
 import SidebarV2 from './SidebarV2';
@@ -173,10 +172,8 @@ export default function AppShellV2() {
     navigate,
   ]);
 
-  // Default selection: prefer a project named "general" so the project-centric
-  // sidebar always has something useful surfaced. Falls back to the first
-  // project when "general" is missing. Runs only when there's no URL hint and
-  // no current selection — never overrides user navigation.
+  // Default selection is only for deep links. The bare root is the home
+  // dashboard, so it should not auto-jump into the general project.
   const didDefaultProjectRef = useRef(false);
   useEffect(() => {
     if (didDefaultProjectRef.current) return;
@@ -189,22 +186,27 @@ export default function AppShellV2() {
       didDefaultProjectRef.current = true;
       return;
     }
-    if (sidebarSharedProps.projects.length === 0) return;
-    const general = sidebarSharedProps.projects.find(
-      (p) => p.name === 'general' || p.displayName === 'general',
-    );
-    const target = general ?? sidebarSharedProps.projects[0];
-    handleProjectSelect(target);
-    navigate(`/p/${encodeURIComponent(target.name)}`, { replace: true });
     didDefaultProjectRef.current = true;
   }, [
     isLoadingProjects,
     selectedProject,
     projectNameParam,
     sessionId,
-    sidebarSharedProps.projects,
-    handleProjectSelect,
-    navigate,
+  ]);
+
+  useEffect(() => {
+    if (isLoadingProjects) return;
+    if (projectNameParam || sessionId || selectedProject) return;
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+    }
+  }, [
+    activeTab,
+    isLoadingProjects,
+    projectNameParam,
+    selectedProject,
+    sessionId,
+    setActiveTab,
   ]);
 
   useEffect(() => {
@@ -498,22 +500,16 @@ export default function AppShellV2() {
 
   const handleSelectTab = useCallback(
     (tab: AppTab) => {
-      // `home` is retained only for old persisted state / links. The Agent
-      // surface now owns both the welcome/new-session state and transcripts.
       if (tab === 'home') {
+        setSelectedProject(null);
         setSelectedSession(null);
-        const target = selectedProject
-          ? `/p/${encodeURIComponent(selectedProject.name)}`
-          : '/';
-        if (window.location.pathname !== target) {
-          navigate(target);
-        }
-        setActiveTab('chat');
+        navigate('/');
+        setActiveTab('home');
         return;
       }
       setActiveTab(tab);
     },
-    [navigate, selectedProject, setActiveTab, setSelectedSession],
+    [navigate, setActiveTab, setSelectedProject, setSelectedSession],
   );
 
   const handleStartNewSession = useCallback(
@@ -556,6 +552,8 @@ export default function AppShellV2() {
     [markSessionAsInactive, dropOptimisticInProjects],
   );
 
+  const isHomeActive = activeTab === 'home';
+
   const sidebar = (
     <SidebarV2
       projects={sidebarSharedProps.projects}
@@ -582,9 +580,9 @@ export default function AppShellV2() {
 
   return (
     <div className="ui-v2 fixed inset-0 flex bg-white font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
-      {!isMobile ? (
+      {!isHomeActive && !isMobile ? (
         desktopSidebarOpen ? sidebar : null
-      ) : (
+      ) : !isHomeActive ? (
         <div
           className={`fixed inset-0 z-50 flex transition-opacity duration-150 ease-out ${
             sidebarOpen ? 'visible opacity-100' : 'invisible opacity-0'
@@ -605,7 +603,7 @@ export default function AppShellV2() {
             {sidebar}
           </div>
         </div>
-      )}
+      ) : null}
 
       <main className="flex min-w-0 flex-1 flex-col">
         <MainAreaV2
@@ -627,6 +625,7 @@ export default function AppShellV2() {
           onSessionNotProcessing={markSessionAsNotProcessing}
           onSessionActivityBump={bumpSessionActivity}
           processingSessions={processingSessions}
+          unreadSessionIds={unreadSessionIds}
           onReplaceTemporarySession={handleReplaceTemporarySession}
           onNavigateToSession={(sid: string) => {
             setSelectedSession((prev) => prev?.id === sid ? prev : { id: sid } as ProjectSession);
@@ -635,16 +634,16 @@ export default function AppShellV2() {
           onStartNewSession={handleNewSession}
           onSelectSession={handleSelectSession}
           onShowSettings={onShowSettings}
+          onCreateProject={handleOpenNewProject}
           onSelectProjectByName={(name: string) => {
             const target = sidebarSharedProps.projects.find((p) => p.name === name);
             if (target) {
               setSelectedProject(target);
               setSelectedSession(null);
-              setActiveTab('dashboard');
               navigate(`/p/${encodeURIComponent(target.name)}`);
             }
           }}
-          isSidebarCollapsed={!isMobile && !desktopSidebarOpen}
+          isSidebarCollapsed={!isHomeActive && !isMobile && !desktopSidebarOpen}
           onOpenSidebar={onOpenDesktopSidebar}
           externalMessageUpdate={externalMessageUpdate}
         />

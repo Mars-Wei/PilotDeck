@@ -5,6 +5,7 @@ import {
   Bot,
   Database,
   Folder,
+  Home,
   PanelLeftOpen,
   Radio,
   Sparkles,
@@ -27,6 +28,7 @@ type Tab = { id: AppTab; labelKey: string; icon: LucideIcon };
 // tools are still reachable via plugin tabs / programmatic activeTab if a
 // future feature needs them, but they were noisy in the day-to-day flow.
 const TABS: Tab[] = [
+  { id: 'home',      labelKey: 'tabs.home',      icon: Home },
   { id: 'chat',      labelKey: 'tabs.chat',      icon: Bot },
   { id: 'files',     labelKey: 'tabs.files',     icon: Folder },
   { id: 'skills',    labelKey: 'tabs.skills',    icon: Sparkles },
@@ -60,12 +62,6 @@ export default function MainAreaV2(props: MainAreaV2Props) {
   const projectName = selectedProject?.name ?? null;
   const [latestReadyPlanMarker, setLatestReadyPlanMarker] = useState<string | null>(null);
   const [lastViewedReadyPlanMarker, setLastViewedReadyPlanMarker] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (activeTab === 'home') {
-      setActiveTab('chat');
-    }
-  }, [activeTab, setActiveTab]);
 
   useEffect(() => {
     if (!projectName) {
@@ -125,13 +121,12 @@ export default function MainAreaV2(props: MainAreaV2Props) {
   // mono. Falls back to "Home" when no project is selected so the breadcrumb
   // never collapses to "/". Project + session strings flow through the
   // customNames overlay so user renames in the sidebar reflect here too.
-  const displayActiveTab = activeTab === 'home' ? 'chat' : activeTab;
-  const tabLabelKey = TABS.find((tab) => tab.id === displayActiveTab)?.labelKey;
+  const tabLabelKey = TABS.find((tab) => tab.id === activeTab)?.labelKey;
   const tabLabel = tabLabelKey
     ? t(tabLabelKey)
-    : displayActiveTab.startsWith('plugin:')
-      ? displayActiveTab.replace('plugin:', '')
-      : displayActiveTab;
+    : activeTab.startsWith('plugin:')
+      ? activeTab.replace('plugin:', '')
+      : activeTab;
   const sessionSummary = selectedSession ? sessionDisplayTitle(selectedSession) : '';
   const alwaysOnUnread = Boolean(
     latestReadyPlanMarker &&
@@ -142,6 +137,7 @@ export default function MainAreaV2(props: MainAreaV2Props) {
   return (
     <div className="flex h-full min-w-0 flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       {/* Header: breadcrumb left, tool switcher right. */}
+      {activeTab !== 'home' ? (
       <header className="flex h-12 shrink-0 items-center px-6">
         {isSidebarCollapsed ? (
           // Just the "expand sidebar" affordance — the PilotDeck logo lives
@@ -159,7 +155,7 @@ export default function MainAreaV2(props: MainAreaV2Props) {
         ) : null}
         <div className="flex min-w-0 flex-1 items-center gap-2 text-[13px]">
           <span className="shrink-0 text-neutral-500 dark:text-neutral-400">
-            {selectedProject ? projectDisplayName(selectedProject) : t('home', { defaultValue: 'Home' })}
+            {selectedProject ? projectDisplayName(selectedProject) : t('tabs.home', { defaultValue: 'Home' })}
           </span>
           <span className="shrink-0 text-neutral-400/60 dark:text-neutral-500/60">/</span>
           <span className="shrink-0 font-medium">{tabLabel}</span>
@@ -180,7 +176,7 @@ export default function MainAreaV2(props: MainAreaV2Props) {
         >
           {TABS.map((tab) => {
             const Icon = tab.icon;
-            const isActive = displayActiveTab === tab.id;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
@@ -208,6 +204,7 @@ export default function MainAreaV2(props: MainAreaV2Props) {
           })}
         </div>
       </header>
+      ) : null}
 
       {/* Body */}
       <div className="min-h-0 flex-1 overflow-hidden">

@@ -105,6 +105,7 @@ const createFakeSubmitEvent = () => {
 
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024;
 const MAX_ATTACHMENTS = 10;
+const HOME_PROMPT_STORAGE_KEY = 'pilotdeck-home-pending-prompt';
 
 type UploadedAttachmentFile = {
   name: string;
@@ -902,10 +903,54 @@ export function useChatComposerState({
         return;
       }
 
-      handleCommandInputChange(newValue, cursorPos);
+      handleCommandInputChange();
     },
     [handleCommandInputChange, resetCommandMenuState, setCursorPosition],
   );
+
+  const applyIncomingPrompt = useCallback(
+    (prompt: string) => {
+      const normalized = prompt.replace(/\s+/g, ' ').trim();
+      if (!normalized) return;
+      setInput(normalized);
+      inputValueRef.current = normalized;
+      resetCommandMenuState();
+      requestAnimationFrame(() => {
+        const node = textareaRef.current;
+        if (!node) return;
+        node.focus();
+        node.setSelectionRange(normalized.length, normalized.length);
+        node.style.height = 'auto';
+        node.style.height = `${node.scrollHeight}px`;
+      });
+    },
+    [resetCommandMenuState],
+  );
+
+  useEffect(() => {
+    if (!selectedProject || typeof window === 'undefined') return undefined;
+
+    const consumeStoredPrompt = () => {
+      const stored = window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY);
+      if (!stored) return;
+      window.sessionStorage.removeItem(HOME_PROMPT_STORAGE_KEY);
+      applyIncomingPrompt(stored);
+    };
+
+    consumeStoredPrompt();
+
+    const handleHomePrompt = (event: Event) => {
+      const detail = (event as CustomEvent<{ prompt?: unknown }>).detail;
+      if (typeof detail?.prompt === 'string') {
+        applyIncomingPrompt(detail.prompt);
+      }
+    };
+
+    window.addEventListener('pilotdeck-home-prompt', handleHomePrompt);
+    return () => {
+      window.removeEventListener('pilotdeck-home-prompt', handleHomePrompt);
+    };
+  }, [applyIncomingPrompt, selectedProject]);
 
   const insertAtCursor = useCallback(
     (char: string) => {
@@ -921,7 +966,7 @@ export function useChatComposerState({
       setCursorPosition(nextCursor);
 
       if (char === '/') {
-        handleCommandInputChange(nextValue, nextCursor);
+        handleCommandInputChange();
       }
 
       requestAnimationFrame(() => {
