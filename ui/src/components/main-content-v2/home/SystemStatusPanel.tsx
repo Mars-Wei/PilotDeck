@@ -84,6 +84,18 @@ export default function SystemStatusPanel({
       : '检查中';
   const budgetTotal = Math.max(estimatedCost, 200);
   const budgetPercent = Math.min(100, Math.round((estimatedCost / budgetTotal) * 100));
+  const gatewayStatus = statusData?.gateway?.status ?? (statusError ? 'degraded' : isConnected ? 'online' : 'pending');
+  const gatewayValue = statusData?.gateway
+    ? statusData.gateway.status === 'online'
+      ? '在线'
+      : statusData.gateway.status === 'offline'
+        ? '离线'
+        : '降级'
+    : statusError
+      ? '检查异常'
+      : isConnected
+        ? '在线'
+        : '检查中';
   const mcpStatus = statusData?.mcp?.status ?? (alwaysOnError || statusError ? 'degraded' : 'degraded');
   const memoryStatus = statusData?.memory?.status ?? (isLoadingProjects ? 'pending' : alerts.length > 0 ? 'warning' : 'pending');
 
@@ -94,8 +106,8 @@ export default function SystemStatusPanel({
           <StatusRow
             icon={RadioTower}
             label="网关在线"
-            status={isConnected ? 'online' : 'offline'}
-            value={isConnected ? '' : '离线'}
+            status={toStatusRowState(gatewayStatus)}
+            value={gatewayValue}
           />
           <StatusRow
             icon={Router}

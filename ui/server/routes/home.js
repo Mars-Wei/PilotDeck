@@ -4,7 +4,7 @@ import path from 'node:path';
 import { getAllMCPServers } from '../utils/mcp-detector.js';
 import { getMemorySchedulerStatus, getRecentMemoryActivityEvents } from '../services/memoryService.js';
 import { getProjects, getProjectCronJobsOverview } from '../projects.js';
-import { getRouterDashboardData } from '../pilotdeck-bridge.js';
+import { getPilotDeckGateway, getRouterDashboardData } from '../pilotdeck-bridge.js';
 import { getAlwaysOnDashboardEvents } from '../services/always-on-events.js';
 
 const router = express.Router();
@@ -55,6 +55,24 @@ function countMcpServers(payload) {
     project: projectServers,
     total: globalServers + projectServers,
   };
+}
+
+async function checkGatewayHealth() {
+  const startedAt = Date.now();
+  try {
+    const gateway = await getPilotDeckGateway();
+    await gateway.listProjects();
+    return {
+      status: 'online',
+      latencyMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {
+      status: 'offline',
+      latencyMs: Date.now() - startedAt,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function parseLimit(value, fallback = 20, max = 80) {
@@ -372,10 +390,18 @@ function buildActivityEvents(projects, alwaysOnEvents, routingData, memoryEvents
 router.get('/status', async (_req, res) => {
   const timestamp = new Date().toISOString();
 
-  const [mcpResult, memoryResult] = await Promise.allSettled([
+  const [gatewayResult, mcpResult, memoryResult] = await Promise.allSettled([
+    checkGatewayHealth(),
     getAllMCPServers(),
     Promise.resolve(getMemorySchedulerStatus()),
   ]);
+
+  const gatewayPayload = gatewayResult.status === 'fulfilled'
+    ? gatewayResult.value
+    : {
+        status: 'offline',
+        error: gatewayResult.reason instanceof Error ? gatewayResult.reason.message : String(gatewayResult.reason),
+      };
 
   const mcpPayload = mcpResult.status === 'fulfilled' ? mcpResult.value : null;
   const mcpCounts = countMcpServers(mcpPayload);
@@ -391,8 +417,10 @@ router.get('/status', async (_req, res) => {
   res.json({
     timestamp,
     gateway: {
-      status: 'online',
+      status: gatewayPayload.status,
       checkedAt: timestamp,
+      latencyMs: gatewayPayload.latencyMs,
+      ...(gatewayPayload.error ? { error: gatewayPayload.error } : {}),
     },
     mcp: {
       status: mcpError ? 'degraded' : 'online',

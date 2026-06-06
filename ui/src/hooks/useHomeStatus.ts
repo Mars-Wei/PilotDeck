@@ -8,6 +8,8 @@ export type HomeStatusData = {
   gateway: {
     status: HomeServiceStatus;
     checkedAt?: string;
+    latencyMs?: number;
+    error?: string;
   };
   mcp: {
     status: HomeServiceStatus;
