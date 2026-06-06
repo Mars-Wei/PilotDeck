@@ -21,6 +21,7 @@ type MenuItem = {
 };
 
 type HomeSidebarProps = {
+  activeId: HomeNavId;
   projects: Project[];
   unreadCount: number;
   runningCount: number;
@@ -29,6 +30,7 @@ type HomeSidebarProps = {
 };
 
 export default function HomeSidebar({
+  activeId,
   projects,
   unreadCount,
   runningCount,
@@ -50,7 +52,7 @@ export default function HomeSidebar({
       <div className="flex-1 space-y-1 px-2 py-4 lg:px-3">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.id === 'home';
+          const isActive = item.id === activeId || (item.id === 'projects' && activeId === 'files');
           return (
             <button
               key={item.id}

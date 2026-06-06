@@ -1,10 +1,10 @@
-// Service Worker for PilotDeck PWA
+// Service Worker for OPC Brain PWA
 // Cache only manifest (needed for PWA install). HTML and JS are never pre-cached
 // so a rebuild + refresh always picks up the latest assets.
 // Bump this token whenever a cached asset's contents change (icons, manifest).
 // The activate handler below purges every cache whose name doesn't match,
 // so existing PWAs pick up the new visuals on the next page load.
-const CACHE_NAME = 'politdeck-v1';
+const CACHE_NAME = 'opc-brain-v1';
 const urlsToCache = [
   '/manifest.json'
 ];
@@ -82,20 +82,20 @@ self.addEventListener('push', event => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'PilotDeck', body: event.data.text() };
+    payload = { title: 'OPC Brain', body: event.data.text() };
   }
 
   const options = {
     body: payload.body || '',
-    icon: '/logo-256.png',
-    badge: '/logo-128.png',
+    icon: '/logo.svg?v=opc1',
+    badge: '/favicon.svg?v=opc1',
     data: payload.data || {},
     tag: payload.data?.tag || `${payload.data?.sessionId || 'global'}:${payload.data?.code || 'default'}`,
     renotify: true
   };
 
   event.waitUntil(
-    self.registration.showNotification(payload.title || 'PilotDeck', options)
+    self.registration.showNotification(payload.title || 'OPC Brain', options)
   );
 });
 

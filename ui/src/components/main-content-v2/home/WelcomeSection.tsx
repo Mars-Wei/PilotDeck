@@ -45,7 +45,7 @@ export default function WelcomeSection({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="mb-1 text-2xl font-bold text-surface-900 dark:text-white">
-            {greetingText}，Mars
+            {greetingText}，老板
           </h1>
           <p className="text-sm text-surface-500 dark:text-surface-400">今天想做什么？</p>
         </div>

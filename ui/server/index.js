@@ -707,14 +707,14 @@ app.post('/api/ccr/stats/reset', authenticateToken, (_req, res) => {
     // of silently no-oping.
     res.status(501).json({
         error: 'not_implemented',
-        message: 'Per-project router stats reset is not exposed yet; restart the PilotDeck server to clear in-memory state.',
+        message: 'Per-project router stats reset is not exposed yet; restart the OPC Brain server to clear in-memory state.',
     });
 });
 
 app.put('/api/ccr/config', authenticateToken, (_req, res) => {
     res.status(501).json({
         error: 'not_implemented',
-        message: 'Routing configuration is owned by PilotDeck config (~/.pilotdeck/pilotdeck.yaml). Edit it directly via /api/config.',
+        message: 'Routing configuration is owned by OPC Brain config (~/.pilotdeck/pilotdeck.yaml). Edit it directly via /api/config.',
     });
 });
 
@@ -2117,7 +2117,7 @@ function handleShellConnection(ws) {
                 if (isPlainShell) {
                     welcomeMsg = `\x1b[36mStarting terminal in: ${projectPath}\x1b[0m\r\n`;
                 } else {
-                    const providerName = provider === 'pilotdeck' ? 'PilotDeck' : (provider === 'cursor' ? 'Cursor' : (provider === 'codex' ? 'Codex' : (provider === 'gemini' ? 'Gemini' : 'Claude')));
+                    const providerName = provider === 'pilotdeck' ? 'OPC Brain' : (provider === 'cursor' ? 'Cursor' : (provider === 'codex' ? 'Codex' : (provider === 'gemini' ? 'Gemini' : 'Claude')));
                     welcomeMsg = hasSession ?
                         `\x1b[36mResuming ${providerName} session ${sessionId} in: ${projectPath}\x1b[0m\r\n` :
                         `\x1b[36mStarting new ${providerName} session in: ${projectPath}\x1b[0m\r\n`;
@@ -3039,7 +3039,7 @@ async function startServer() {
 
                     console.log('');
                     console.log(c.dim('═'.repeat(63)));
-                    console.log(`  ${c.bright('PilotDeck Server - Ready')}`);
+                    console.log(`  ${c.bright('OPC Brain Server - Ready')}`);
                     console.log(c.dim('═'.repeat(63)));
                     console.log('');
                     console.log(`${c.info('[INFO]')} Server URL:  ${c.bright('http://' + DISPLAY_HOST + ':' + boundPort)}`);

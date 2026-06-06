@@ -1,5 +1,6 @@
-import { Bell, BrainCircuit, Moon, Search, Sun } from 'lucide-react';
+import { Bell, Moon, Search, Sun } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import BrandLogo from '../../brand/BrandLogo';
 
 type TopHeaderProps = {
   unreadCount: number;
@@ -16,12 +17,7 @@ export default function TopHeader({ unreadCount, onHomeClick }: TopHeaderProps) 
         onClick={onHomeClick}
         className="flex items-center gap-3 rounded-md pr-2 text-left"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-          <BrainCircuit className="h-5 w-5 text-white" strokeWidth={1.75} />
-        </span>
-        <span className="text-lg font-bold tracking-tight text-surface-900 dark:text-surface-100">
-          OPC Brain
-        </span>
+        <BrandLogo />
       </button>
 
       <div className="hidden max-w-xl flex-1 items-center px-8 md:flex">

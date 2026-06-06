@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   Activity,
-  CircleDollarSign,
   CircleHelp,
   KeyRound,
   RadioTower,

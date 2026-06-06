@@ -1,5 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  BarChart3,
+  Brain,
+  FolderOpen,
+  GitBranch,
+  MessageSquare,
+  Puzzle,
+  Terminal,
+  Wrench,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';
 import ChatInterfaceV2 from '../../chat-v2/ChatInterfaceV2';
 import AlwaysOnV2 from '../../main-content-v2/AlwaysOnV2';
 import FilesV2 from '../../main-content-v2/FilesV2';
@@ -49,6 +61,149 @@ const FILES_CHAT_DEFAULT_WIDTH = 460;
 const FILES_CHAT_MIN_WIDTH = 320;
 const FILES_TREE_MIN_WIDTH = 280;
 const FILES_TREE_ONLY_WIDTH = 300;
+
+type ConsolePageMeta = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+function getConsolePageMeta(
+  activeTab: string,
+  selectedProject: Project | null,
+  selectedSession: ProjectSession | null,
+): ConsolePageMeta {
+  const projectLabel = selectedProject?.displayName || selectedProject?.name || '未选择项目';
+  const sessionLabel = selectedSession?.title || selectedSession?.summary || selectedSession?.id;
+
+  if (activeTab === 'chat') {
+    return {
+      title: sessionLabel ? '会话' : '会话工作台',
+      description: sessionLabel ? `${projectLabel} / ${sessionLabel}` : `${projectLabel} 的智能代理工作区`,
+      icon: MessageSquare,
+    };
+  }
+
+  if (activeTab === 'files') {
+    return {
+      title: '项目文件',
+      description: `${projectLabel} 的文件树、编辑器和会话协作视图`,
+      icon: FolderOpen,
+    };
+  }
+
+  if (activeTab === 'always-on') {
+    return {
+      title: '后台任务',
+      description: `${projectLabel} 的 Always-On 计划、运行记录和定时任务`,
+      icon: Zap,
+    };
+  }
+
+  if (activeTab === 'dashboard') {
+    return {
+      title: '数据与路由',
+      description: '查看模型路由、成本、Token 和项目级使用趋势',
+      icon: BarChart3,
+    };
+  }
+
+  if (activeTab === 'memory') {
+    return {
+      title: '记忆',
+      description: `${projectLabel} 的白盒记忆、检索上下文和知识沉淀`,
+      icon: Brain,
+    };
+  }
+
+  if (activeTab === 'skills') {
+    return {
+      title: '插件与 Skills',
+      description: `${projectLabel} 可用的能力扩展、工具和 Skill 管理`,
+      icon: Puzzle,
+    };
+  }
+
+  if (activeTab === 'tasks') {
+    return {
+      title: '任务',
+      description: `${projectLabel} 的 TaskMaster 任务列表和执行状态`,
+      icon: Wrench,
+    };
+  }
+
+  if (activeTab === 'shell') {
+    return {
+      title: '终端',
+      description: `${projectLabel} 的 Shell 执行环境`,
+      icon: Terminal,
+    };
+  }
+
+  if (activeTab === 'git') {
+    return {
+      title: 'Git',
+      description: `${projectLabel} 的变更、提交和版本控制`,
+      icon: GitBranch,
+    };
+  }
+
+  if (activeTab.startsWith('plugin:')) {
+    return {
+      title: activeTab.replace('plugin:', ''),
+      description: `${projectLabel} 的插件页面`,
+      icon: Puzzle,
+    };
+  }
+
+  return {
+    title: '工作台',
+    description: projectLabel,
+    icon: Wrench,
+  };
+}
+
+function ConsolePageFrame({
+  meta,
+  children,
+  dense = false,
+}: {
+  meta: ConsolePageMeta;
+  children: React.ReactNode;
+  dense?: boolean;
+}) {
+  const Icon = meta.icon;
+
+  return (
+    <div className="h-full overflow-hidden bg-surface-50 text-surface-900 dark:bg-surface-950 dark:text-surface-100">
+      <div className="flex h-full min-h-0 flex-col px-4 py-4 lg:px-6 lg:py-5">
+        <div className="mb-4 flex shrink-0 items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+              <Icon className="h-5 w-5" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-semibold tracking-tight text-surface-900 dark:text-surface-100">
+                {meta.title}
+              </h1>
+              <p className="mt-0.5 truncate text-sm text-surface-500 dark:text-surface-400">
+                {meta.description}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          className={cn(
+            'min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-200 bg-white shadow-sm shadow-surface-200/40 dark:border-surface-800 dark:bg-surface-900 dark:shadow-black/20',
+            dense && 'rounded-lg',
+          )}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 async function readJsonPayload<T>(response: Response): Promise<T | null> {
   try {
@@ -334,7 +489,7 @@ function MainContent({
   }
 
   return (
-    <div className="relative flex h-full flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+    <div className="relative flex h-full flex-col bg-surface-50 text-surface-900 dark:bg-surface-950 dark:text-surface-100">
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <SplitBody
           projects={projects}
@@ -523,6 +678,10 @@ function SplitBody(props: SplitBodyProps) {
   const filesSplitContainerRef = useRef<HTMLDivElement | null>(null);
   const [filesChatWidth, setFilesChatWidth] = useState(FILES_CHAT_DEFAULT_WIDTH);
   const [isFilesSplitResizing, setIsFilesSplitResizing] = useState(false);
+  const pageMeta = useMemo(
+    () => getConsolePageMeta(activeTab, selectedProject, selectedSession),
+    [activeTab, selectedProject, selectedSession],
+  );
 
   const clampFilesChatWidth = useCallback((width: number, containerWidth: number) => {
     const maxWidth = Math.max(FILES_CHAT_MIN_WIDTH, containerWidth - FILES_TREE_MIN_WIDTH);
@@ -589,8 +748,6 @@ function SplitBody(props: SplitBodyProps) {
           projects={projects}
           processingSessions={processingSessions}
           unreadSessionIds={unreadSessionIds}
-          isConnected={ws?.readyState === WebSocket.OPEN}
-          isLoadingProjects={false}
           onSelectProjectByName={onSelectProjectByName}
           onSelectSession={onSelectSession}
           onStartNewSession={onStartNewSession}
@@ -640,6 +797,7 @@ function SplitBody(props: SplitBodyProps) {
   const showFullScreenTool = isFullScreenTool && (activeTab !== 'tasks' || shouldShowTasksTab);
   const showChat = !showFullScreenTool;
   const keepHiddenChatMounted = showChat || selectedProject !== null;
+  const showUnifiedFrame = showFullScreenTool && activeTab !== 'home';
 
   return (
     <div
@@ -647,11 +805,19 @@ function SplitBody(props: SplitBodyProps) {
       className={cn('flex min-h-0 min-w-0 flex-1 overflow-hidden', editorExpanded && 'hidden')}
     >
       {/* Full-screen tool surface (Memory, Dashboard, Always-On, etc.) */}
-      {showFullScreenTool && (
+      {showFullScreenTool && activeTab === 'home' ? (
         <div className="flex h-full w-full min-w-0 flex-col overflow-hidden">
           {renderTool()}
         </div>
-      )}
+      ) : null}
+
+      {showUnifiedFrame ? (
+        <ConsolePageFrame meta={pageMeta}>
+          <div className="h-full min-h-0 overflow-hidden">
+            {renderTool()}
+          </div>
+        </ConsolePageFrame>
+      ) : null}
 
       {/* Agent surface — kept mounted even when a full-screen tool is active
           so that the session store, WebSocket subscriptions, and streaming
@@ -661,7 +827,7 @@ function SplitBody(props: SplitBodyProps) {
           className={cn(
             'flex min-h-0 min-w-0 flex-col',
             showChat
-              ? (isFiles ? 'flex-shrink-0' : 'flex-1')
+              ? (isFiles ? 'flex-shrink-0 p-4 lg:p-5' : 'flex-1 p-4 lg:p-5')
               : 'invisible absolute h-0 w-0 overflow-hidden',
           )}
           style={showChat && isFiles
@@ -672,35 +838,37 @@ function SplitBody(props: SplitBodyProps) {
             : undefined}
           aria-hidden={!showChat}
         >
-          <ErrorBoundary showDetails>
-            <ChatInterfaceV2
-              selectedProject={selectedProject}
-              selectedSession={selectedSession}
-              ws={ws}
-              sendMessage={sendMessage}
-              latestMessage={latestMessage}
-              onFileOpen={handleFileOpen}
-              onInputFocusChange={onInputFocusChange}
-              onSessionActive={onSessionActive}
-              onSessionInactive={onSessionInactive}
-              onSessionProcessing={onSessionProcessing}
-              onSessionNotProcessing={onSessionNotProcessing}
-              onSessionActivityBump={onSessionActivityBump}
-              processingSessions={processingSessions}
-              onReplaceTemporarySession={onReplaceTemporarySession}
-              onNavigateToSession={onNavigateToSession}
-              onShowSettings={onShowSettings}
-              autoExpandTools={autoExpandTools}
-              showRawParameters={showRawParameters}
-              showThinking={showThinking}
-              autoScrollToBottom={autoScrollToBottom}
-              sendByCtrlEnter={sendByCtrlEnter}
-              externalMessageUpdate={externalMessageUpdate}
-              onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
-              forceWelcome={false}
-              onExitWelcome={() => setActiveTab('chat')}
-            />
-          </ErrorBoundary>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-surface-200 bg-white shadow-sm shadow-surface-200/40 dark:border-surface-800 dark:bg-surface-900 dark:shadow-black/20">
+            <ErrorBoundary showDetails>
+              <ChatInterfaceV2
+                selectedProject={selectedProject}
+                selectedSession={selectedSession}
+                ws={ws}
+                sendMessage={sendMessage}
+                latestMessage={latestMessage}
+                onFileOpen={handleFileOpen}
+                onInputFocusChange={onInputFocusChange}
+                onSessionActive={onSessionActive}
+                onSessionInactive={onSessionInactive}
+                onSessionProcessing={onSessionProcessing}
+                onSessionNotProcessing={onSessionNotProcessing}
+                onSessionActivityBump={onSessionActivityBump}
+                processingSessions={processingSessions}
+                onReplaceTemporarySession={onReplaceTemporarySession}
+                onNavigateToSession={onNavigateToSession}
+                onShowSettings={onShowSettings}
+                autoExpandTools={autoExpandTools}
+                showRawParameters={showRawParameters}
+                showThinking={showThinking}
+                autoScrollToBottom={autoScrollToBottom}
+                sendByCtrlEnter={sendByCtrlEnter}
+                externalMessageUpdate={externalMessageUpdate}
+                onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
+                forceWelcome={false}
+                onExitWelcome={() => setActiveTab('chat')}
+              />
+            </ErrorBoundary>
+          </div>
         </div>
       ) : null}
 
@@ -710,22 +878,24 @@ function SplitBody(props: SplitBodyProps) {
         <>
           <div
             onMouseDown={handleFilesSplitResizeStart}
-            className="group relative z-10 w-px flex-shrink-0 cursor-col-resize bg-neutral-200 transition-colors hover:bg-neutral-400 dark:bg-neutral-800 dark:hover:bg-neutral-600"
+            className="group relative z-10 w-px flex-shrink-0 cursor-col-resize bg-surface-200 transition-colors hover:bg-surface-400 dark:bg-surface-800 dark:hover:bg-surface-600"
             title="Drag to resize"
           >
             <div className="absolute inset-y-0 left-1/2 w-3 -translate-x-1/2" />
-            <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-neutral-400 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-neutral-600" />
+            <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-surface-400 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-surface-600" />
           </div>
           <div
-            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-4 pl-0 lg:p-5 lg:pl-0"
             style={{ minWidth: `${FILES_TREE_MIN_WIDTH}px` }}
           >
-            <FilesV2
-              key={selectedProject?.name ?? ''}
-              selectedProject={selectedProject}
-              onFileOpen={handleFileOpen}
-              onClose={() => setActiveTab('chat')}
-            />
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-surface-200 bg-white shadow-sm shadow-surface-200/40 dark:border-surface-800 dark:bg-surface-900 dark:shadow-black/20">
+              <FilesV2
+                key={selectedProject?.name ?? ''}
+                selectedProject={selectedProject}
+                onFileOpen={handleFileOpen}
+                onClose={() => setActiveTab('chat')}
+              />
+            </div>
           </div>
         </>
       ) : null}

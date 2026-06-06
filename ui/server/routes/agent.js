@@ -1082,7 +1082,7 @@ router.post('/', validateExternalApiKey, async (req, res) => {
           } else {
             prBody += `Agent task: ${message}`;
           }
-          prBody += '\n\n---\n*This pull request was automatically created by PilotDeck Agent.*';
+          prBody += '\n\n---\n*This pull request was automatically created by OPC Brain Agent.*';
 
           console.log(`📝 PR Title: ${prTitle}`);
 

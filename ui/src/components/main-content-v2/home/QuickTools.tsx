@@ -72,7 +72,7 @@ export default function QuickTools({ disabled = false, onRunTool }: QuickToolsPr
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-surface-900 dark:text-surface-100">快捷工具</h2>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
         {QUICK_TOOLS.map((tool) => {
           const Icon = tool.icon;
           return (
@@ -81,12 +81,12 @@ export default function QuickTools({ disabled = false, onRunTool }: QuickToolsPr
               type="button"
               disabled={disabled}
               onClick={() => onRunTool(tool.prompt)}
-              className="group flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-surface-200 bg-white text-sm font-medium text-surface-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-700 hover:shadow-lg hover:shadow-surface-200/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-800 dark:bg-surface-900 dark:text-surface-300 dark:hover:border-brand-900 dark:hover:text-brand-300 dark:hover:shadow-black/20"
+              className="group flex h-24 min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-surface-200 bg-white px-2 text-sm font-medium text-surface-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-700 hover:shadow-lg hover:shadow-surface-200/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-800 dark:bg-surface-900 dark:text-surface-300 dark:hover:border-brand-900 dark:hover:text-brand-300 dark:hover:shadow-black/20"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-100 text-surface-500 transition group-hover:bg-brand-50 group-hover:text-brand-600 dark:bg-surface-800 dark:text-surface-400 dark:group-hover:bg-brand-900/30 dark:group-hover:text-brand-300">
                 <Icon className="h-5 w-5" strokeWidth={1.75} />
               </span>
-              <span>{tool.label}</span>
+              <span className="max-w-full truncate">{tool.label}</span>
             </button>
           );
         })}

@@ -24,6 +24,7 @@ import {
 import type { TFunction } from 'i18next';
 import type { AppTab, Project, ProjectSession } from '../../types/app';
 import { cn } from '../../lib/utils.js';
+import BrandLogo from '../brand/BrandLogo';
 import { isImeEnterEvent } from '../../utils/ime';
 import {
   projectDisplayName,
@@ -32,8 +33,6 @@ import {
   setSessionCustomTitle,
   useCustomNamesVersion,
 } from '../../lib/customNames';
-import pilotdeckLogoDark from '../../assets/pilotdeck-wordmark-dark.png';
-import pilotdeckLogoLight from '../../assets/pilotdeck-wordmark-light.png';
 
 const asTimestamp = (value: unknown): number => {
   if (typeof value === 'number') return value;
@@ -970,22 +969,11 @@ export default function SidebarV2({
                 navigate('/');
               }
             }}
-            aria-label="PilotDeck"
-            title="PilotDeck"
+            aria-label="OPC Brain"
+            title="OPC Brain"
             className="flex min-w-0 shrink items-center gap-2 rounded-md p-1 transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 dark:focus-visible:ring-neutral-700"
           >
-            <img
-              src={pilotdeckLogoLight}
-              alt="PilotDeck"
-              className="h-7 w-auto max-w-[150px] select-none object-contain dark:hidden"
-              draggable={false}
-            />
-            <img
-              src={pilotdeckLogoDark}
-              alt="PilotDeck"
-              className="hidden h-7 w-auto max-w-[150px] select-none object-contain dark:block"
-              draggable={false}
-            />
+            <BrandLogo iconClassName="h-7 w-7" textClassName="max-w-[150px] text-base" />
           </button>
         </div>
         {onCollapse ? (

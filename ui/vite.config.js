@@ -31,6 +31,15 @@ export default defineConfig(({ mode }) => {
   const disableLocalAuth =
     env.PILOTDECK_DISABLE_LOCAL_AUTH !== '0' &&
     env.PILOTDECK_DISABLE_LOCAL_AUTH !== 'false'
+  const defaultAllowedHosts = [
+    'opcbrain.cn',
+    'www.opcbrain.cn',
+  ]
+  const allowedHosts = (env.VITE_ALLOWED_HOSTS
+    ? env.VITE_ALLOWED_HOSTS.split(',')
+    : defaultAllowedHosts)
+    .map((host) => host.trim())
+    .filter(Boolean)
 
   return {
     define: {
@@ -48,6 +57,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host,
       port: parseInt(env.VITE_PORT) || 5173,
+      allowedHosts,
       proxy: {
         '/api': `http://${proxyHost}:${serverPort}`,
         '/memory-dashboard': `http://${proxyHost}:${serverPort}`,
