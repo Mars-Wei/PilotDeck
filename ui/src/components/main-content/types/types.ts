@@ -1,4 +1,6 @@
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
+import type { HomeDashboardData } from '../../../hooks/useHomeDashboardData';
+import type { DashboardData } from '../../../hooks/useRoutingDashboard';
 
 export type SessionLifecycleHandler = (sessionId?: string | null) => void;
 
@@ -66,6 +68,8 @@ export type MainContentProps = {
   onShowSettings: () => void;
   onCreateProject?: () => void;
   onSelectProjectByName?: (projectName: string) => void;
+  homeDashboardData?: HomeDashboardData;
+  routingDashboardData?: DashboardData | null;
   externalMessageUpdate: number;
 };
 

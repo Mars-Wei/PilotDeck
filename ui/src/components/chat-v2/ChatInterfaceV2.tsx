@@ -354,7 +354,7 @@ function ChatInterfaceV2({
     <div className="mx-auto w-full max-w-[720px] px-6 pb-6 pt-3">
       <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-[13px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
         {t('session.readonlyBackground', {
-          defaultValue: 'This background task transcript is read-only.',
+          defaultValue: '这个后台任务记录是只读的。',
         })}
       </div>
     </div>
@@ -362,7 +362,7 @@ function ChatInterfaceV2({
     <ComposerV2
       input={input}
       placeholder={t('composer.placeholder', {
-        defaultValue: 'Tell OPC Brain what you want to get done…',
+        defaultValue: '告诉 OPC Brain 你想完成什么...',
       }) as string}
       textareaRef={textareaRef}
       inputHighlightRef={inputHighlightRef}
@@ -432,7 +432,7 @@ function ChatInterfaceV2({
                     defaultValue: `What's on the plan today?`,
                   })
                 : t('welcome.noProject', {
-                    defaultValue: 'Pick a project from the sidebar to get started',
+                    defaultValue: '从侧边栏选择一个项目开始',
                   })}
             </h1>
             {composer}

@@ -49,14 +49,14 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
   })() : (toolInput || {});
 
   const subagentType = parsedInput?.subagent_type || parsedInput?.subagentType || 'Agent';
-  const description = parsedInput?.description || 'Running task';
+  const description = parsedInput?.description || '正在运行任务';
   const prompt = parsedInput?.prompt || '';
   const childTools = Array.isArray(subagentState.childTools) ? subagentState.childTools : [];
   const { currentToolIndex, isComplete } = subagentState;
   const isFailed = Boolean(subagentState.isFailed || toolResult?.isError);
   const currentTool = currentToolIndex >= 0 ? childTools[currentToolIndex] : null;
 
-  const title = `Subagent / ${subagentType}: ${description}`;
+  const title = `子智能体 / ${subagentType}: ${description}`;
 
   return (
     <div className="my-1 border-l-2 border-l-purple-500 py-0.5 pl-3 dark:border-l-purple-400">
@@ -76,7 +76,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
         {currentTool && !isComplete && (
           <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <span className="h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-purple-500 dark:bg-purple-400" />
-            <span className="text-gray-400 dark:text-gray-500">Currently:</span>
+            <span className="text-gray-400 dark:text-gray-500">当前：</span>
             <span className="font-medium text-gray-600 dark:text-gray-300">{currentTool.toolName}</span>
             {getCompactToolDisplay(currentTool.toolName, currentTool.toolInput) && (
               <>
@@ -92,7 +92,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
         {!currentTool && !isComplete && (
           <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <span className="h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-purple-500 dark:bg-purple-400" />
-            <span>Running subagent...</span>
+            <span>正在运行子智能体...</span>
           </div>
         )}
 
@@ -102,7 +102,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
             <svg className="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            <span>Failed ({childTools.length} {childTools.length === 1 ? 'tool' : 'tools'})</span>
+            <span>失败（{childTools.length} 个工具）</span>
           </div>
         )}
 
@@ -111,7 +111,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
             <svg className="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span>Completed ({childTools.length} {childTools.length === 1 ? 'tool' : 'tools'})</span>
+            <span>已完成（{childTools.length} 个工具）</span>
           </div>
         )}
 
@@ -127,7 +127,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              <span>View tool history ({childTools.length})</span>
+              <span>查看工具历史（{childTools.length}）</span>
             </summary>
             <div className="mt-1 space-y-0.5 border-l border-gray-200 pl-3 dark:border-gray-700">
               {childTools.map((child, index) => (
@@ -140,7 +140,7 @@ export const SubagentContainer: React.FC<SubagentContainerProps> = ({
                     </span>
                   )}
                   {child.toolResult?.isError && (
-                    <span className="flex-shrink-0 text-red-500">(error)</span>
+                    <span className="flex-shrink-0 text-red-500">（错误）</span>
                   )}
                 </div>
               ))}

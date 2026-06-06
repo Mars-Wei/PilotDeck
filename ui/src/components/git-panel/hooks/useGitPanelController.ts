@@ -295,14 +295,14 @@ export function useGitPanelController({
 
         const data = await readJson<GitOperationResponse>(response);
         if (!data.success) {
-          setOperationError(data.error ?? 'Delete branch failed');
+          setOperationError(data.error ?? '删除分支失败');
           return false;
         }
 
         void fetchBranches();
         return true;
       } catch (error) {
-        setOperationError(error instanceof Error ? error.message : 'Delete branch failed');
+        setOperationError(error instanceof Error ? error.message : '删除分支失败');
         return false;
       }
     },
@@ -603,7 +603,7 @@ export function useGitPanelController({
 
   const createInitialCommit = useCallback(async () => {
     if (!selectedProject) {
-      throw new Error('No project selected');
+      throw new Error('未选择项目');
     }
 
     setIsCreatingInitialCommit(true);
@@ -623,7 +623,7 @@ export function useGitPanelController({
         return true;
       }
 
-      throw new Error(data.error || 'Failed to create initial commit');
+      throw new Error(data.error || '创建初始提交失败');
     } catch (error) {
       console.error('Error creating initial commit:', error);
       throw error;

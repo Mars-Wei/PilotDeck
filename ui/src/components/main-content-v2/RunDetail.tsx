@@ -167,7 +167,7 @@ export default function RunDetail(props: RunDetailProps) {
         className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
       >
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-        {backLabel ?? t('dashboard.runDetail.back', { defaultValue: 'Back to events' })}
+        {backLabel ?? t('dashboard.runDetail.back', { defaultValue: '返回事件列表' })}
       </button>
 
       {/* Header card */}
@@ -176,12 +176,12 @@ export default function RunDetail(props: RunDetailProps) {
           {loadingPlan && !plan ? (
             <div className="flex items-center gap-2 text-[13px] text-neutral-500">
               <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} />
-              {t('dashboard.runDetail.loading', { defaultValue: 'Loading…' })}
+              {t('dashboard.runDetail.loading', { defaultValue: '加载中...' })}
             </div>
           ) : (
             <>
               <h2 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-                {plan?.title || t('dashboard.runDetail.untitled', { defaultValue: 'Untitled Plan' })}
+                {plan?.title || t('dashboard.runDetail.untitled', { defaultValue: '未命名计划' })}
               </h2>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 {projectDisplayName && (
@@ -209,7 +209,7 @@ export default function RunDetail(props: RunDetailProps) {
           {/* Workspace strategy */}
           <div className="px-5 py-3">
             <div className="text-xxs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-              {t('dashboard.runDetail.workspaceStrategy', { defaultValue: 'Workspace' })}
+              {t('dashboard.runDetail.workspaceStrategy', { defaultValue: '工作区' })}
             </div>
             <div className="mt-1 text-[13px] font-medium text-neutral-700 dark:text-neutral-300">
               {plan?.workspace?.strategy || '—'}
@@ -219,7 +219,7 @@ export default function RunDetail(props: RunDetailProps) {
           {/* Execution session */}
           <div className="px-5 py-3">
             <div className="text-xxs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-              {t('dashboard.runDetail.executionSession', { defaultValue: 'Execution Session' })}
+              {t('dashboard.runDetail.executionSession', { defaultValue: '执行会话' })}
             </div>
             <div className="mt-1">
               {projectKey && effectiveRunId ? (
@@ -228,7 +228,7 @@ export default function RunDetail(props: RunDetailProps) {
                   onClick={() => onOpenExecutionSession?.(projectKey, effectiveRunId, projectName)}
                   className="inline-flex items-center gap-1 text-[13px] font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  {t('dashboard.runDetail.openSession', { defaultValue: 'Open Session' })}
+                  {t('dashboard.runDetail.openSession', { defaultValue: '打开会话' })}
                   <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
                 </button>
               ) : (
@@ -240,7 +240,7 @@ export default function RunDetail(props: RunDetailProps) {
           {/* Outcome */}
           <div className="px-5 py-3">
             <div className="text-xxs font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-              {t('dashboard.runDetail.outcome', { defaultValue: 'Outcome' })}
+              {t('dashboard.runDetail.outcome', { defaultValue: '结果' })}
             </div>
             <div className="mt-1 text-[13px] font-medium text-neutral-700 dark:text-neutral-300">
               {outcome || planStatusToOutcome(plan?.status) || '—'}
@@ -261,7 +261,7 @@ export default function RunDetail(props: RunDetailProps) {
               <ChevronRight className="h-4 w-4 text-neutral-400" strokeWidth={1.75} />
             )}
             <span className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-              {t('dashboard.runDetail.plan', { defaultValue: 'Plan' })}
+              {t('dashboard.runDetail.plan', { defaultValue: '计划' })}
             </span>
           </button>
           {planOpen && (
@@ -269,7 +269,7 @@ export default function RunDetail(props: RunDetailProps) {
               {loadingPlan ? (
                 <div className="flex items-center gap-2 py-4 text-[13px] text-neutral-500">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-                  {t('dashboard.runDetail.loading', { defaultValue: 'Loading…' })}
+                  {t('dashboard.runDetail.loading', { defaultValue: '加载中...' })}
                 </div>
               ) : plan?.content ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -277,7 +277,7 @@ export default function RunDetail(props: RunDetailProps) {
                 </div>
               ) : (
                 <p className="py-4 text-[13px] text-neutral-400 dark:text-neutral-500">
-                  {t('dashboard.runDetail.noPlanContent', { defaultValue: 'No plan content available.' })}
+                  {t('dashboard.runDetail.noPlanContent', { defaultValue: '暂无计划内容。' })}
                 </p>
               )}
             </div>
@@ -297,7 +297,7 @@ export default function RunDetail(props: RunDetailProps) {
               <ChevronRight className="h-4 w-4 text-neutral-400" strokeWidth={1.75} />
             )}
             <span className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-              {t('dashboard.runDetail.report', { defaultValue: 'Report' })}
+              {t('dashboard.runDetail.report', { defaultValue: '报告' })}
             </span>
           </button>
           {reportOpen && (
@@ -305,7 +305,7 @@ export default function RunDetail(props: RunDetailProps) {
               {loadingReport ? (
                 <div className="flex items-center gap-2 py-4 text-[13px] text-neutral-500">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-                  {t('dashboard.runDetail.loading', { defaultValue: 'Loading…' })}
+                  {t('dashboard.runDetail.loading', { defaultValue: '加载中...' })}
                 </div>
               ) : reportMarkdown ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -313,7 +313,7 @@ export default function RunDetail(props: RunDetailProps) {
                 </div>
               ) : (
                 <p className="py-4 text-[13px] text-neutral-400 dark:text-neutral-500">
-                  {t('dashboard.runDetail.noReportContent', { defaultValue: 'No report available yet.' })}
+                  {t('dashboard.runDetail.noReportContent', { defaultValue: '暂无报告。' })}
                 </p>
               )}
             </div>

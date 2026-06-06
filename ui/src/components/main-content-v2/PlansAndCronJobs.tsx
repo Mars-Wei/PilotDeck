@@ -67,12 +67,12 @@ const PLAN_STATUS_STYLE: Record<PlanDisplayStatus, string> = {
 };
 
 const PLAN_STATUS_LABEL: Record<PlanDisplayStatus, { key: string; defaultValue: string }> = {
-  created: { key: 'plansCron.status.created', defaultValue: 'Created' },
-  preparingWorkspace: { key: 'plansCron.status.preparingWorkspace', defaultValue: 'Preparing Workspace' },
-  executing: { key: 'plansCron.status.executing', defaultValue: 'Executing' },
-  completedWaiting: { key: 'plansCron.status.completedWaiting', defaultValue: 'Completed' },
-  failed: { key: 'plansCron.status.failed', defaultValue: 'Failed' },
-  archived: { key: 'plansCron.status.archived', defaultValue: 'Archived' },
+  created: { key: 'plansCron.status.created', defaultValue: '刚创建' },
+  preparingWorkspace: { key: 'plansCron.status.preparingWorkspace', defaultValue: '正在创建隔离环境' },
+  executing: { key: 'plansCron.status.executing', defaultValue: '正在执行' },
+  completedWaiting: { key: 'plansCron.status.completedWaiting', defaultValue: '执行完成' },
+  failed: { key: 'plansCron.status.failed', defaultValue: '执行失败' },
+  archived: { key: 'plansCron.status.archived', defaultValue: '已归档' },
 };
 
 const CRON_STATUS_STYLE: Record<'scheduled' | 'running', string> = {
@@ -81,8 +81,8 @@ const CRON_STATUS_STYLE: Record<'scheduled' | 'running', string> = {
 };
 
 const CRON_STATUS_LABEL: Record<'scheduled' | 'running', { key: string; defaultValue: string }> = {
-  scheduled: { key: 'plansCron.status.scheduled', defaultValue: 'Scheduled' },
-  running: { key: 'plansCron.status.running', defaultValue: 'Running' },
+  scheduled: { key: 'plansCron.status.scheduled', defaultValue: '已安排' },
+  running: { key: 'plansCron.status.running', defaultValue: '运行中' },
 };
 
 // ---------------------------------------------------------------------------
@@ -293,10 +293,10 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-[20px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-            {t('plansCron.title', { defaultValue: 'Plans & Cron Jobs' })}
+            {t('plansCron.title', { defaultValue: '计划与定时任务' })}
           </h2>
           <p className="mt-0.5 text-[13px] text-neutral-500 dark:text-neutral-400">
-            {t('plansCron.subtitle', { defaultValue: 'All plans and cron jobs across projects.' })}
+            {t('plansCron.subtitle', { defaultValue: '所有项目的计划与定时任务。' })}
           </p>
         </div>
         <button
@@ -306,7 +306,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 px-2.5 text-xxs text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
         >
           <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} strokeWidth={1.75} />
-          <span>{t('actions.refresh', { defaultValue: 'Refresh' })}</span>
+          <span>{t('actions.refresh', { defaultValue: '刷新' })}</span>
         </button>
       </div>
 
@@ -320,12 +320,12 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
       {loading && totalItems === 0 ? (
         <div className="flex items-center gap-2 py-8 text-[13px] text-neutral-500 dark:text-neutral-400">
           <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-          <span>{t('plansCron.loading', { defaultValue: 'Loading plans and cron jobs…' })}</span>
+          <span>{t('plansCron.loading', { defaultValue: '正在加载计划与定时任务...' })}</span>
         </div>
       ) : totalItems === 0 && !loading ? (
         <div className="py-8 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
           <FileText className="mx-auto mb-2 h-8 w-8 text-neutral-300 dark:text-neutral-600" strokeWidth={1.25} />
-          {t('plansCron.empty', { defaultValue: 'No plans or cron jobs found.' })}
+          {t('plansCron.empty', { defaultValue: '暂无计划或定时任务。' })}
         </div>
       ) : (
         <div className="space-y-4">
@@ -333,7 +333,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
             const isCollapsed = collapsedProjects.has(projectKey);
             const label =
               projectKey === '__unassigned__'
-                ? t('plansCron.unassigned', { defaultValue: 'Unassigned' })
+                ? t('plansCron.unassigned', { defaultValue: '未关联项目' })
                 : displayName;
 
             return (
@@ -418,7 +418,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                       {planItems.length > 0 && (
                         <SubSection
                           sectionKey={`${projectKey}::plans`}
-                          label={`${t('plansCron.type.plan', { defaultValue: 'Plan' })} (${planItems.length})`}
+                          label={`${t('plansCron.type.plan', { defaultValue: '计划' })} (${planItems.length})`}
                           collapsedSections={collapsedSections}
                           toggleSection={toggleSection}
                           actions={
@@ -426,7 +426,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                               {isApplying && (
                                 <span className="inline-flex items-center gap-1 text-xxs text-sky-600 dark:text-sky-400">
                                   <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
-                                  {t('plansCron.cycleStatus.applying', { defaultValue: 'Applying…' })}
+                                  {t('plansCron.cycleStatus.applying', { defaultValue: '正在应用...' })}
                                 </span>
                               )}
                               {canApply && !isApplying && (
@@ -439,7 +439,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                                   {busy ? (
                                     <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
                                   ) : (
-                                    t('plansCron.actions.applyCycle', { defaultValue: 'Apply All' })
+                                    t('plansCron.actions.applyCycle', { defaultValue: '全部应用' })
                                   )}
                                 </button>
                               )}
@@ -449,7 +449,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                                   disabled={busy}
                                   onClick={() => setConfirmingArchiveCycle(activeCycle!.id)}
                                   className="inline-flex h-7 items-center rounded-md border border-neutral-200 px-2 text-neutral-500 transition hover:border-red-300 hover:text-red-600 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-red-700 dark:hover:text-red-400"
-                                  title={t('plansCron.actions.archiveCycle', { defaultValue: 'Archive' })}
+                                  title={t('plansCron.actions.archiveCycle', { defaultValue: '归档' })}
                                 >
                                   <Archive className="h-3.5 w-3.5" strokeWidth={1.75} />
                                 </button>
@@ -465,7 +465,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                                     {busy ? (
                                       <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
                                     ) : (
-                                      t('plansCron.actions.archiveCycle', { defaultValue: 'Archive' })
+                                      t('plansCron.actions.archiveCycle', { defaultValue: '归档' })
                                     )}
                                   </button>
                                   <button
@@ -499,7 +499,7 @@ export default function PlansAndCronJobs({ onApplyWorkCycle, onOpenPlanDetail }:
                       {cronItems.length > 0 && (
                         <SubSection
                           sectionKey={`${projectKey}::crons`}
-                          label={`${t('plansCron.type.cronJob', { defaultValue: 'Cron Jobs' })} (${cronItems.length})`}
+                          label={`${t('plansCron.type.cronJob', { defaultValue: '定时任务' })} (${cronItems.length})`}
                           collapsedSections={collapsedSections}
                           toggleSection={toggleSection}
                         >
@@ -580,22 +580,22 @@ function ColumnHeaders({ t }: { t: (key: string, opts?: Record<string, string>) 
     <div className="flex items-center gap-4 border-b border-neutral-200 bg-neutral-50 px-5 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
       <div className={COL.title}>
         <span className="text-xxs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-          {t('plansCron.columns.title', { defaultValue: 'Title' })}
+          {t('plansCron.columns.title', { defaultValue: '标题' })}
         </span>
       </div>
       <div className={COL.createdAt}>
         <span className="text-xxs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-          {t('plansCron.columns.createdAt', { defaultValue: 'Created' })}
+          {t('plansCron.columns.createdAt', { defaultValue: '创建时间' })}
         </span>
       </div>
       <div className={COL.status}>
         <span className="text-xxs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-          {t('plansCron.columns.status', { defaultValue: 'Status' })}
+          {t('plansCron.columns.status', { defaultValue: '状态' })}
         </span>
       </div>
       <div className={COL.actions}>
         <span className="text-xxs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-          {t('plansCron.columns.actions', { defaultValue: 'Actions' })}
+          {t('plansCron.columns.actions', { defaultValue: '操作' })}
         </span>
       </div>
     </div>
@@ -757,7 +757,7 @@ function ItemRow({
                 {busy ? (
                   <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
                 ) : (
-                  t('plansCron.actions.retry', { defaultValue: 'Retry' })
+                  t('plansCron.actions.retry', { defaultValue: '重新执行' })
                 )}
               </button>
             )}
@@ -776,7 +776,7 @@ function ItemRow({
                 ) : (
                   <>
                     <Square className="h-3 w-3" strokeWidth={2} />
-                    {t('plansCron.actions.stop', { defaultValue: 'Stop' })}
+                    {t('plansCron.actions.stop', { defaultValue: '停止' })}
                   </>
                 )}
               </button>
@@ -792,7 +792,7 @@ function ItemRow({
                 ) : (
                   <>
                     <Play className="h-3 w-3" strokeWidth={2} />
-                    {t('plansCron.actions.runNow', { defaultValue: 'Run Now' })}
+                    {t('plansCron.actions.runNow', { defaultValue: '立即运行' })}
                   </>
                 )}
               </button>
@@ -802,7 +802,7 @@ function ItemRow({
               disabled={busy}
               onClick={() => void handleCronDelete()}
               className="inline-flex h-7 items-center rounded-md border border-neutral-200 px-2 text-neutral-500 transition hover:border-red-300 hover:text-red-600 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-red-700 dark:hover:text-red-400"
-              title={t('plansCron.actions.delete', { defaultValue: 'Delete' })}
+              title={t('plansCron.actions.delete', { defaultValue: '删除' })}
             >
               <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
             </button>

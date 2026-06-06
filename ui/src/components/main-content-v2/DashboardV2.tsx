@@ -64,6 +64,18 @@ function getSortedTierEntries<T>(byTier: Record<string, T> | null | undefined): 
   });
 }
 
+function formatTierLabel(tier: string): string {
+  const labels: Record<string, string> = {
+    SIMPLE: '简单',
+    MEDIUM: '中等',
+    COMPLEX: '复杂',
+    REASONING: '推理',
+    HARD: '困难',
+    RECORDED: '已记录',
+  };
+  return labels[tier.toUpperCase()] || tier;
+}
+
 function SavingsBadge({ baseline, saved }: { baseline?: number; saved?: number }) {
   const { t } = useTranslation('routing');
   if (!baseline || baseline <= 0) return null;
@@ -77,8 +89,8 @@ function SavingsBadge({ baseline, saved }: { baseline?: number; saved?: number }
     )}>
       <TrendingUp className="h-3 w-3" strokeWidth={1.75} />
       {isPositive
-        ? `${t('dashboard.price.saved', { defaultValue: 'Saved' })} ${formatCost(actualSaved)} (${pct}%)`
-        : `${t('dashboard.price.extraShort', { defaultValue: 'Over' })} ${formatCost(Math.abs(actualSaved))}`}
+        ? `${t('dashboard.price.saved', { defaultValue: '节省' })} ${formatCost(actualSaved)} (${pct}%)`
+        : `${t('dashboard.price.extraShort', { defaultValue: '多花' })} ${formatCost(Math.abs(actualSaved))}`}
     </span>
   );
 }
@@ -107,7 +119,7 @@ function collectRecentRoutes(
   if (unmatchedSessions) {
     const placeholder = {
       name: 'unmatched',
-      displayName: 'General',
+      displayName: '通用',
       fullPath: '',
       sessions: [],
       aggregated: {},
@@ -244,7 +256,7 @@ function buildProjectGroups(
 
     generalGroup = {
       name: '__general__',
-      displayName: 'General / Other',
+      displayName: '通用 / 其他',
       fullPath: '',
       aggregated: {
         total: aggTotal,
@@ -342,7 +354,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
       <div className="flex h-full items-center justify-center bg-white text-neutral-500 dark:bg-neutral-950 dark:text-neutral-400">
         <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} />
         <span className="ml-2 text-[13px]">
-          {t('dashboard.loading', { defaultValue: 'Loading dashboard…' })}
+          {t('dashboard.loading', { defaultValue: '正在加载路由...' })}
         </span>
       </div>
     );
@@ -357,7 +369,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
           onClick={refresh}
           className="text-xxs rounded-md bg-neutral-900 px-3 py-1.5 text-white transition hover:opacity-90 dark:bg-neutral-50 dark:text-neutral-900"
         >
-          {t('dashboard.retry', { defaultValue: 'Retry' })}
+          {t('dashboard.retry', { defaultValue: '重试' })}
         </button>
       </div>
     );
@@ -388,7 +400,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
         project: projectDisplayName,
         defaultValue: `Routing stats for ${projectDisplayName}.`,
       })
-    : t('dashboard.subtitle', { defaultValue: 'Usage across all projects and sessions.' });
+    : t('dashboard.subtitle', { defaultValue: '覆盖所有项目与会话的用量统计。' });
 
   return (
     <div className="h-full overflow-y-auto bg-white dark:bg-neutral-950">
@@ -397,7 +409,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-[20px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-              {t('dashboard.title', { defaultValue: 'Dashboard' })}
+              {t('dashboard.title', { defaultValue: '路由' })}
             </h2>
             <p className="mt-0.5 text-[13px] text-neutral-500 dark:text-neutral-400">{subtitle}</p>
           </div>
@@ -405,7 +417,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
             {hasProjectScope ? (
               <div
                 role="tablist"
-                aria-label={t('dashboard.scope.label', { defaultValue: 'Dashboard scope' }) as string}
+                aria-label={t('dashboard.scope.label', { defaultValue: '统计范围' }) as string}
                 className="flex h-8 rounded-md bg-neutral-100 p-0.5 dark:bg-neutral-900"
               >
                 {(['project', 'total'] as DashboardScope[]).map((item) => (
@@ -423,8 +435,8 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
                     )}
                   >
                     {item === 'project'
-                      ? t('dashboard.scope.project', { defaultValue: 'Project' })
-                      : t('dashboard.scope.total', { defaultValue: 'Total' })}
+                      ? t('dashboard.scope.project', { defaultValue: '项目' })
+                      : t('dashboard.scope.total', { defaultValue: '总计' })}
                   </button>
                 ))}
               </div>
@@ -436,7 +448,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
               className="text-xxs inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 px-2.5 text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} strokeWidth={1.75} />
-              <span>{t('dashboard.refresh', { defaultValue: 'Refresh' })}</span>
+              <span>{t('dashboard.refresh', { defaultValue: '刷新' })}</span>
             </button>
           </div>
         </div>
@@ -445,13 +457,13 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
         <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
           <StatCard
             icon={<Activity className="h-3.5 w-3.5" strokeWidth={1.75} />}
-            label={t('dashboard.stats.requests', { defaultValue: 'Requests' })}
+            label={t('dashboard.stats.requests', { defaultValue: '请求数' })}
             value={totalRequests.toLocaleString()}
             sub={
               routedSessionCount > 0
                 ? t('dashboard.stats.routedSessions', {
                     count: routedSessionCount,
-                    defaultValue: `${routedSessionCount} routed sessions`,
+                    defaultValue: `${routedSessionCount} 个已路由会话`,
                   })
                 : undefined
             }
@@ -463,7 +475,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
                       <span>
                         {t('dashboard.stats.activeProjects', {
                           count: overall.projectCount,
-                          defaultValue: `${overall.projectCount} active projects`,
+                          defaultValue: `${overall.projectCount} 个活跃项目`,
                         })}
                       </span>
                     </span>
@@ -473,30 +485,30 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
           />
           <StatCard
             icon={<Sigma className="h-3.5 w-3.5" strokeWidth={1.75} />}
-            label={t('dashboard.stats.tokens', { defaultValue: 'Tokens' })}
+            label={t('dashboard.stats.tokens', { defaultValue: '令牌数' })}
             value={formatTokens(totalTokens)}
             sub={
               t('dashboard.stats.inOut', {
                 in: formatTokens(inputTokens),
                 out: formatTokens(outputTokens),
-                defaultValue: `${formatTokens(inputTokens)} in · ${formatTokens(outputTokens)} out`,
+                defaultValue: `输入 ${formatTokens(inputTokens)} · 输出 ${formatTokens(outputTokens)}`,
               }) as string
             }
           />
           <StatCard
             icon={<DollarSign className="h-3.5 w-3.5" strokeWidth={1.75} />}
-            label={t('dashboard.stats.cost', { defaultValue: 'Cost' })}
+            label={t('dashboard.stats.cost', { defaultValue: '成本' })}
             value={formatCost(totalCost)}
             sub={
               hasBaselineData
                 ? t('dashboard.stats.noRouterCost', {
                     value: formatCost(totalBaselineCost),
-                    defaultValue: `No-router ${formatCost(totalBaselineCost)}`,
+                    defaultValue: `不走路由 ${formatCost(totalBaselineCost)}`,
                   })
                 : totalRequests > 0
                   ? (t('dashboard.stats.perRequest', {
                     value: formatCost(totalCost / totalRequests),
-                    defaultValue: `≈ ${formatCost(totalCost / totalRequests)} / request`,
+                    defaultValue: `≈ ${formatCost(totalCost / totalRequests)} / 次请求`,
                   }) as string)
                   : undefined
             }
@@ -510,7 +522,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
         {effectiveProjectFilter && (
           <div className="mt-6 space-y-2">
             <div className="text-xxs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-              {t('dashboard.sessions.title', { defaultValue: 'Sessions' })}
+              {t('dashboard.sessions.title', { defaultValue: '会话' })}
             </div>
             {groups.length > 0 && groups[0].allSessions.length > 0 ? (
               <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
@@ -522,7 +534,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
               </div>
             ) : (
               <p className="py-6 text-center text-[13px] text-neutral-400 dark:text-neutral-500">
-                {t('dashboard.sessions.empty', { defaultValue: 'No sessions yet.' })}
+                {t('dashboard.sessions.empty', { defaultValue: '暂无会话。' })}
               </p>
             )}
           </div>
@@ -538,7 +550,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
             {(groups.length > 0 || generalGroup) && (
               <div className="mt-6 space-y-3">
                 <div className="text-xxs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                  {t('dashboard.projects.title', { defaultValue: 'By project' })}
+                  {t('dashboard.projects.title', { defaultValue: '按项目' })}
                 </div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {groups.map((grp) => (
@@ -551,13 +563,13 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
 
             <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
               <div className="text-xxs mb-4 uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                {t('dashboard.recent.title', { defaultValue: 'Recent routes' })}
+                {t('dashboard.recent.title', { defaultValue: '最近调用' })}
               </div>
               {recent.length === 0 ? (
                 <p className="py-6 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
                   {t('dashboard.recent.empty', {
                     defaultValue:
-                      'No routing activity yet. Start a conversation to see stats here.',
+                      '暂无路由活动。发起一个对话即可在此看到统计。',
                   })}
                 </p>
               ) : (
@@ -565,16 +577,16 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
                   <thead className="text-xxs text-neutral-500 dark:text-neutral-400">
                     <tr className="text-left">
                       <th className="pb-2 font-normal">
-                        {t('dashboard.recent.columns.time', { defaultValue: 'Time' })}
+                        {t('dashboard.recent.columns.time', { defaultValue: '时间' })}
                       </th>
                       <th className="pb-2 font-normal">
-                        {t('dashboard.recent.columns.project', { defaultValue: 'Project' })}
+                        {t('dashboard.recent.columns.project', { defaultValue: '项目' })}
                       </th>
                       <th className="pb-2 font-normal">
-                        {t('dashboard.recent.columns.model', { defaultValue: 'Model' })}
+                        {t('dashboard.recent.columns.model', { defaultValue: '模型' })}
                       </th>
                       <th className="pb-2 text-right font-normal">
-                        {t('dashboard.recent.columns.tokens', { defaultValue: 'Tokens' })}
+                        {t('dashboard.recent.columns.tokens', { defaultValue: '令牌数' })}
                       </th>
                     </tr>
                   </thead>
@@ -634,7 +646,7 @@ function ProjectGroupCard({
           {group.displayName}
         </span>
         <span className="text-xxs shrink-0 tabular-nums text-neutral-500 dark:text-neutral-400">
-          {agg.sessionCount} sessions{agg.routedSessionCount > 0 ? ` · ${agg.routedSessionCount} routed` : ''} · {formatTokens(agg.total.totalTokens || 0)} tokens · {formatCost(agg.total.estimatedCost || 0)}
+          {agg.sessionCount} 个会话{agg.routedSessionCount > 0 ? ` · ${agg.routedSessionCount} 个已路由` : ''} · {formatTokens(agg.total.totalTokens || 0)} 令牌 · {formatCost(agg.total.estimatedCost || 0)}
         </span>
       </button>
 
@@ -643,14 +655,14 @@ function ProjectGroupCard({
           {/* Tier breakdown */}
           {Object.keys(agg.byTier || {}).length > 0 && (
             <div className="mb-3">
-              <div className="text-xxs mb-2 text-neutral-400 dark:text-neutral-500">Tier breakdown</div>
+              <div className="text-xxs mb-2 text-neutral-400 dark:text-neutral-500">层级分布</div>
               <div className="flex flex-wrap gap-2">
                 {getSortedTierEntries(agg.byTier).map(([tier, bucket]) => (
                   <span
                     key={tier}
                     className="text-xxs inline-flex items-center gap-1.5 rounded-md border border-neutral-200 px-2 py-1 text-neutral-600 dark:border-neutral-700 dark:text-neutral-400"
                   >
-                    <span className="font-medium">{tier}</span>
+                    <span className="font-medium">{formatTierLabel(tier)}</span>
                     <span className="text-neutral-400 dark:text-neutral-500">·</span>
                     <span>{formatTokens(bucket?.totalTokens || 0)}</span>
                     <span className="text-neutral-400 dark:text-neutral-500">·</span>
@@ -664,7 +676,7 @@ function ProjectGroupCard({
           {/* Session list — show all sessions */}
           {group.allSessions.length > 0 ? (
             <div>
-              <div className="text-xxs mb-2 text-neutral-400 dark:text-neutral-500">Sessions</div>
+              <div className="text-xxs mb-2 text-neutral-400 dark:text-neutral-500">会话</div>
               <div className="space-y-1">
                 {group.allSessions.map((session) => (
                   <SessionRow key={session.sessionId} session={session} />
@@ -672,7 +684,7 @@ function ProjectGroupCard({
               </div>
             </div>
           ) : (
-            <p className="text-xxs text-neutral-400 dark:text-neutral-500">No sessions yet.</p>
+            <p className="text-xxs text-neutral-400 dark:text-neutral-500">暂无会话。</p>
           )}
         </div>
       )}
@@ -713,7 +725,7 @@ function TierBar({ byTier }: { byTier: Record<string, { estimatedCost?: number; 
         {entries.map(([tier, b]) => (
           <span key={tier} className="inline-flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400">
             <span className={cn('inline-block h-1.5 w-1.5 rounded-full', TIER_COLORS[tier.toUpperCase()] || 'bg-neutral-400')} />
-            <span>{tier}</span>
+            <span>{formatTierLabel(tier)}</span>
             <span className="tabular-nums">{formatCost(b?.estimatedCost ?? 0)}</span>
           </span>
         ))}
@@ -752,7 +764,7 @@ function ProjectCostCard({ group, onClick }: { group: ProjectGroup; onClick?: ()
               requests,
               tokens: formatTokens(tokens),
               sessions: agg.sessionCount,
-              defaultValue: `${requests} requests · ${formatTokens(tokens)} tokens · ${agg.sessionCount} sessions`,
+              defaultValue: `${requests} 次请求 · ${formatTokens(tokens)} 令牌 · ${agg.sessionCount} 个会话`,
             })}
           </div>
         </div>
@@ -800,7 +812,7 @@ function PriceSection({ sessions }: { sessions: DashboardSession[] }) {
   return (
     <div className="mt-6 space-y-2">
       <div className="text-xxs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-        {t('dashboard.price.title', { defaultValue: 'Price' })}
+        {t('dashboard.price.title', { defaultValue: '成本' })}
       </div>
       <div className={cn(
         'rounded-xl border',
@@ -812,7 +824,7 @@ function PriceSection({ sessions }: { sessions: DashboardSession[] }) {
       )}>
         {pricedSessions.length === 0 ? (
           <p className="px-5 py-6 text-center text-[13px] text-neutral-400 dark:text-neutral-500">
-            {t('dashboard.price.empty', { defaultValue: 'No priced sessions yet.' })}
+            {t('dashboard.price.empty', { defaultValue: '暂无可计价会话。' })}
           </p>
         ) : (
           <>
@@ -825,33 +837,33 @@ function PriceSection({ sessions }: { sessions: DashboardSession[] }) {
                 : 'divide-neutral-100 dark:divide-neutral-800',
             )}>
               <PriceMetric
-                label={t('dashboard.price.actual', { defaultValue: 'Actual cost' })}
+                label={t('dashboard.price.actual', { defaultValue: '实际开销' })}
                 value={formatCost(totals.actual)}
                 sub={t('dashboard.price.summary', {
                   sessions: pricedSessions.length,
                   requests: totals.requests,
                   tokens: formatTokens(totals.tokens),
-                  defaultValue: `${pricedSessions.length} sessions · ${totals.requests} req · ${formatTokens(totals.tokens)} tokens`,
+                  defaultValue: `${pricedSessions.length} 个会话 · ${totals.requests} 次请求 · ${formatTokens(totals.tokens)} 令牌`,
                 })}
               />
               <PriceMetric
-                label={t('dashboard.price.baseline', { defaultValue: 'No-router cost' })}
+                label={t('dashboard.price.baseline', { defaultValue: '不走路由器开销' })}
                 value={hasBaseline ? formatCost(totals.baseline) : '—'}
                 sub={t('dashboard.price.baselineHint', {
-                  defaultValue: 'Baseline assumes the main model handles all routed tokens.',
+                  defaultValue: '按所有路由令牌都交给主模型估算。',
                 })}
               />
               <PriceMetric
                 label={savedIsPositive
-                  ? t('dashboard.price.saved', { defaultValue: 'Saved' })
-                  : t('dashboard.price.extra', { defaultValue: 'Extra spent' })}
+                  ? t('dashboard.price.saved', { defaultValue: '节省' })
+                  : t('dashboard.price.extra', { defaultValue: '多花' })}
                 value={hasBaseline ? formatCost(Math.abs(totals.saved)) : '—'}
                 sub={hasBaseline
                   ? t('dashboard.price.savedHint', {
                       rate: Math.round(Math.abs(totals.saved / totals.baseline) * 100),
-                      defaultValue: `${Math.round(Math.abs(totals.saved / totals.baseline) * 100)}% vs baseline`,
+                      defaultValue: `相对基准 ${Math.round(Math.abs(totals.saved / totals.baseline) * 100)}%`,
                     })
-                  : t('dashboard.price.missingBaseline', { defaultValue: 'No baseline configured for these sessions.' })}
+                  : t('dashboard.price.missingBaseline', { defaultValue: '这些会话还没有配置基准成本。' })}
                 tone={hasBaseline ? (savedIsPositive ? 'positive' : 'warning') : 'neutral'}
               />
             </div>
@@ -865,10 +877,10 @@ function PriceSection({ sessions }: { sessions: DashboardSession[] }) {
                 : 'border-neutral-100 dark:border-neutral-800',
             )}>
               <div className="hidden grid-cols-[minmax(0,1fr)_112px_112px_112px] gap-4 px-5 py-2 text-[11px] leading-[14px] text-neutral-500 dark:text-neutral-400 md:grid">
-                <span>{t('dashboard.price.session', { defaultValue: 'Session' })}</span>
-                <span className="text-right">{t('dashboard.price.actualShort', { defaultValue: 'Actual' })}</span>
-                <span className="text-right">{t('dashboard.price.baselineShort', { defaultValue: 'No router' })}</span>
-                <span className="text-right">{t('dashboard.price.savedShort', { defaultValue: 'Saved' })}</span>
+                <span>{t('dashboard.price.session', { defaultValue: '会话' })}</span>
+                <span className="text-right">{t('dashboard.price.actualShort', { defaultValue: '实际' })}</span>
+                <span className="text-right">{t('dashboard.price.baselineShort', { defaultValue: '不走路由器' })}</span>
+                <span className="text-right">{t('dashboard.price.savedShort', { defaultValue: '节省' })}</span>
               </div>
               <div className={cn(
                 'divide-y',
@@ -898,24 +910,24 @@ function PriceSection({ sessions }: { sessions: DashboardSession[] }) {
                           <span>
                             {t('dashboard.units.requestsShort', {
                               count: total.requestCount || 0,
-                              defaultValue: `${total.requestCount || 0} req`,
+                              defaultValue: `${total.requestCount || 0} 次`,
                             })}
                           </span>
                           <span>
                             {t('dashboard.units.tokens', {
                               value: formatTokens(total.totalTokens || 0),
-                              defaultValue: `${formatTokens(total.totalTokens || 0)} tokens`,
+                              defaultValue: `${formatTokens(total.totalTokens || 0)} 令牌`,
                             })}
                           </span>
                           <span>{formatTime(session.lastActivity, session.routing?.lastActiveAt)}</span>
                         </div>
                       </div>
-                      <PriceCell label={t('dashboard.price.actualShort', { defaultValue: 'Actual' })} value={formatCost(actual)} />
-                      <PriceCell label={t('dashboard.price.baselineShort', { defaultValue: 'No router' })} value={rowHasBaseline ? formatCost(baseline) : '—'} />
+                      <PriceCell label={t('dashboard.price.actualShort', { defaultValue: '实际' })} value={formatCost(actual)} />
+                      <PriceCell label={t('dashboard.price.baselineShort', { defaultValue: '不走路由器' })} value={rowHasBaseline ? formatCost(baseline) : '—'} />
                       <PriceCell
                         label={rowSavedPositive
-                          ? t('dashboard.price.savedShort', { defaultValue: 'Saved' })
-                          : t('dashboard.price.extraShort', { defaultValue: 'Extra' })}
+                          ? t('dashboard.price.savedShort', { defaultValue: '节省' })
+                          : t('dashboard.price.extraShort', { defaultValue: '多花' })}
                         value={rowHasBaseline ? formatCost(Math.abs(saved)) : '—'}
                         tone={rowHasBaseline ? (rowSavedPositive ? 'positive' : 'warning') : 'neutral'}
                       />
@@ -1033,15 +1045,15 @@ function RequestLogRow({ entry, variant }: { entry: RequestLogEntry; variant: 'm
       ? 'bg-violet-50 text-violet-500 dark:bg-violet-900/20 dark:text-violet-400'
       : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500';
   const badgeLabel = isTool
-    ? t('dashboard.session.toolShort', { defaultValue: 'tool' })
+    ? t('dashboard.session.toolShort', { defaultValue: '工具' })
     : isSub
-      ? t('dashboard.session.subShort', { defaultValue: 'sub' })
-      : t('dashboard.session.mainShort', { defaultValue: 'main' });
+      ? t('dashboard.session.subShort', { defaultValue: '子' })
+      : t('dashboard.session.mainShort', { defaultValue: '主' });
 
   return (
     <div className={cn('flex items-start gap-2 rounded-md px-2.5 py-1.5 text-[12px]', bgClass)}>
       <span className={cn('text-xxs mt-0.5 shrink-0 rounded px-1.5 py-0.5 font-medium', tierClass)}>
-        {entry.tier || '—'}
+        {entry.tier ? formatTierLabel(entry.tier) : '—'}
       </span>
       <span className={cn('text-xxs mt-0.5 shrink-0 rounded px-1 py-0.5', badgeClass)}>
         {badgeLabel}
@@ -1050,7 +1062,7 @@ function RequestLogRow({ entry, variant }: { entry: RequestLogEntry; variant: 'm
         <div className="truncate text-neutral-700 dark:text-neutral-300">
           {entry.query || (
             <span className="italic text-neutral-400">
-              {t('dashboard.session.noContent', { defaultValue: '(no content)' })}
+              {t('dashboard.session.noContent', { defaultValue: '（无内容）' })}
             </span>
           )}
         </div>
@@ -1064,8 +1076,8 @@ function RequestLogRow({ entry, variant }: { entry: RequestLogEntry; variant: 'm
               saved >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
             )}>
               {saved >= 0
-                ? t('dashboard.price.savedLower', { defaultValue: 'saved' })
-                : t('dashboard.price.extraLower', { defaultValue: 'over' })}{' '}
+                ? t('dashboard.price.savedLower', { defaultValue: '节省' })
+                : t('dashboard.price.extraLower', { defaultValue: '多花' })}{' '}
               {formatCost(Math.abs(saved))}
             </span>
           )}
@@ -1127,19 +1139,19 @@ function SessionRow({ session }: { session: DashboardSession }) {
           <div className="flex shrink-0 items-center gap-2">
             {isOrchestrated && (
               <span className="text-xxs rounded bg-violet-100 px-1.5 py-0.5 font-medium text-violet-600 dark:bg-violet-900/40 dark:text-violet-400">
-                {t('dashboard.session.orchestrated', { defaultValue: 'orchestrated' })}
+                {t('dashboard.session.orchestrated', { defaultValue: '已编排' })}
               </span>
             )}
             {Object.keys(routing.byTier || {}).map((tier) => (
               <span key={tier} className="text-xxs rounded bg-blue-100 px-1.5 py-0.5 font-medium text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
-                {tier}
+                {formatTierLabel(tier)}
               </span>
             ))}
             <div className="ml-1 grid grid-cols-[56px_62px_58px_86px] items-center gap-2 text-[11px] leading-[14px] tabular-nums">
               <span className="text-right text-neutral-500 dark:text-neutral-400">
                 {t('dashboard.units.requestsShort', {
                   count: routing.total.requestCount,
-                  defaultValue: `${routing.total.requestCount} req`,
+                  defaultValue: `${routing.total.requestCount} 次`,
                 })}
               </span>
               <span className="text-right text-neutral-600 dark:text-neutral-400">
@@ -1154,8 +1166,8 @@ function SessionRow({ session }: { session: DashboardSession }) {
                 (routing.total.savedCost || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
               )}>
                 {(routing.total.savedCost || 0) >= 0
-                  ? t('dashboard.price.savedLower', { defaultValue: 'saved' })
-                  : t('dashboard.price.extraLower', { defaultValue: 'over' })}{' '}
+                  ? t('dashboard.price.savedLower', { defaultValue: '节省' })
+                  : t('dashboard.price.extraLower', { defaultValue: '多花' })}{' '}
                 {formatCost(Math.abs(routing.total.savedCost || 0))}
               </span>
             </div>
@@ -1165,7 +1177,7 @@ function SessionRow({ session }: { session: DashboardSession }) {
             {queryCount > 0
               ? t('dashboard.units.queries', {
                   count: queryCount,
-                  defaultValue: `${queryCount} queries`,
+                  defaultValue: `${queryCount} 条请求`,
                 })
               : '—'}
           </span>
@@ -1183,12 +1195,12 @@ function SessionRow({ session }: { session: DashboardSession }) {
                   {mainRole && (
                     <div className="rounded-lg border border-neutral-200 px-3 py-2 dark:border-neutral-700/60">
                       <div className="text-xxs font-medium text-neutral-700 dark:text-neutral-300">
-                        {t('dashboard.session.mainAgent', { defaultValue: 'Main Agent' })}
+                        {t('dashboard.session.mainAgent', { defaultValue: '主智能体' })}
                       </div>
                       <div className="mt-0.5 text-xxs tabular-nums text-neutral-500 dark:text-neutral-400">
                         {t('dashboard.units.requestsShort', {
                           count: mainRole.requestCount,
-                          defaultValue: `${mainRole.requestCount} req`,
+                          defaultValue: `${mainRole.requestCount} 次`,
                         })} · {formatTokens(mainRole.totalTokens || 0)} · {formatCost(mainRole.estimatedCost || 0)}
                       </div>
                     </div>
@@ -1196,12 +1208,12 @@ function SessionRow({ session }: { session: DashboardSession }) {
                   {subRole && (
                     <div className="rounded-lg border border-violet-200/60 bg-violet-50/30 px-3 py-2 dark:border-violet-700/30 dark:bg-violet-900/10">
                       <div className="text-xxs font-medium text-violet-700 dark:text-violet-300">
-                        {t('dashboard.session.subagents', { defaultValue: 'Sub-agents' })}
+                        {t('dashboard.session.subagents', { defaultValue: '子智能体' })}
                       </div>
                       <div className="mt-0.5 text-xxs tabular-nums text-violet-600 dark:text-violet-400">
                         {t('dashboard.units.requestsShort', {
                           count: subRole.requestCount,
-                          defaultValue: `${subRole.requestCount} req`,
+                          defaultValue: `${subRole.requestCount} 次`,
                         })} · {formatTokens(subRole.totalTokens || 0)} · {formatCost(subRole.estimatedCost || 0)}
                       </div>
                     </div>
@@ -1233,12 +1245,12 @@ function SessionRow({ session }: { session: DashboardSession }) {
                   {mainRole && (
                     <div className="rounded-lg border border-neutral-200 px-3 py-2 dark:border-neutral-700/60">
                       <div className="text-xxs font-medium text-neutral-700 dark:text-neutral-300">
-                        {t('dashboard.session.mainAgent', { defaultValue: 'Main Agent' })}
+                        {t('dashboard.session.mainAgent', { defaultValue: '主智能体' })}
                       </div>
                       <div className="mt-0.5 text-xxs tabular-nums text-neutral-500 dark:text-neutral-400">
                         {t('dashboard.units.requestsShort', {
                           count: mainRole.requestCount,
-                          defaultValue: `${mainRole.requestCount} req`,
+                          defaultValue: `${mainRole.requestCount} 次`,
                         })} · {formatTokens(mainRole.totalTokens || 0)} · {formatCost(mainRole.estimatedCost || 0)}
                       </div>
                     </div>
@@ -1246,12 +1258,12 @@ function SessionRow({ session }: { session: DashboardSession }) {
                   {subRole && (
                     <div className="rounded-lg border border-violet-200/60 bg-violet-50/30 px-3 py-2 dark:border-violet-700/30 dark:bg-violet-900/10">
                       <div className="text-xxs font-medium text-violet-700 dark:text-violet-300">
-                        {t('dashboard.session.subagents', { defaultValue: 'Sub-agents' })}
+                        {t('dashboard.session.subagents', { defaultValue: '子智能体' })}
                       </div>
                       <div className="mt-0.5 text-xxs tabular-nums text-violet-600 dark:text-violet-400">
                         {t('dashboard.units.requestsShort', {
                           count: subRole.requestCount,
-                          defaultValue: `${subRole.requestCount} req`,
+                          defaultValue: `${subRole.requestCount} 次`,
                         })} · {formatTokens(subRole.totalTokens || 0)} · {formatCost(subRole.estimatedCost || 0)}
                       </div>
                     </div>
@@ -1265,7 +1277,7 @@ function SessionRow({ session }: { session: DashboardSession }) {
                     <div key={i} className="flex items-center gap-2 text-[12px]">
                       {perQueryTiers[i] ? (
                         <span className="text-xxs shrink-0 rounded bg-neutral-200/70 px-1.5 py-0.5 font-medium text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400">
-                          {perQueryTiers[i]}
+                          {formatTierLabel(perQueryTiers[i])}
                         </span>
                       ) : (
                         <span className="text-xxs shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600">
@@ -1278,7 +1290,7 @@ function SessionRow({ session }: { session: DashboardSession }) {
                 </div>
               ) : (
                 <p className="text-xxs text-neutral-400 dark:text-neutral-600">
-                  {t('dashboard.session.noUserQueries', { defaultValue: 'No user queries recorded.' })}
+                  {t('dashboard.session.noUserQueries', { defaultValue: '暂无用户请求记录。' })}
                 </p>
               )}
             </>
@@ -1288,7 +1300,7 @@ function SessionRow({ session }: { session: DashboardSession }) {
           {routing && Object.keys(routing.byModel || {}).length > 0 && (
             <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
               <span className="text-xxs text-neutral-400 dark:text-neutral-500">
-                {t('dashboard.session.models', { defaultValue: 'Models:' })}
+                {t('dashboard.session.models', { defaultValue: '模型：' })}
               </span>
               {Object.entries(routing.byModel || {}).map(([model, bucket]) => (
                 <span key={model} className="text-xxs rounded-full bg-neutral-100 px-2 py-0.5 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
@@ -12,14 +12,6 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
-import ChatInterfaceV2 from '../../chat-v2/ChatInterfaceV2';
-import AlwaysOnV2 from '../../main-content-v2/AlwaysOnV2';
-import FilesV2 from '../../main-content-v2/FilesV2';
-import ShellV2 from '../../main-content-v2/ShellV2';
-import GitV2 from '../../main-content-v2/GitV2';
-import PluginTabContent from '../../plugins/view/PluginTabContent';
-import DashboardV2 from '../../main-content-v2/DashboardV2';
-import TasksV2 from '../../main-content-v2/TasksV2';
 import HomeConsoleV2 from '../../main-content-v2/home/HomeConsoleV2';
 import { cn } from '../../../lib/utils.js';
 import type { MainContentProps } from '../types/types';
@@ -27,22 +19,33 @@ import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import { useEditorSidebar } from '../../code-editor/hooks/useEditorSidebar';
-import EditorSidebar from '../../code-editor/view/EditorSidebar';
 import type { CodeEditorDiffInfo } from '../../code-editor/types/types';
 import type {
   AlwaysOnSessionTarget,
   Project,
   ProjectSession,
 } from '../../../types/app';
+import type { HomeDashboardData } from '../../../hooks/useHomeDashboardData';
+import type { DashboardData } from '../../../hooks/useRoutingDashboard';
 import { api } from '../../../utils/api';
 import {
   clearAlwaysOnPresence,
   sendAlwaysOnPresence,
 } from '../../../utils/alwaysOnPresence';
-import SkillsV2 from '../../main-content-v2/SkillsV2';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
-import MemoryPanel from './memory/MemoryPanel';
+
+const ChatInterfaceV2 = lazy(() => import('../../chat-v2/ChatInterfaceV2'));
+const AlwaysOnV2 = lazy(() => import('../../main-content-v2/AlwaysOnV2'));
+const FilesV2 = lazy(() => import('../../main-content-v2/FilesV2'));
+const ShellV2 = lazy(() => import('../../main-content-v2/ShellV2'));
+const GitV2 = lazy(() => import('../../main-content-v2/GitV2'));
+const PluginTabContent = lazy(() => import('../../plugins/view/PluginTabContent'));
+const DashboardV2 = lazy(() => import('../../main-content-v2/DashboardV2'));
+const TasksV2 = lazy(() => import('../../main-content-v2/TasksV2'));
+const SkillsV2 = lazy(() => import('../../main-content-v2/SkillsV2'));
+const MemoryPanel = lazy(() => import('./memory/MemoryPanel'));
+const EditorSidebar = lazy(() => import('../../code-editor/view/EditorSidebar'));
 
 type TaskMasterContextValue = {
   currentProject?: Project | null;
@@ -103,7 +106,7 @@ function getConsolePageMeta(
   if (activeTab === 'dashboard') {
     return {
       title: '数据与路由',
-      description: '查看模型路由、成本、Token 和项目级使用趋势',
+      description: '查看模型路由、成本、令牌和项目级使用趋势',
       icon: BarChart3,
     };
   }
@@ -205,6 +208,14 @@ function ConsolePageFrame({
   );
 }
 
+function PaneFallback({ label = '加载中...' }: { label?: string }) {
+  return (
+    <div className="flex h-full min-h-[160px] items-center justify-center px-4 text-sm text-surface-500 dark:text-surface-400">
+      {label}
+    </div>
+  );
+}
+
 async function readJsonPayload<T>(response: Response): Promise<T | null> {
   try {
     return await response.json() as T;
@@ -240,6 +251,8 @@ function MainContent({
   onShowSettings,
   onCreateProject,
   onSelectProjectByName,
+  homeDashboardData,
+  routingDashboardData,
   externalMessageUpdate,
 }: MainContentProps) {
   const { i18n } = useTranslation();
@@ -342,7 +355,7 @@ function MainContent({
     const payload = await readJsonPayload<{ cycle?: { id: string }; sessionKey?: string; executionToken?: string; error?: { code: string; message: string } | string }>(response);
     if (!response.ok || !payload) {
       const errMsg = typeof payload?.error === 'string' ? payload.error : payload?.error?.message;
-      throw new Error(errMsg || 'Failed to queue discovery plan apply');
+      throw new Error(errMsg || '提交 discovery 计划执行失败');
     }
     if (payload.error) {
       const errMsg = typeof payload.error === 'string' ? payload.error : payload.error.message;
@@ -381,8 +394,8 @@ function MainContent({
       return;
     }
 
-    const missingMessage = i18n.t('alwaysOn:sessionMissing', {
-      defaultValue: 'This chat record no longer exists.',
+      const missingMessage = i18n.t('alwaysOn:sessionMissing', {
+      defaultValue: '这条聊天记录已不存在。',
     });
 
     if (target.kind === 'origin') {
@@ -468,7 +481,7 @@ function MainContent({
     [handleOpenAlwaysOnSession],
   );
 
-  if (isLoading) {
+  if (isLoading && activeTab !== 'home') {
     return (
       <MainContentStateView
         mode="loading"
@@ -511,6 +524,8 @@ function MainContent({
           onSessionActivityBump={onSessionActivityBump}
           processingSessions={processingSessions}
           unreadSessionIds={unreadSessionIds ?? new Set<string>()}
+          homeDashboardData={homeDashboardData}
+          routingDashboardData={routingDashboardData}
           onReplaceTemporarySession={onReplaceTemporarySession}
           onNavigateToSession={onNavigateToSession}
           onStartNewSession={onStartNewSession}
@@ -530,21 +545,23 @@ function MainContent({
           onSelectProjectByName={onSelectProjectByName}
         />
 
-        {selectedProject && (
-          <EditorSidebar
-            editingFile={editingFile}
-            isMobile={isMobile}
-            editorExpanded={editorExpanded}
-            editorWidth={editorWidth}
-            hasManualWidth={hasManualWidth}
-            resizeHandleRef={resizeHandleRef}
-            onResizeStart={handleResizeStart}
-            onCloseEditor={handleCloseEditor}
-            onToggleEditorExpand={handleToggleEditorExpand}
-            projectPath={selectedProject.path}
-            fillSpace={activeTab === 'files'}
-          />
-        )}
+        {selectedProject && editingFile ? (
+          <Suspense fallback={<PaneFallback label="加载编辑器..." />}>
+            <EditorSidebar
+              editingFile={editingFile}
+              isMobile={isMobile}
+              editorExpanded={editorExpanded}
+              editorWidth={editorWidth}
+              hasManualWidth={hasManualWidth}
+              resizeHandleRef={resizeHandleRef}
+              onResizeStart={handleResizeStart}
+              onCloseEditor={handleCloseEditor}
+              onToggleEditorExpand={handleToggleEditorExpand}
+              projectPath={selectedProject.path}
+              fillSpace={activeTab === 'files'}
+            />
+          </Suspense>
+        ) : null}
       </div>
       {toast ? (
         <div
@@ -588,6 +605,8 @@ type SplitBodyProps = {
   ) => void;
   processingSessions: any;
   unreadSessionIds: Set<string>;
+  homeDashboardData?: HomeDashboardData;
+  routingDashboardData?: DashboardData | null;
   onReplaceTemporarySession: any;
   onNavigateToSession: (sessionId: string) => void;
   onStartNewSession: (project: Project) => void;
@@ -628,6 +647,8 @@ function SplitBody(props: SplitBodyProps) {
     onSessionActivityBump,
     processingSessions,
     unreadSessionIds,
+    homeDashboardData,
+    routingDashboardData,
     onReplaceTemporarySession,
     onNavigateToSession,
     onStartNewSession,
@@ -743,17 +764,18 @@ function SplitBody(props: SplitBodyProps) {
 
   const renderTool = () => {
     if (activeTab === 'home') {
+      if (!homeDashboardData) return null;
       return (
         <HomeConsoleV2
           projects={projects}
-          processingSessions={processingSessions}
-          unreadSessionIds={unreadSessionIds}
           onSelectProjectByName={onSelectProjectByName}
           onSelectSession={onSelectSession}
           onStartNewSession={onStartNewSession}
           onCreateProject={onCreateProject}
           onShowSettings={onShowSettings}
           setActiveTab={setActiveTab}
+          homeData={homeDashboardData}
+          routingData={routingDashboardData}
         />
       );
     }
@@ -796,7 +818,7 @@ function SplitBody(props: SplitBodyProps) {
 
   const showFullScreenTool = isFullScreenTool && (activeTab !== 'tasks' || shouldShowTasksTab);
   const showChat = !showFullScreenTool;
-  const keepHiddenChatMounted = showChat || selectedProject !== null;
+  const keepHiddenChatMounted = showChat || (activeTab !== 'home' && selectedProject !== null);
   const showUnifiedFrame = showFullScreenTool && activeTab !== 'home';
 
   return (
@@ -814,7 +836,9 @@ function SplitBody(props: SplitBodyProps) {
       {showUnifiedFrame ? (
         <ConsolePageFrame meta={pageMeta}>
           <div className="h-full min-h-0 overflow-hidden">
-            {renderTool()}
+            <Suspense fallback={<PaneFallback />}>
+              {renderTool()}
+            </Suspense>
           </div>
         </ConsolePageFrame>
       ) : null}
@@ -839,35 +863,37 @@ function SplitBody(props: SplitBodyProps) {
           aria-hidden={!showChat}
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-surface-200 bg-white shadow-sm shadow-surface-200/40 dark:border-surface-800 dark:bg-surface-900 dark:shadow-black/20">
-            <ErrorBoundary showDetails>
-              <ChatInterfaceV2
-                selectedProject={selectedProject}
-                selectedSession={selectedSession}
-                ws={ws}
-                sendMessage={sendMessage}
-                latestMessage={latestMessage}
-                onFileOpen={handleFileOpen}
-                onInputFocusChange={onInputFocusChange}
-                onSessionActive={onSessionActive}
-                onSessionInactive={onSessionInactive}
-                onSessionProcessing={onSessionProcessing}
-                onSessionNotProcessing={onSessionNotProcessing}
-                onSessionActivityBump={onSessionActivityBump}
-                processingSessions={processingSessions}
-                onReplaceTemporarySession={onReplaceTemporarySession}
-                onNavigateToSession={onNavigateToSession}
-                onShowSettings={onShowSettings}
-                autoExpandTools={autoExpandTools}
-                showRawParameters={showRawParameters}
-                showThinking={showThinking}
-                autoScrollToBottom={autoScrollToBottom}
-                sendByCtrlEnter={sendByCtrlEnter}
-                externalMessageUpdate={externalMessageUpdate}
-                onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
-                forceWelcome={false}
-                onExitWelcome={() => setActiveTab('chat')}
-              />
-            </ErrorBoundary>
+            <Suspense fallback={<PaneFallback label="加载会话..." />}>
+              <ErrorBoundary showDetails>
+                <ChatInterfaceV2
+                  selectedProject={selectedProject}
+                  selectedSession={selectedSession}
+                  ws={ws}
+                  sendMessage={sendMessage}
+                  latestMessage={latestMessage}
+                  onFileOpen={handleFileOpen}
+                  onInputFocusChange={onInputFocusChange}
+                  onSessionActive={onSessionActive}
+                  onSessionInactive={onSessionInactive}
+                  onSessionProcessing={onSessionProcessing}
+                  onSessionNotProcessing={onSessionNotProcessing}
+                  onSessionActivityBump={onSessionActivityBump}
+                  processingSessions={processingSessions}
+                  onReplaceTemporarySession={onReplaceTemporarySession}
+                  onNavigateToSession={onNavigateToSession}
+                  onShowSettings={onShowSettings}
+                  autoExpandTools={autoExpandTools}
+                  showRawParameters={showRawParameters}
+                  showThinking={showThinking}
+                  autoScrollToBottom={autoScrollToBottom}
+                  sendByCtrlEnter={sendByCtrlEnter}
+                  externalMessageUpdate={externalMessageUpdate}
+                  onShowAllTasks={tasksEnabled ? () => setActiveTab('tasks') : null}
+                  forceWelcome={false}
+                  onExitWelcome={() => setActiveTab('chat')}
+                />
+              </ErrorBoundary>
+            </Suspense>
           </div>
         </div>
       ) : null}
@@ -879,7 +905,7 @@ function SplitBody(props: SplitBodyProps) {
           <div
             onMouseDown={handleFilesSplitResizeStart}
             className="group relative z-10 w-px flex-shrink-0 cursor-col-resize bg-surface-200 transition-colors hover:bg-surface-400 dark:bg-surface-800 dark:hover:bg-surface-600"
-            title="Drag to resize"
+            title="拖动调整大小"
           >
             <div className="absolute inset-y-0 left-1/2 w-3 -translate-x-1/2" />
             <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-surface-400 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-surface-600" />
@@ -889,12 +915,14 @@ function SplitBody(props: SplitBodyProps) {
             style={{ minWidth: `${FILES_TREE_MIN_WIDTH}px` }}
           >
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-surface-200 bg-white shadow-sm shadow-surface-200/40 dark:border-surface-800 dark:bg-surface-900 dark:shadow-black/20">
-              <FilesV2
-                key={selectedProject?.name ?? ''}
-                selectedProject={selectedProject}
-                onFileOpen={handleFileOpen}
-                onClose={() => setActiveTab('chat')}
-              />
+              <Suspense fallback={<PaneFallback label="加载文件..." />}>
+                <FilesV2
+                  key={selectedProject?.name ?? ''}
+                  selectedProject={selectedProject}
+                  onFileOpen={handleFileOpen}
+                  onClose={() => setActiveTab('chat')}
+                />
+              </Suspense>
             </div>
           </div>
         </>

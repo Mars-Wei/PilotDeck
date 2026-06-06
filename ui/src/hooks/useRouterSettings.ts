@@ -95,7 +95,7 @@ export function useRouterSettings() {
       if (configRes?.ok) setConfig(await configRes.json());
       if (summaryRes?.ok) setSummary(await summaryRes.json());
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load CCR data');
+      setError(err instanceof Error ? err.message : '加载 CCR 数据失败');
     } finally {
       setLoading(false);
     }
@@ -117,14 +117,14 @@ export function useRouterSettings() {
       if (res.ok && data.success) {
         setSaveResult({
           success: true,
-          message: data.restarted ? 'Saved & CCR restarted' : 'Saved (CCR restart pending)',
+          message: data.restarted ? '已保存并重启 CCR' : '已保存（等待重启 CCR）',
         });
         await fetchAll();
       } else {
-        setSaveResult({ success: false, message: data.error || 'Save failed' });
+        setSaveResult({ success: false, message: data.error || '保存失败' });
       }
     } catch (err: unknown) {
-      setSaveResult({ success: false, message: err instanceof Error ? err.message : 'Save failed' });
+      setSaveResult({ success: false, message: err instanceof Error ? err.message : '保存失败' });
     } finally {
       setSaving(false);
     }

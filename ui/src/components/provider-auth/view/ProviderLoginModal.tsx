@@ -54,11 +54,11 @@ const getProviderCommand = ({
 };
 
 const getProviderTitle = (provider: CliProvider) => {
-  if (provider === 'pilotdeck') return 'OPC Brain API Login';
-  if (provider === 'claude') return 'Anthropic API Login';
-  if (provider === 'cursor') return 'Cursor CLI Login';
-  if (provider === 'codex') return 'Codex CLI Login';
-  return 'Gemini CLI Configuration';
+  if (provider === 'pilotdeck') return 'OPC Brain API 登录';
+  if (provider === 'claude') return 'Anthropic API 登录';
+  if (provider === 'cursor') return 'Cursor CLI 登录';
+  if (provider === 'codex') return 'Codex CLI 登录';
+  return 'Gemini CLI 配置';
 };
 
 const normalizeProject = (project?: LoginModalProject | null) => {
@@ -103,7 +103,7 @@ export default function ProviderLoginModal({
           <button
             onClick={onClose}
             className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
-            aria-label="Close login modal"
+            aria-label="关闭登录窗口"
           >
             <X className="h-6 w-6" />
           </button>
@@ -116,10 +116,10 @@ export default function ProviderLoginModal({
                 <KeyRound className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
 
-              <h4 className="mb-3 text-xl font-medium text-gray-900 dark:text-white">Setup Gemini API Access</h4>
+              <h4 className="mb-3 text-xl font-medium text-gray-900 dark:text-white">设置 Gemini API 访问</h4>
 
               <p className="mb-8 max-w-md text-gray-600 dark:text-gray-400">
-                The Gemini CLI requires an API key to function. Configure it in your terminal first.
+                Gemini CLI 需要 API 密钥才能运行。请先在终端中完成配置。
               </p>
 
               <div className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -129,7 +129,7 @@ export default function ProviderLoginModal({
                       1
                     </div>
                     <div>
-                      <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white">Get your API key</p>
+                      <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white">获取 API 密钥</p>
                       <a
                         href="https://aistudio.google.com/app/apikey"
                         target="_blank"
@@ -145,8 +145,8 @@ export default function ProviderLoginModal({
                       2
                     </div>
                     <div>
-                      <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white">Run configuration</p>
-                      <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">Open your terminal and run:</p>
+                      <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white">运行配置命令</p>
+                      <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">打开终端并运行：</p>
                       <code className="block rounded bg-gray-100 px-3 py-2 font-mono text-sm text-pink-600 dark:bg-gray-900 dark:text-pink-400">
                         gemini config set api_key YOUR_KEY
                       </code>
@@ -159,7 +159,7 @@ export default function ProviderLoginModal({
                 onClick={onClose}
                 className="mt-8 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
               >
-                Done
+                完成
               </button>
             </div>
           ) : (

@@ -211,7 +211,7 @@ export function useChatComposerState({
           break;
 
         case 'model': {
-          const modelLines = [`**Current Model**: ${data.current.model}`, '', '**Available Models**:'];
+          const modelLines = [`**当前模型**：${data.current.model}`, '', '**可用模型**：'];
           if (data.available && typeof data.available === 'object') {
             for (const [provider, models] of Object.entries(data.available)) {
               if (Array.isArray(models) && models.length) {
@@ -228,13 +228,13 @@ export function useChatComposerState({
         }
 
         case 'cost': {
-          const costMessage = `**Token Usage**: ${data.tokenUsage.used.toLocaleString()} / ${data.tokenUsage.total.toLocaleString()} (${data.tokenUsage.percentage}%)\n\n**Estimated Cost**:\n- Input: $${data.cost.input}\n- Output: $${data.cost.output}\n- **Total**: $${data.cost.total}\n\n**Model**: ${data.model}`;
+          const costMessage = `**令牌用量**：${data.tokenUsage.used.toLocaleString()} / ${data.tokenUsage.total.toLocaleString()} (${data.tokenUsage.percentage}%)\n\n**预估成本**：\n- 输入：$${data.cost.input}\n- 输出：$${data.cost.output}\n- **总计**：$${data.cost.total}\n\n**模型**：${data.model}`;
           addMessage({ type: 'assistant', content: costMessage, timestamp: Date.now() });
           break;
         }
 
         case 'status': {
-          const statusMessage = `**System Status**\n\n- Version: ${data.version}\n- Uptime: ${data.uptime}\n- Model: ${data.model}\n- Provider: ${data.provider}\n- Node.js: ${data.nodeVersion}\n- Platform: ${data.platform}`;
+          const statusMessage = `**系统状态**\n\n- 版本：${data.version}\n- 运行时长：${data.uptime}\n- 模型：${data.model}\n- 供应商：${data.provider}\n- Node.js：${data.nodeVersion}\n- 平台：${data.platform}`;
           addMessage({ type: 'assistant', content: statusMessage, timestamp: Date.now() });
           break;
         }
@@ -243,13 +243,13 @@ export function useChatComposerState({
           if (data.error) {
             addMessage({
               type: 'assistant',
-              content: `Warning: ${data.message}`,
+              content: `警告：${data.message}`,
               timestamp: Date.now(),
             });
           } else {
             addMessage({
               type: 'assistant',
-              content: `${data.message}\n\nPath: \`${data.path}\``,
+              content: `${data.message}\n\n路径：\`${data.path}\``,
               timestamp: Date.now(),
             });
             if (data.exists && onFileOpen) {
@@ -266,14 +266,14 @@ export function useChatComposerState({
           if (data.error) {
             addMessage({
               type: 'assistant',
-              content: `Warning: ${data.message}`,
+              content: `警告：${data.message}`,
               timestamp: Date.now(),
             });
           } else {
             rewindMessages(data.steps * 2);
             addMessage({
               type: 'assistant',
-              content: `Rewound ${data.steps} step(s). ${data.message}`,
+              content: `已回退 ${data.steps} 步。${data.message}`,
               timestamp: Date.now(),
             });
           }
@@ -294,10 +294,10 @@ export function useChatComposerState({
 
           if (data.needsForce) {
             lines.push(
-              `⚠️ **\`${data.slug}\` is flagged as suspicious by VirusTotal.** clawhub refused to install without explicit consent.`,
+              `⚠️ **\`${data.slug}\` 被 VirusTotal 标记为可疑。** clawhub 需要明确确认后才会安装。`,
             );
             lines.push('');
-            lines.push('Review the skill before retrying. If you trust the source, rerun:');
+            lines.push('请先检查这个技能。如果你信任来源，可以重新运行：');
             lines.push('');
             lines.push('```');
             lines.push(data.retryCommand || `/skill_install ${data.slug} --force`);
@@ -305,15 +305,15 @@ export function useChatComposerState({
           } else if (data.installed) {
             const versionTag = data.skillMeta?.version ? ` v${data.skillMeta.version}` : '';
             const displayName = data.skillMeta?.name || data.slug;
-            lines.push(`✅ **Installed** \`${displayName}\`${versionTag} (${data.scope === 'project' ? 'project' : 'user'} scope)`);
-            lines.push(`Path: \`${data.installPath}\``);
+            lines.push(`✅ **已安装** \`${displayName}\`${versionTag}（${data.scope === 'project' ? '项目' : '用户'}范围）`);
+            lines.push(`路径：\`${data.installPath}\``);
             if (data.skillMeta?.description) {
               lines.push('');
               lines.push(data.skillMeta.description);
             }
           } else {
             lines.push(
-              `⚠️ clawhub finished but \`SKILL.md\` was not found at \`${data.installPath}\`.`,
+              `⚠️ clawhub 已完成，但在 \`${data.installPath}\` 未找到 \`SKILL.md\`。`,
             );
           }
 
@@ -332,11 +332,11 @@ export function useChatComposerState({
           }
           if (data.exitCode && data.exitCode !== 0 && !data.needsForce) {
             lines.push('');
-            lines.push(`Exit code: \`${data.exitCode}\`. ${data.errorMessage || ''}`);
+            lines.push(`退出码：\`${data.exitCode}\`。${data.errorMessage || ''}`);
           }
           if (data.installed) {
             lines.push('');
-            lines.push('_New skill is on disk — open a fresh chat (or `/clear-caches`) to make PilotDeck see it. The UI slash menu picks it up next time you open `/`._');
+            lines.push('_新技能已写入磁盘。打开新会话（或运行 `/clear-caches`）后 OPC Brain 会识别它；下次打开 `/` 时，UI 斜杠菜单也会加载它。_');
           }
           addMessage({
             type: 'assistant',
@@ -368,8 +368,8 @@ export function useChatComposerState({
           addMessage({
             type: 'assistant',
             content: switched
-              ? `Switched to project: \`${targetName}\``
-              : `No project matched \`${targetName}\`. Try the project's directory name (sidebar tooltip).`,
+              ? `已切换到项目：\`${targetName}\``
+              : `没有匹配到项目 \`${targetName}\`。可以试试项目目录名（侧边栏提示中可见）。`,
             timestamp: Date.now(),
           });
           break;
@@ -651,7 +651,7 @@ export function useChatComposerState({
         }
       }
 
-      const userVisibleInput = currentInput.trim() || 'Please review the attached file(s).';
+      const userVisibleInput = currentInput.trim() || '请查看附件。';
       let messageContent = userVisibleInput;
       const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
@@ -702,14 +702,14 @@ export function useChatComposerState({
           });
 
           if (!response.ok) {
-            throw new Error('Failed to upload attachments');
+            throw new Error('上传附件失败');
           }
 
           const result = await response.json();
           uploadedImages = Array.isArray(result.images) ? result.images : [];
           uploadedFiles = Array.isArray(result.files) ? result.files : [];
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
+          const message = error instanceof Error ? error.message : '未知错误';
           console.error('Attachment upload failed:', error);
           addMessage({
             type: 'error',
@@ -734,10 +734,10 @@ export function useChatComposerState({
       };
 
       addMessage(userMessage, submitTargetSessionId);
-      setIsLoading(true); // Processing banner starts
+      setIsLoading(true); // Start the processing banner.
       setCanAbortSession(true);
       setClaudeStatus({
-        text: 'Processing',
+        text: '处理中',
         tokens: 0,
         can_interrupt: true,
       });
@@ -1077,7 +1077,7 @@ export function useChatComposerState({
       candidateSessionIds.find((sessionId) => Boolean(sessionId) && !isTemporarySessionId(sessionId)) || null;
 
     if (!targetSessionId) {
-      console.warn('Abort requested but no concrete session ID is available yet.');
+      console.warn('已请求中止，但还没有可用的具体会话 ID。');
       return;
     }
 
@@ -1090,7 +1090,7 @@ export function useChatComposerState({
     setCanAbortSession(false);
     setIsAborting(true);
     setPilotDeckStatus({
-      text: 'Stopping',
+      text: '正在停止',
       tokens: 0,
       can_interrupt: false,
     });

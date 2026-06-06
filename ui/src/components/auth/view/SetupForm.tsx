@@ -25,19 +25,19 @@ const initialState: SetupFormState = {
  */
 function validateSetupForm(formState: SetupFormState): string | null {
   if (!formState.username.trim() || !formState.password || !formState.confirmPassword) {
-    return 'Please fill in all fields.';
+    return '请填写所有字段。';
   }
 
   if (formState.username.trim().length < 3) {
-    return 'Username must be at least 3 characters long.';
+    return '用户名至少需要 3 个字符。';
   }
 
   if (formState.password.length < 6) {
-    return 'Password must be at least 6 characters long.';
+    return '密码至少需要 6 个字符。';
   }
 
   if (formState.password !== formState.confirmPassword) {
-    return 'Passwords do not match.';
+    return '两次输入的密码不一致。';
   }
 
   return null;
@@ -83,9 +83,9 @@ export default function SetupForm() {
 
   return (
     <AuthScreenLayout
-      title="Welcome to OPC Brain"
-      description="Set up your account to get started"
-      footerText="This is a single-user system. Only one account can be created."
+      title="欢迎使用 OPC Brain"
+      description="设置你的账号后即可开始使用"
+      footerText="这是单用户系统，只能创建一个账号。"
       logo={
         <BrandLogo iconClassName="h-12 w-12 rounded-xl" textClassName="text-3xl" />
       }
@@ -94,10 +94,10 @@ export default function SetupForm() {
         <AuthInputField
           id="username"
           name="username"
-          label="Username"
+          label="用户名"
           value={formState.username}
           onChange={(value) => updateField('username', value)}
-          placeholder="Enter your username"
+          placeholder="输入用户名"
           isDisabled={isSubmitting}
           autoComplete="username"
         />
@@ -105,10 +105,10 @@ export default function SetupForm() {
         <AuthInputField
           id="password"
           name="password"
-          label="Password"
+          label="密码"
           value={formState.password}
           onChange={(value) => updateField('password', value)}
-          placeholder="Enter your password"
+          placeholder="输入密码"
           isDisabled={isSubmitting}
           type="password"
           autoComplete="new-password"
@@ -117,10 +117,10 @@ export default function SetupForm() {
         <AuthInputField
           id="confirmPassword"
           name="confirmPassword"
-          label="Confirm Password"
+          label="确认密码"
           value={formState.confirmPassword}
           onChange={(value) => updateField('confirmPassword', value)}
-          placeholder="Confirm your password"
+          placeholder="再次输入密码"
           isDisabled={isSubmitting}
           type="password"
           autoComplete="new-password"
@@ -133,7 +133,7 @@ export default function SetupForm() {
           disabled={isSubmitting}
           className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:bg-blue-400"
         >
-          {isSubmitting ? 'Setting up...' : 'Create Account'}
+          {isSubmitting ? '正在设置...' : '创建账号'}
         </button>
       </form>
     </AuthScreenLayout>

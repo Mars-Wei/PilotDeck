@@ -133,7 +133,7 @@ export default function CommandMenu({
         className={cn(containerClass, 'px-4 py-5 text-center text-[13px] text-neutral-500 dark:text-neutral-400')}
         style={{ ...menuPosition, zIndex: 1000 }}
       >
-        {t('commandMenu.empty', { defaultValue: 'No commands available' })}
+        {t('commandMenu.empty', { defaultValue: '暂无可用命令' })}
       </div>
     );
   }
@@ -179,7 +179,7 @@ export default function CommandMenu({
     <div
       ref={menuRef}
       role="listbox"
-      aria-label="Available commands"
+      aria-label="可用命令"
       className={cn(containerClass, 'p-1')}
       style={{ ...menuPosition, zIndex: 1000 }}
     >

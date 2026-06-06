@@ -78,6 +78,7 @@ import mcpRoutes from './routes/mcp.js';
 import taskmasterRoutes from './routes/taskmaster.js';
 import memoryRoutes, { MEMORY_DASHBOARD_DIR } from './routes/memory.js';
 import mcpUtilsRoutes from './routes/mcp-utils.js';
+import homeRoutes from './routes/home.js';
 import commandsRoutes from './routes/commands.js';
 import skillsRoutes from './routes/skills.js';
 import settingsRoutes from './routes/settings.js';
@@ -535,6 +536,9 @@ app.use('/api/memory', authenticateToken, memoryRoutes);
 
 // MCP utilities
 app.use('/api/mcp-utils', authenticateToken, mcpUtilsRoutes);
+
+// Home dashboard aggregate endpoints
+app.use('/api/home', authenticateToken, homeRoutes);
 
 // Commands API Routes (protected)
 app.use('/api/commands', authenticateToken, commandsRoutes);

@@ -34,86 +34,86 @@ const PHASE_META: Record<
     icon: Search,
     color: 'text-blue-500 dark:text-blue-400',
     labelKey: 'dashboard.phase.discoveryStarted',
-    defaultLabel: 'Discovery Started',
+    defaultLabel: '发现已启动',
   },
   plan_produced: {
     icon: FileText,
     color: 'text-emerald-600 dark:text-emerald-400',
     labelKey: 'dashboard.phase.planProduced',
-    defaultLabel: 'Plan Produced',
+    defaultLabel: '已产出计划',
   },
   no_plan: {
     icon: Clock,
     color: 'text-neutral-400 dark:text-neutral-500',
     labelKey: 'dashboard.phase.noPlan',
-    defaultLabel: 'No Plan',
+    defaultLabel: '未产出计划',
   },
   workspace_ready: {
     icon: Zap,
     color: 'text-amber-500 dark:text-amber-400',
     labelKey: 'dashboard.phase.workspaceReady',
-    defaultLabel: 'Workspace Ready',
+    defaultLabel: '工作区就绪',
   },
   execution_started: {
     icon: Play,
     color: 'text-blue-600 dark:text-blue-400',
     labelKey: 'dashboard.phase.executionStarted',
-    defaultLabel: 'Execution Started',
+    defaultLabel: '开始执行',
   },
   execution_completed: {
     icon: CheckCircle2,
     color: 'text-emerald-600 dark:text-emerald-400',
     labelKey: 'dashboard.phase.executionCompleted',
-    defaultLabel: 'Execution Completed',
+    defaultLabel: '执行完成',
   },
   report_produced: {
     icon: Sparkles,
     color: 'text-purple-600 dark:text-purple-400',
     labelKey: 'dashboard.phase.reportProduced',
-    defaultLabel: 'Report Produced',
+    defaultLabel: '已产出报告',
   },
   run_completed: {
     icon: CheckCircle2,
     color: 'text-emerald-600 dark:text-emerald-400',
     labelKey: 'dashboard.phase.runCompleted',
-    defaultLabel: 'Run Completed',
+    defaultLabel: '运行完成',
   },
   run_failed: {
     icon: XCircle,
     color: 'text-red-500 dark:text-red-400',
     labelKey: 'dashboard.phase.runFailed',
-    defaultLabel: 'Run Failed',
+    defaultLabel: '运行失败',
   },
   cron_started: {
     icon: Play,
     color: 'text-indigo-500 dark:text-indigo-400',
     labelKey: 'dashboard.phase.cronStarted',
-    defaultLabel: 'Cron Started',
+    defaultLabel: '定时任务已启动',
   },
   cron_completed: {
     icon: CheckCircle2,
     color: 'text-emerald-600 dark:text-emerald-400',
     labelKey: 'dashboard.phase.cronCompleted',
-    defaultLabel: 'Cron Completed',
+    defaultLabel: '定时任务完成',
   },
   cron_failed: {
     icon: XCircle,
     color: 'text-red-500 dark:text-red-400',
     labelKey: 'dashboard.phase.cronFailed',
-    defaultLabel: 'Cron Failed',
+    defaultLabel: '定时任务失败',
   },
 };
 
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - Date.parse(iso);
   const sec = Math.round(diff / 1000);
-  if (sec < 60) return 'just now';
+  if (sec < 60) return '刚刚';
   const min = Math.round(sec / 60);
-  if (min < 60) return `${min}m ago`;
+  if (min < 60) return `${min} 分钟前`;
   const hr = Math.round(min / 60);
-  if (hr < 24) return `${hr}h ago`;
+  if (hr < 24) return `${hr} 小时前`;
   const day = Math.round(hr / 24);
-  return `${day}d ago`;
+  return `${day} 天前`;
 }
 
 function formatAbsoluteTime(iso: string): string {
@@ -267,10 +267,10 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-[20px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-            {t('dashboard.title', { defaultValue: 'Always-On Dashboard' })}
+            {t('dashboard.title', { defaultValue: 'Always-On 仪表盘' })}
           </h2>
           <p className="mt-0.5 text-[13px] text-neutral-500 dark:text-neutral-400">
-            {t('dashboard.subtitle', { defaultValue: 'Activity feed across all workspaces.' })}
+            {t('dashboard.subtitle', { defaultValue: '所有工作区的活动动态。' })}
           </p>
         </div>
         <button
@@ -280,7 +280,7 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 px-2.5 text-xxs text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
         >
           <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} strokeWidth={1.75} />
-          <span>{t('actions.refresh', { defaultValue: 'Refresh' })}</span>
+          <span>{t('actions.refresh', { defaultValue: '刷新' })}</span>
         </button>
       </div>
 
@@ -288,7 +288,7 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border border-neutral-200 p-3.5 dark:border-neutral-800">
           <div className="text-xxs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            {t('dashboard.stats.todayEvents', { defaultValue: 'Today\'s Events' })}
+            {t('dashboard.stats.todayEvents', { defaultValue: '今日事件' })}
           </div>
           <div className="mt-1 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
             {stats.todayEvents}
@@ -296,7 +296,7 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
         </div>
         <div className="rounded-lg border border-neutral-200 p-3.5 dark:border-neutral-800">
           <div className="text-xxs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            {t('dashboard.stats.activeProjects', { defaultValue: 'Active Projects' })}
+            {t('dashboard.stats.activeProjects', { defaultValue: '活跃项目' })}
           </div>
           <div className="mt-1 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
             {stats.activeProjectCount}
@@ -304,7 +304,7 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
         </div>
         <div className="rounded-lg border border-neutral-200 p-3.5 dark:border-neutral-800">
           <div className="text-xxs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            {t('dashboard.stats.running', { defaultValue: 'Running Now' })}
+            {t('dashboard.stats.running', { defaultValue: '正在运行' })}
           </div>
           <div className="mt-1 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
             {stats.runningCount}
@@ -323,19 +323,19 @@ export default function AlwaysOnDashboard({ onOpenExecutionSession }: AlwaysOnDa
       <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
         <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
           <h3 className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-            {t('dashboard.eventList.title', { defaultValue: 'Recent Events' })}
+            {t('dashboard.eventList.title', { defaultValue: '近期事件' })}
           </h3>
         </div>
 
         {loading && events.length === 0 ? (
           <div className="flex items-center gap-2 px-5 py-8 text-[13px] text-neutral-500 dark:text-neutral-400">
             <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-            <span>{t('dashboard.loading', { defaultValue: 'Loading events…' })}</span>
+            <span>{t('dashboard.loading', { defaultValue: '正在加载事件...' })}</span>
           </div>
         ) : events.length === 0 ? (
           <div className="px-5 py-8 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
             <Activity className="mx-auto mb-2 h-8 w-8 text-neutral-300 dark:text-neutral-600" strokeWidth={1.25} />
-            {t('dashboard.empty', { defaultValue: 'No Always-On events recorded yet.' })}
+            {t('dashboard.empty', { defaultValue: '暂无 Always-On 事件记录。' })}
           </div>
         ) : (
           <div className="divide-y divide-neutral-100 dark:divide-neutral-900">

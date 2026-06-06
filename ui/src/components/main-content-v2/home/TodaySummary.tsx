@@ -5,6 +5,8 @@ import { formatCost } from './homeUtils';
 type TodaySummaryProps = {
   recentCost: number;
   recentSaved: number;
+  costScope?: 'today' | 'recent';
+  costFooter?: string;
   taskStats: HomeTaskStats;
   unreadCount: number;
   unreadSessionCount: number;
@@ -17,6 +19,8 @@ type TodaySummaryProps = {
 export default function TodaySummary({
   recentCost,
   recentSaved,
+  costScope = 'recent',
+  costFooter,
   taskStats,
   unreadCount,
   unreadSessionCount,
@@ -44,9 +48,9 @@ export default function TodaySummary({
           iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
           badge="路由优化"
           value={formatCost(recentCost)}
-          valueLabel="/ 近期"
+          valueLabel={costScope === 'today' ? '/ 今日' : '/ 近期'}
           sub={recentSaved > 0 ? `节省 ${formatCost(recentSaved)} 对比不分路由` : '等待路由成本数据'}
-          footer="查看数据"
+          footer={costFooter ?? '查看数据'}
           onClick={onOpenDashboard}
         />
         <SummaryCard

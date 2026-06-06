@@ -478,5 +478,7 @@
       "updateAvailable": "有可用更新",
       "closeSidebar": "关闭侧边栏"
     }
-  }
+  },
+  "newSessionInProject": "新会话",
+  "deleteProject": "删除项目"
 }

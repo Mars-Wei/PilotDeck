@@ -54,7 +54,7 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         setPlugins(data.plugins || []);
         setPluginsError(null);
       } else {
-        let errorMessage = `Failed to fetch plugins (${res.status})`;
+        let errorMessage = `获取插件失败（${res.status}）`;
         try {
           const data = await res.json();
           errorMessage = data.details || data.error || errorMessage;
@@ -64,7 +64,7 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         setPluginsError(errorMessage);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch plugins';
+      const message = err instanceof Error ? err.message : '获取插件失败';
       setPluginsError(message);
       console.error('[Plugins] Failed to fetch plugins:', err);
     } finally {
@@ -87,9 +87,9 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         await refreshPlugins();
         return { success: true };
       }
-      return { success: false, error: data.details || data.error || 'Install failed' };
+      return { success: false, error: data.details || data.error || '安装失败' };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Install failed' };
+      return { success: false, error: err instanceof Error ? err.message : '安装失败' };
     }
   }, [refreshPlugins]);
 
@@ -103,9 +103,9 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         await refreshPlugins();
         return { success: true };
       }
-      return { success: false, error: data.details || data.error || 'Uninstall failed' };
+      return { success: false, error: data.details || data.error || '卸载失败' };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Uninstall failed' };
+      return { success: false, error: err instanceof Error ? err.message : '卸载失败' };
     }
   }, [refreshPlugins]);
 
@@ -119,9 +119,9 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         await refreshPlugins();
         return { success: true };
       }
-      return { success: false, error: data.details || data.error || 'Update failed' };
+      return { success: false, error: data.details || data.error || '更新失败' };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Update failed' };
+      return { success: false, error: err instanceof Error ? err.message : '更新失败' };
     }
   }, [refreshPlugins]);
 
@@ -132,7 +132,7 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ enabled }),
       });
       if (!res.ok) {
-        let errorMessage = `Toggle failed (${res.status})`;
+        let errorMessage = `切换插件状态失败（${res.status}）`;
         try {
           const data = await res.json();
           errorMessage = data.details || data.error || errorMessage;
@@ -145,7 +145,7 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
       await refreshPlugins();
       return { success: true, error: null };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Toggle failed' };
+      return { success: false, error: err instanceof Error ? err.message : '切换插件状态失败' };
     }
   }, [refreshPlugins]);
 

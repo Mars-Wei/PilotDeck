@@ -140,17 +140,17 @@ const PERMISSION_MODE_OPTIONS: PermissionModeOption[] = [
     mode: 'default',
     Icon: Hand,
     labelKey: 'input.permissions.default',
-    defaultLabel: 'Default Permissions',
+    defaultLabel: '默认权限',
     descriptionKey: 'input.permissions.defaultDescription',
-    defaultDescription: 'Ask before risky operations',
+    defaultDescription: '需要风险操作时先询问',
   },
   {
     mode: 'bypassPermissions',
     Icon: ShieldAlert,
     labelKey: 'input.permissions.bypassPermissions',
-    defaultLabel: 'Full Access',
+    defaultLabel: '完全访问权限',
     descriptionKey: 'input.permissions.bypassPermissionsDescription',
-    defaultDescription: 'Skip confirmations and allow full access',
+    defaultDescription: '跳过确认并允许完全访问',
   },
 ];
 
@@ -166,13 +166,13 @@ const RUN_MODE_OPTIONS: RunModeOption[] = [
     mode: 'agent',
     Icon: Bot,
     labelKey: 'input.runModes.agent',
-    defaultLabel: 'Agent',
+    defaultLabel: '智能体',
   },
   {
     mode: 'plan',
     Icon: ListChecks,
     labelKey: 'input.runModes.plan',
-    defaultLabel: 'Plan',
+    defaultLabel: '计划',
   },
 ];
 
@@ -331,10 +331,10 @@ export default function ComposerV2({
         used: contextStatus.usedLabel,
         total: contextStatus.totalLabel,
         defaultValue:
-          `${contextStatus.percent}% used. ${contextStatus.usedLabel} tokens used out of ${contextStatus.totalLabel}. Auto compact runs near the limit.`,
+          `已使用 ${contextStatus.percent}%。已用 ${contextStatus.usedLabel} / ${contextStatus.totalLabel} 令牌。接近上限时会自动压缩。`,
       }) as string)
     : (t('input.contextStatusUnknown', {
-        defaultValue: 'Context usage unknown. It will appear after the next model response.',
+        defaultValue: '上下文用量未知。下一次模型响应后会显示。',
       }) as string);
 
   return (
@@ -416,7 +416,7 @@ export default function ComposerV2({
                 isDragActive && 'border-dashed border-neutral-400 dark:border-neutral-500',
               )}
             >
-              <input {...getInputProps()} />
+              <input {...getInputProps({ 'aria-label': t('input.attachFiles', { defaultValue: '附加文件' }) as string })} />
 
               <div className="relative">
                 <div
@@ -468,7 +468,7 @@ export default function ComposerV2({
                             : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
                         )}
                         title={t('input.runModes.change', {
-                          defaultValue: 'Select run mode',
+                          defaultValue: '选择运行模式',
                         }) as string}
                         aria-haspopup="menu"
                         aria-expanded={isRunModeMenuOpen}
@@ -498,10 +498,10 @@ export default function ComposerV2({
                             }) as string;
                             const description = isPlan
                               ? (t('input.runModes.planDescription', {
-                                  defaultValue: 'Generate a plan first, then execute after confirmation',
+                                  defaultValue: '先产出计划，确认后再执行',
                                 }) as string)
                               : (t('input.runModes.agentDescription', {
-                                  defaultValue: 'Directly process and execute the task',
+                                  defaultValue: '直接处理并执行任务',
                                 }) as string);
 
                             return (
@@ -548,7 +548,7 @@ export default function ComposerV2({
                                   <span className="block truncate text-[11px] text-neutral-500 dark:text-neutral-400">
                                     {optionDisabled
                                       ? t('input.runModes.planUnavailable', {
-                                          defaultValue: 'Plan mode is only available for Anthropic models.',
+                                          defaultValue: '计划模式仅适用于 Anthropic 模型。',
                                         })
                                       : description}
                                   </span>
@@ -566,7 +566,7 @@ export default function ComposerV2({
                       type="button"
                       onClick={openImagePicker}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                    title={t('input.attachFiles', { defaultValue: 'Attach photos or files' }) as string}
+                    title={t('input.attachFiles', { defaultValue: '附加图片或文件' }) as string}
                   >
                     <Paperclip className="h-4 w-4" strokeWidth={1.75} />
                   </button>
@@ -574,7 +574,7 @@ export default function ComposerV2({
                     type="button"
                     onClick={onInsertMention}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                    title={t('input.mentionFile', { defaultValue: 'Mention a file' }) as string}
+                    title={t('input.mentionFile', { defaultValue: '引用文件' }) as string}
                   >
                     <AtSign className="h-4 w-4" strokeWidth={1.75} />
                   </button>
@@ -603,7 +603,7 @@ export default function ComposerV2({
                             : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
                       )}
                       title={t('input.permissions.change', {
-                        defaultValue: 'Select permission mode',
+                        defaultValue: '选择权限模式',
                       }) as string}
                       aria-haspopup="menu"
                       aria-expanded={permissionSelectorDisabled ? false : isPermissionMenuOpen}
@@ -724,7 +724,7 @@ export default function ComposerV2({
                         >
                           <div className="mb-1 flex items-center justify-between gap-2">
                             <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                              {t('input.contextStatusTitle', { defaultValue: 'Context window' })}
+                              {t('input.contextStatusTitle', { defaultValue: '上下文窗口' })}
                             </span>
                             <span
                               className={cn(
@@ -748,13 +748,13 @@ export default function ComposerV2({
                                   used: contextStatus.used.toLocaleString(),
                                   total: contextStatus.total.toLocaleString(),
                                   defaultValue:
-                                    `${contextStatus.used.toLocaleString()} tokens used out of ${contextStatus.total.toLocaleString()}.`,
+                                    `已使用 ${contextStatus.used.toLocaleString()} / ${contextStatus.total.toLocaleString()} 令牌。`,
                                 })}
                               </div>
                               <div className="mt-2 text-neutral-500 dark:text-neutral-400">
                                 {t('input.contextStatusAutoCompact', {
                                   defaultValue:
-                                    'Auto compact runs when the conversation approaches the configured limit.',
+                                    '会话接近配置上限时会自动压缩。',
                                 })}
                               </div>
                             </>
@@ -762,7 +762,7 @@ export default function ComposerV2({
                             <div className="text-neutral-500 dark:text-neutral-400">
                               {t('input.contextStatusUnknownBody', {
                                 defaultValue:
-                                  'No token budget has been reported yet. It will appear after the next model response.',
+                                  '尚未收到令牌预算。下一次模型响应后会显示。',
                               })}
                             </div>
                           )}
@@ -781,8 +781,8 @@ export default function ComposerV2({
                         )}
                         title={
                           isAbortPending
-                            ? (t('input.stopping', { defaultValue: 'Stopping...' }) as string)
-                            : (t('input.stop', { defaultValue: 'Stop' }) as string)
+                            ? (t('input.stopping', { defaultValue: '停止中...' }) as string)
+                            : (t('input.stop', { defaultValue: '停止' }) as string)
                         }
                       >
                         {isAbortPending ? (
@@ -802,8 +802,8 @@ export default function ComposerV2({
                         )}
                         title={
                           isSubmitPending || hasUploadingImages
-                            ? (t('input.sending', { defaultValue: 'Sending...' }) as string)
-                            : (t('input.send', { defaultValue: 'Send' }) as string)
+                            ? (t('input.sending', { defaultValue: '发送中...' }) as string)
+                            : (t('input.send', { defaultValue: '发送' }) as string)
                         }
                       >
                         {isSubmitPending || hasUploadingImages ? (

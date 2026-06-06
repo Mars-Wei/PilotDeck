@@ -28,13 +28,13 @@ function flattenTasks(tasks: TaskMasterTask[]): TaskMasterTask[] {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: 'Not started',
-  'in-progress': 'In progress',
-  done: 'Done',
-  review: 'In review',
-  blocked: 'Blocked',
-  deferred: 'Deferred',
-  cancelled: 'Cancelled',
+  pending: '未开始',
+  'in-progress': '进行中',
+  done: '已完成',
+  review: '待审核',
+  blocked: '受阻',
+  deferred: '已延期',
+  cancelled: '已取消',
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -95,10 +95,10 @@ export default function TasksV2({ isVisible }: TasksV2Props) {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[20px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-              Tasks
+              任务
             </h2>
             <p className="mt-0.5 text-[13px] text-neutral-500 dark:text-neutral-400">
-              {flat.length} tasks · {inProgressCount} in progress
+              {flat.length} 个任务 · {inProgressCount} 个进行中
             </p>
           </div>
           <button
@@ -107,18 +107,18 @@ export default function TasksV2({ isVisible }: TasksV2Props) {
             className="text-xxs inline-flex h-8 items-center gap-1.5 rounded-md bg-neutral-900 px-2.5 text-white transition hover:opacity-90 dark:bg-neutral-50 dark:text-neutral-900"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-            <span>Refresh</span>
+            <span>刷新</span>
           </button>
         </div>
 
         {isLoadingTasks && flat.length === 0 ? (
           <div className="flex items-center justify-center gap-2 rounded-xl border border-neutral-200 py-10 text-[13px] text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
             <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-            <span>{t('loading', { defaultValue: 'Loading…' })}</span>
+            <span>{t('loading', { defaultValue: '加载中...' })}</span>
           </div>
         ) : flat.length === 0 ? (
           <div className="rounded-xl border border-neutral-200 p-10 text-center text-[13px] text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-            No tasks yet. Initialize Task Master from the legacy tasks panel to get started.
+            暂无任务。请先在旧版任务面板中初始化 Task Master。
           </div>
         ) : (
           <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">

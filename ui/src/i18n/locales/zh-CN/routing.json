@@ -14,7 +14,7 @@
     },
     "stats": {
       "requests": "请求数",
-      "tokens": "Token 数",
+      "tokens": "令牌数",
       "cost": "成本",
       "sessions_one": "{{count}} 个会话",
       "sessions_other": "{{count}} 个会话",
@@ -34,14 +34,14 @@
       "title": "按项目"
     },
     "projectCard": {
-      "summary": "{{requests}} 次请求 · {{tokens}} tokens · {{sessions}} 个会话"
+      "summary": "{{requests}} 次请求 · {{tokens}} 令牌 · {{sessions}} 个会话"
     },
     "units": {
       "requestsShort_one": "{{count}} 次",
       "requestsShort_other": "{{count}} 次",
       "queries_one": "{{count}} 条请求",
       "queries_other": "{{count}} 条请求",
-      "tokens": "{{value}} tokens"
+      "tokens": "{{value}} 令牌"
     },
     "session": {
       "orchestrated": "已编排",
@@ -62,25 +62,25 @@
         "project": "项目",
         "provider": "供应商",
         "model": "模型",
-        "tokens": "Token 数"
+        "tokens": "令牌数"
       }
     },
     "price": {
       "title": "成本",
       "empty": "暂无可计价会话。",
       "actual": "实际开销",
-      "baseline": "不走 Router 开销",
+      "baseline": "不走路由器开销",
       "saved": "节省",
       "savedLower": "节省",
       "extra": "多花",
       "extraLower": "多花",
-      "summary": "{{sessions}} 个会话 · {{requests}} 次请求 · {{tokens}} tokens",
-      "baselineHint": "按所有路由 token 都交给主模型估算。",
+      "summary": "{{sessions}} 个会话 · {{requests}} 次请求 · {{tokens}} 令牌",
+      "baselineHint": "按所有路由令牌都交给主模型估算。",
       "savedHint": "相对基准 {{rate}}%",
       "missingBaseline": "这些会话还没有配置基准成本。",
       "session": "会话",
       "actualShort": "实际",
-      "baselineShort": "不走 Router",
+      "baselineShort": "不走路由器",
       "savedShort": "节省",
       "extraShort": "多花"
     }

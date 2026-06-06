@@ -28,7 +28,7 @@ const MEMORY_PANEL_TEXT: Record<'zh' | 'en', {
   en: {
     emptyProject: 'Select a project to inspect memory.',
     unavailable: 'Memory dashboard is unavailable until auth and project context are ready.',
-    title: 'Memory Dashboard',
+    title: 'Memory 面板',
   },
 };
 

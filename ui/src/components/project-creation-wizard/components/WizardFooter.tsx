@@ -42,7 +42,7 @@ export default function WizardFooter({
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {isCloneWorkflow
-              ? t('projectWizard.buttons.cloning', { defaultValue: 'Cloning...' })
+              ? t('projectWizard.buttons.cloning', { defaultValue: '正在克隆...' })
               : t('projectWizard.buttons.creating')}
           </>
         ) : step === 3 ? (

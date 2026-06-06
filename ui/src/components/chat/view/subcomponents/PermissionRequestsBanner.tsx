@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PendingPermissionRequest } from '../../types/types';
 import { buildPilotDeckToolPermissionEntry, formatToolInputForDisplay } from '../../utils/chatPermissions';
 import { getPilotDeckSettings } from '../../utils/chatStorage';
@@ -27,6 +28,8 @@ export default function PermissionRequestsBanner({
   handleGrantToolPermission,
   onPlanExecutionApproved,
 }: PermissionRequestsBannerProps) {
+  const { t } = useTranslation('chat');
+
   if (!pendingPermissionRequests.length) {
     return null;
   }
@@ -70,7 +73,9 @@ export default function PermissionRequestsBanner({
         const permissionEntry = buildPilotDeckToolPermissionEntry(first.toolName, rawInput);
         const settings = getPilotDeckSettings();
         const alreadyAllowed = permissionEntry ? settings.allowedTools.includes(permissionEntry) : false;
-        const rememberLabel = alreadyAllowed ? 'Allow (saved)' : 'Allow & remember';
+        const rememberLabel = alreadyAllowed
+          ? t('permissionBanner.rememberSaved', { defaultValue: '允许（已保存）' })
+          : t('permissionBanner.remember', { defaultValue: '允许并记住' });
 
         return (
           <div
@@ -80,15 +85,15 @@ export default function PermissionRequestsBanner({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                  Permission required{requests.length > 1 ? ` (${requests.length})` : ''}
+                  {t('permissionBanner.required', { defaultValue: '需要授权' })}{requests.length > 1 ? ` (${requests.length})` : ''}
                 </div>
                 <div className="text-xs text-amber-800 dark:text-amber-200">
-                  Tool: <span className="font-mono">{first.toolName}</span>
+                  {t('permissionBanner.tool', { defaultValue: '工具：' })} <span className="font-mono">{first.toolName}</span>
                 </div>
               </div>
               {permissionEntry && (
                 <div className="text-xs text-amber-700 dark:text-amber-300">
-                  Allow rule: <span className="font-mono">{permissionEntry}</span>
+                  {t('permissionBanner.allowRule', { defaultValue: '允许规则：' })} <span className="font-mono">{permissionEntry}</span>
                 </div>
               )}
             </div>
@@ -96,7 +101,7 @@ export default function PermissionRequestsBanner({
             {requests.length <= 1 && rawInput && (
               <details className="mt-2">
                 <summary className="cursor-pointer text-xs text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100">
-                  View tool input
+                  {t('permissionBanner.viewInput', { defaultValue: '查看工具输入' })}
                 </summary>
                 <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-md border border-amber-200/60 bg-white/80 p-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-gray-900/60 dark:text-amber-100">
                   {rawInput}
@@ -107,7 +112,10 @@ export default function PermissionRequestsBanner({
             {requests.length > 1 && (
               <details className="mt-2">
                 <summary className="cursor-pointer text-xs text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100">
-                  View {requests.length} tool inputs
+                  {t('permissionBanner.viewInputs', {
+                    count: requests.length,
+                    defaultValue: `查看 ${requests.length} 个工具输入`,
+                  })}
                 </summary>
                 <div className="mt-2 space-y-1">
                   {requests.map((r) => {
@@ -128,7 +136,7 @@ export default function PermissionRequestsBanner({
                 onClick={() => handlePermissionDecision(allIds, { allow: true })}
                 className="inline-flex items-center gap-2 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700"
               >
-                Allow once
+                {t('permissionBanner.allowOnce', { defaultValue: '仅允许一次' })}
               </button>
               <button
                 type="button"
@@ -149,10 +157,13 @@ export default function PermissionRequestsBanner({
               </button>
               <button
                 type="button"
-                onClick={() => handlePermissionDecision(allIds, { allow: false, message: 'User denied tool use' })}
+                onClick={() => handlePermissionDecision(allIds, {
+                  allow: false,
+                  message: t('permissionBanner.denyMessage', { defaultValue: '用户拒绝了工具调用' }),
+                })}
                 className="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-200 dark:hover:bg-red-900/30"
               >
-                Deny
+                {t('permissionBanner.deny', { defaultValue: '拒绝' })}
               </button>
             </div>
           </div>

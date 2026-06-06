@@ -464,8 +464,8 @@ export function useChatRealtimeHandlers({
         });
         setIsLoading(true);
         setCanAbortSession(true);
-        setClaudeStatus({ text: 'Waiting for permission', tokens: 0, can_interrupt: true });
-        setPilotDeckStatus({ text: 'Waiting for permission', tokens: 0, can_interrupt: true });
+        setClaudeStatus({ text: '等待授权', tokens: 0, can_interrupt: true });
+        setPilotDeckStatus({ text: '等待授权', tokens: 0, can_interrupt: true });
         break;
       }
 

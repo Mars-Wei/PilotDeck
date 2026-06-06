@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
 import { useSessionProtection } from '../../hooks/useSessionProtection';
 import { useProjectsState } from '../../hooks/useProjectsState';
-import Settings from '../settings/view/Settings';
-import ProjectCreationWizard from '../project-creation-wizard';
-import { normalizeProjectForSettings, type SettingsProject } from '../../lib/projectSettings';
+import { normalizeProjectForSettings } from '../../lib/projectSettings';
 import {
   type AppTab,
   type Project,
@@ -18,14 +16,18 @@ import { useHomeDashboardData } from '../../hooks/useHomeDashboardData';
 import { useRoutingDashboard } from '../../hooks/useRoutingDashboard';
 import MainAreaV2 from './MainAreaV2';
 
-type TypedSettingsProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  projects: SettingsProject[];
-  initialTab: string;
-};
+const SettingsComponent = lazy(() => import('../settings/view/Settings'));
+const ProjectCreationWizard = lazy(() => import('../project-creation-wizard'));
 
-const SettingsComponent = Settings as unknown as (props: TypedSettingsProps) => JSX.Element;
+function PortalFallback({ label }: { label: string }) {
+  return (
+    <div className="modal-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted-foreground shadow-xl">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 const UNREAD_IGNORED_MESSAGE_TYPES = new Set([
   'websocket-reconnected',
@@ -128,12 +130,17 @@ export default function AppShellV2() {
     activeSessions,
   });
 
+  const isRootHomeRoute = !projectNameParam && !sessionId && !selectedProject;
+  const effectiveActiveTab = isRootHomeRoute ? 'home' : activeTab;
   const homeData = useHomeDashboardData({
     projects: sidebarSharedProps.projects,
     processingSessions,
     unreadSessionIds,
+    initialDelayMs: effectiveActiveTab === 'home' ? 700 : 0,
   });
-  const routingDashboard = useRoutingDashboard();
+  const routingDashboard = useRoutingDashboard({
+    initialDelayMs: effectiveActiveTab === 'home' ? 900 : 0,
+  });
 
   // Sync URL projectName -> selectedProject for deep links like /p/:projectName.
   // When the URL also carries a session id (/p/.../c/:sessionId or
@@ -182,14 +189,12 @@ export default function AppShellV2() {
   ]);
 
   useEffect(() => {
-    if (isLoadingProjects) return;
     if (projectNameParam || sessionId || selectedProject) return;
     if (activeTab !== 'home') {
       setActiveTab('home');
     }
   }, [
     activeTab,
-    isLoadingProjects,
     projectNameParam,
     selectedProject,
     sessionId,
@@ -433,20 +438,23 @@ export default function AppShellV2() {
     <div className="ui-v2 fixed inset-0 flex bg-white font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <main className="flex min-w-0 flex-1 flex-col">
         <HomeChrome
-          activeTab={activeTab}
+          activeTab={effectiveActiveTab}
           projects={sidebarSharedProps.projects}
           recentProjects={homeData.recentProjects}
           unreadCount={homeData.unreadCount}
+          unreadSessions={homeData.unreadSessions}
           runningCount={homeData.taskStats.running}
           isConnected={isConnected}
           isLoadingProjects={isLoadingProjects}
           routingData={routingDashboard.data}
           routingError={routingDashboard.error}
+          homeCost={homeData.cost}
           taskStats={homeData.taskStats}
           alerts={homeData.alerts}
           alwaysOnError={homeData.alwaysOnError}
           onSetActiveTab={handleSelectTab}
           onSelectProjectByName={handleSelectProjectByName}
+          onOpenSession={handleSelectSession}
           onCreateProject={handleOpenNewProject}
           onShowSettings={onShowSettings}
         >
@@ -454,7 +462,7 @@ export default function AppShellV2() {
             projects={sidebarSharedProps.projects}
             selectedProject={selectedProject}
             selectedSession={selectedSession}
-            activeTab={activeTab}
+            activeTab={effectiveActiveTab}
             setActiveTab={handleSelectTab}
             ws={ws}
             sendMessage={sendMessage}
@@ -480,6 +488,8 @@ export default function AppShellV2() {
             onShowSettings={onShowSettings}
             onCreateProject={handleOpenNewProject}
             onSelectProjectByName={handleSelectProjectByName}
+            homeDashboardData={homeData}
+            routingDashboardData={routingDashboard.data}
             isSidebarCollapsed={false}
             externalMessageUpdate={externalMessageUpdate}
           />
@@ -488,22 +498,26 @@ export default function AppShellV2() {
 
       {sidebarSharedProps.showSettings
         ? ReactDOM.createPortal(
-            <SettingsComponent
-              isOpen={sidebarSharedProps.showSettings}
-              onClose={onCloseSettings}
-              projects={sidebarSharedProps.projects.map(normalizeProjectForSettings)}
-              initialTab={sidebarSharedProps.settingsInitialTab || 'appearance'}
-            />,
+            <Suspense fallback={<PortalFallback label="加载设置..." />}>
+              <SettingsComponent
+                isOpen={sidebarSharedProps.showSettings}
+                onClose={onCloseSettings}
+                projects={sidebarSharedProps.projects.map(normalizeProjectForSettings)}
+                initialTab={sidebarSharedProps.settingsInitialTab || 'appearance'}
+              />
+            </Suspense>,
             document.body,
           )
         : null}
 
       {showNewProject
         ? ReactDOM.createPortal(
-            <ProjectCreationWizard
-              onClose={handleCloseNewProject}
-              onProjectCreated={handleProjectCreated}
-            />,
+            <Suspense fallback={<PortalFallback label="加载项目向导..." />}>
+              <ProjectCreationWizard
+                onClose={handleCloseNewProject}
+                onProjectCreated={handleProjectCreated}
+              />
+            </Suspense>,
             document.body,
           )
         : null}

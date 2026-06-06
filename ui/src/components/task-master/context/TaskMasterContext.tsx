@@ -154,7 +154,7 @@ export function TaskMasterProvider({ children }: { children: React.ReactNode }) 
       const response = await api.get(`/taskmaster/tasks/${encodeURIComponent(projectName)}`);
       if (!response.ok) {
         const errorPayload = (await response.json()) as { message?: string };
-        throw new Error(errorPayload.message ?? 'Failed to load tasks');
+        throw new Error(errorPayload.message ?? '加载任务失败');
       }
 
       const data = (await response.json()) as { tasks?: TaskMasterTask[] };

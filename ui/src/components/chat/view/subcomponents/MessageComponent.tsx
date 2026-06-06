@@ -387,7 +387,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, o
                             <CollapsibleDisplay
                               toolName={message.toolName || 'UnknownTool'}
                               toolId={message.toolId}
-                              title={t('toolUseError.title', { defaultValue: 'Tool error' })}
+                              title={t('toolUseError.title', { defaultValue: '工具错误' })}
                               defaultOpen={false}
                               toolCategory="default"
                               autoExpandable={false}
@@ -416,8 +416,8 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, o
                                 </svg>
                                 <span>
                                   {recoverableToolError
-                                    ? t('toolUseError.title', { defaultValue: 'Tool error' })
-                                    : t('messageTypes.error', { defaultValue: 'Error' })}
+                                    ? t('toolUseError.title', { defaultValue: '工具错误' })
+                                    : t('messageTypes.error', { defaultValue: '错误' })}
                                 </span>
                                 {message.toolName ? (
                                   <>

@@ -118,7 +118,7 @@ export default function WorkspacePathField({
           variant="outline"
           onClick={() => setShowFolderBrowser(true)}
           className="px-3"
-          title="Browse folders"
+          title="浏览文件夹"
           disabled={disabled}
         >
           <FolderOpen className="h-4 w-4" />

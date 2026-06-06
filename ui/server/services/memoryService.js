@@ -466,6 +466,43 @@ export function getMemorySchedulerStatus() {
   };
 }
 
+export async function getRecentMemoryActivityEvents(limit = 8) {
+  const workspaceDataDirs = await listWorkspaceDataDirs();
+  const events = [];
+
+  for (const dataDir of workspaceDataDirs) {
+    try {
+      const restoredWorkspaceDir = readWorkspaceDirFromDataDir(dataDir);
+      const { service } = getOrCreateServiceForDataDir(dataDir, restoredWorkspaceDir ?? dataDir);
+      const projectMeta = service.getProjectMeta();
+      const entries = service.list({ limit: Math.max(1, Math.min(12, limit)) });
+
+      for (const entry of entries) {
+        if (!entry || entry.deprecated) continue;
+        const timestamp = Date.parse(entry.updatedAt);
+        if (!Number.isFinite(timestamp)) continue;
+        events.push({
+          id: `memory:${entry.relativePath}`,
+          type: 'memory',
+          projectName: projectMeta?.projectId || projectMeta?.projectName || path.basename(service.workspaceDir),
+          projectDisplayName: projectMeta?.projectName || path.basename(service.workspaceDir),
+          title: entry.description
+            ? `更新记忆：${entry.description}`
+            : `更新记忆：${entry.name || entry.relativePath}`,
+          detail: entry.type === 'feedback' ? '反馈记忆' : entry.type === 'user' ? '用户记忆' : '项目记忆',
+          timestamp,
+        });
+      }
+    } catch {
+      // Memory activity is best-effort; status endpoint reports availability.
+    }
+  }
+
+  return events
+    .sort((left, right) => right.timestamp - left.timestamp)
+    .slice(0, Math.max(1, Math.min(50, limit)));
+}
+
 export function closeMemoryServices() {
   stopMemoryScheduler();
   for (const service of servicesByDataDir.values()) {

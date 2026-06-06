@@ -222,7 +222,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
           project: updateIn(prev.project),
         };
       });
-      flashToast({ kind: 'success', text: t('skillsTab.savedSuccess', { defaultValue: 'Saved' }) });
+      flashToast({ kind: 'success', text: t('skillsTab.savedSuccess', { defaultValue: '已保存' }) });
     } catch (e) {
       flashToast({ kind: 'error', text: (e as Error).message });
     } finally {
@@ -232,7 +232,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
 
   const handleDelete = useCallback(async () => {
     if (!activeSkill) return;
-    if (!window.confirm(t('skillsTab.confirmDelete', { defaultValue: 'Delete this skill? This will remove the entire folder.', name: activeSkill.name }) as string)) {
+    if (!window.confirm(t('skillsTab.confirmDelete', { defaultValue: '确认删除这个技能？整个文件夹会被移除。', name: activeSkill.name }) as string)) {
       return;
     }
     try {
@@ -243,7 +243,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
       setActiveSlug(null);
       setActiveScope(null);
       await refresh();
-      flashToast({ kind: 'success', text: t('skillsTab.deletedSuccess', { defaultValue: 'Deleted' }) });
+      flashToast({ kind: 'success', text: t('skillsTab.deletedSuccess', { defaultValue: '已删除' }) });
     } catch (e) {
       flashToast({ kind: 'error', text: (e as Error).message });
     }
@@ -251,7 +251,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
 
   const handleSelect = useCallback((skill: Skill) => {
     if (isDirty) {
-      if (!window.confirm(t('skillsTab.discardUnsaved', { defaultValue: 'Discard unsaved changes?' }) as string)) {
+      if (!window.confirm(t('skillsTab.discardUnsaved', { defaultValue: '放弃未保存的修改？' }) as string)) {
         return;
       }
     }
@@ -264,7 +264,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
   if (!selectedProject) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-[13px] text-neutral-500 dark:bg-neutral-950 dark:text-neutral-400">
-        {t('skillsTab.pickProject', { defaultValue: 'Open a project to manage its skills.' })}
+        {t('skillsTab.pickProject', { defaultValue: '选一个项目来管理它的技能。' })}
       </div>
     );
   }
@@ -326,7 +326,7 @@ export default function SkillsV2({ selectedProject, projects }: SkillsV2Props) {
             setActiveSlug(created.slug);
             setActiveScope(created.scope);
             setShowNew(false);
-            flashToast({ kind: 'success', text: t('skillsTab.installedSuccess', { defaultValue: 'Installed', name: created.name }) });
+            flashToast({ kind: 'success', text: t('skillsTab.installedSuccess', { defaultValue: '已安装 {{name}}', name: created.name }) });
           }}
           projectAvailable={Boolean(effectiveProjectPath)}
           projectPath={effectiveProjectPath}
@@ -372,7 +372,7 @@ function Header({
       <div className="flex min-w-0 items-center gap-2 truncate font-mono text-xxs text-neutral-500 dark:text-neutral-400">
         <Sparkles className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} />
         {generalCwd ? (
-          <span>{t('skillsTab.generalChat', { defaultValue: 'General chat — user-scope skills only' })}</span>
+          <span>{t('skillsTab.generalChat', { defaultValue: '通用聊天 — 仅显示用户级技能' })}</span>
         ) : (
           <span className="truncate">{cwd}</span>
         )}
@@ -383,8 +383,8 @@ function Header({
           onClick={onRefresh}
           disabled={loading}
           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-900"
-          title={t('skillsTab.refresh', { defaultValue: 'Refresh' }) as string}
-          aria-label={t('skillsTab.refresh', { defaultValue: 'Refresh' }) as string}
+          title={t('skillsTab.refresh', { defaultValue: '刷新' }) as string}
+          aria-label={t('skillsTab.refresh', { defaultValue: '刷新' }) as string}
         >
           <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} strokeWidth={1.75} />
         </button>
@@ -394,7 +394,7 @@ function Header({
           className="inline-flex h-7 items-center gap-1.5 rounded-md bg-neutral-900 px-2.5 text-[12px] font-medium text-white transition hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />
-          <span>{t('skillsTab.newSkill', { defaultValue: 'New' })}</span>
+          <span>{t('skillsTab.newSkill', { defaultValue: '新建' })}</span>
         </button>
       </div>
     </div>
@@ -435,7 +435,7 @@ function SkillsList({
   t: ReturnType<typeof useTranslation>['t'];
 }) {
   const handleDeleteSkill = useCallback(async (skill: Skill) => {
-    if (!window.confirm(t('skillsTab.confirmUninstall', { defaultValue: 'Uninstall "{{name}}"? This will remove the entire skill folder.', name: skill.name }) as string)) {
+    if (!window.confirm(t('skillsTab.confirmUninstall', { defaultValue: '卸载 "{{name}}"？这会移除整个技能文件夹。', name: skill.name }) as string)) {
       return;
     }
     try {
@@ -448,7 +448,7 @@ function SkillsList({
         setActiveScope(null);
       }
       await refresh();
-      flashToast({ kind: 'success', text: t('skillsTab.uninstallSuccess', { defaultValue: 'Uninstalled "{{name}}"', name: skill.name }) as string });
+      flashToast({ kind: 'success', text: t('skillsTab.uninstallSuccess', { defaultValue: '已卸载 "{{name}}"', name: skill.name }) as string });
     } catch (e) {
       flashToast({ kind: 'error', text: (e as Error).message });
     }
@@ -472,11 +472,11 @@ function SkillsList({
         setActiveScope(target.scope);
       }
       await refresh();
-      const label = target.scope === 'user' ? 'User' : target.projectPath.split('/').pop() || 'Project';
+      const label = target.scope === 'user' ? '用户' : target.projectPath.split('/').pop() || '项目';
       flashToast({
         kind: 'success',
         text: t('skillsTab.moveSuccess', {
-          defaultValue: 'Moved "{{name}}" to {{scope}}',
+          defaultValue: '已将 "{{name}}" 移动到 {{scope}}',
           name: skill.name,
           scope: label,
         }) as string,
@@ -488,7 +488,7 @@ function SkillsList({
 
   const moveTargets = useMemo((): { label: string; target: MoveTarget }[] => {
     const targets: { label: string; target: MoveTarget }[] = [];
-    targets.push({ label: 'User (global)', target: { scope: 'user', projectPath: null } });
+    targets.push({ label: '用户（全局）', target: { scope: 'user', projectPath: null } });
     for (const project of projects) {
       const path = project.fullPath || project.path || null;
       if (!path) continue;
@@ -507,13 +507,13 @@ function SkillsList({
         {loading && !skills ? (
           <div className="flex items-center justify-center gap-2 py-6 text-xxs text-neutral-500 dark:text-neutral-400">
             <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-            <span>{t('skillsTab.loading', { defaultValue: 'Loading…' })}</span>
+            <span>{t('skillsTab.loading', { defaultValue: '加载中…' })}</span>
           </div>
         ) : (
           <>
             {!generalCwd && skills?.project && skills.project.length > 0 ? (
               <ListSection
-                title={t('skillsTab.projectScope', { defaultValue: 'Project Skills' })}
+                title={t('skillsTab.projectScope', { defaultValue: '项目技能' })}
                 items={skills.project}
                 activeSlug={activeScope === 'project' ? activeSlug : null}
                 onSelect={onSelect}
@@ -526,7 +526,7 @@ function SkillsList({
             ) : null}
             {skills?.user && skills.user.length > 0 ? (
               <ListSection
-                title={t('skillsTab.userScope', { defaultValue: 'User Skills' })}
+                title={t('skillsTab.userScope', { defaultValue: '用户技能' })}
                 items={skills.user}
                 activeSlug={activeScope === 'user' ? activeSlug : null}
                 onSelect={onSelect}
@@ -539,7 +539,7 @@ function SkillsList({
             ) : null}
             {skills && skills.user.length === 0 && (generalCwd || skills.project.length === 0) ? (
               <div className="px-4 py-6 text-center text-xxs text-neutral-500 dark:text-neutral-400">
-                {t('skillsTab.empty', { defaultValue: 'No skills yet. Click "New" to install or create one.' })}
+                {t('skillsTab.empty', { defaultValue: '还没有技能。点“新建”来安装或创建一个。' })}
               </div>
             ) : null}
           </>
@@ -657,7 +657,7 @@ function ListSection({
                   onDelete(s);
                 }}
                 className="absolute right-1.5 top-1/2 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-neutral-400 hover:bg-red-50 hover:text-red-600 group-hover:inline-flex dark:text-neutral-500 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                title={t('skillsTab.delete', { defaultValue: 'Delete' }) as string}
+                title={t('skillsTab.delete', { defaultValue: '删除' }) as string}
               >
                 <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
               </button>
@@ -682,7 +682,7 @@ function ListSection({
               >
                 <span className="flex items-center gap-2">
                   <ArrowRightLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  <span>{t('skillsTab.moveTo', { defaultValue: 'Move to…' })}</span>
+                  <span>{t('skillsTab.moveTo', { defaultValue: '移动到…' })}</span>
                 </span>
                 <span className="text-neutral-400">›</span>
               </button>
@@ -725,7 +725,7 @@ function ListSection({
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
           >
             <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-            <span>{t('skillsTab.delete', { defaultValue: 'Delete' })}</span>
+            <span>{t('skillsTab.delete', { defaultValue: '删除' })}</span>
           </button>
         </div>
       ) : null}
@@ -737,7 +737,7 @@ function EmptyState({ t }: { t: ReturnType<typeof useTranslation>['t'] }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
       <Sparkles className="h-8 w-8 text-neutral-300 dark:text-neutral-700" strokeWidth={1.5} />
-      <div>{t('skillsTab.selectHint', { defaultValue: 'Pick a skill on the left to view or edit its SKILL.md.' })}</div>
+      <div>{t('skillsTab.selectHint', { defaultValue: '在左侧选一个技能查看或编辑它的 SKILL.md。' })}</div>
     </div>
   );
 }
@@ -782,7 +782,9 @@ function SkillDetail({
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
             )}
           >
-            {skill.scope}
+            {skill.scope === 'project'
+              ? t('skillsTab.scopeProject', { defaultValue: '项目' })
+              : t('skillsTab.scopeUser', { defaultValue: '用户' })}
           </span>
           {skill.version ? (
             <span className="text-xxs text-neutral-500 dark:text-neutral-400">v{skill.version}</span>
@@ -800,7 +802,7 @@ function SkillDetail({
         {loading ? (
           <div className="flex h-full items-center justify-center gap-2 text-xxs text-neutral-500 dark:text-neutral-400">
             <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-            <span>{t('skillsTab.loading', { defaultValue: 'Loading…' })}</span>
+            <span>{t('skillsTab.loading', { defaultValue: '加载中…' })}</span>
           </div>
         ) : (
           <CodeMirror
@@ -829,7 +831,7 @@ function SkillDetail({
           className="inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[12px] text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-          <span>{t('skillsTab.delete', { defaultValue: 'Delete' })}</span>
+          <span>{t('skillsTab.delete', { defaultValue: '删除' })}</span>
         </button>
         <div className="flex items-center gap-1.5">
           {isDirty ? (
@@ -838,7 +840,7 @@ function SkillDetail({
               onClick={onRevert}
               className="inline-flex h-7 items-center rounded-md px-2.5 text-[12px] text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
             >
-              {t('skillsTab.revert', { defaultValue: 'Revert' })}
+              {t('skillsTab.revert', { defaultValue: '撤销' })}
             </button>
           ) : null}
           <button
@@ -848,7 +850,7 @@ function SkillDetail({
             className="inline-flex h-7 items-center gap-1.5 rounded-md bg-neutral-900 px-2.5 text-[12px] font-medium text-white transition hover:bg-neutral-700 disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
           >
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} /> : <Save className="h-3.5 w-3.5" strokeWidth={1.75} />}
-            <span>{saving ? t('skillsTab.saving', { defaultValue: 'Saving…' }) : t('skillsTab.save', { defaultValue: 'Save' })}</span>
+            <span>{saving ? t('skillsTab.saving', { defaultValue: '保存中…' }) : t('skillsTab.save', { defaultValue: '保存' })}</span>
           </button>
         </div>
       </div>
@@ -880,12 +882,12 @@ function NewSkillModal({
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
       <div className="flex h-[560px] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-950">
         <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-          <h3 className="text-sm font-semibold">{t('skillsTab.newTitle', { defaultValue: 'New Skill' })}</h3>
+          <h3 className="text-sm font-semibold">{t('skillsTab.newTitle', { defaultValue: '新建技能' })}</h3>
           <button
             type="button"
             onClick={onClose}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-900"
-            aria-label={t('skillsTab.close', { defaultValue: 'Close' }) as string}
+            aria-label={t('skillsTab.close', { defaultValue: '关闭' }) as string}
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
@@ -893,13 +895,13 @@ function NewSkillModal({
 
         <div className="flex shrink-0 gap-1 border-b border-neutral-200 px-5 dark:border-neutral-800">
           <ModalTab active={tab === 'install'} onClick={() => setTab('install')} icon={Download}>
-            {t('skillsTab.tabInstall', { defaultValue: 'Install from ClawHub' })}
+            {t('skillsTab.tabInstall', { defaultValue: '从 ClawHub 安装' })}
           </ModalTab>
           <ModalTab active={tab === 'import'} onClick={() => setTab('import')} icon={FolderInput}>
-            {t('skillsTab.tabImport', { defaultValue: 'Import folder' })}
+            {t('skillsTab.tabImport', { defaultValue: '从文件夹导入' })}
           </ModalTab>
           <ModalTab active={tab === 'create'} onClick={() => setTab('create')} icon={PencilLine}>
-            {t('skillsTab.tabCreate', { defaultValue: 'Write my own' })}
+            {t('skillsTab.tabCreate', { defaultValue: '自己写一个' })}
           </ModalTab>
         </div>
 
@@ -974,7 +976,7 @@ function ScopeSelector({
   return (
     <div className="flex items-center gap-2 text-[12px]">
       <span className="text-neutral-500 dark:text-neutral-400">
-        {t('skillsTab.scope', { defaultValue: 'Scope' })}:
+        {t('skillsTab.scope', { defaultValue: '范围' })}:
       </span>
       <div className="inline-flex overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
         <button
@@ -987,7 +989,7 @@ function ScopeSelector({
               : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-900',
           )}
         >
-          <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" strokeWidth={1.75} />{t('skillsTab.scopeUser', { defaultValue: 'User' })}</span>
+          <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" strokeWidth={1.75} />{t('skillsTab.scopeUser', { defaultValue: '用户' })}</span>
         </button>
         <button
           type="button"
@@ -1000,7 +1002,7 @@ function ScopeSelector({
               : 'text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:hover:bg-transparent dark:text-neutral-400 dark:hover:bg-neutral-900',
           )}
         >
-          {t('skillsTab.scopeProject', { defaultValue: 'Project' })}
+          {t('skillsTab.scopeProject', { defaultValue: '项目' })}
         </button>
       </div>
     </div>
@@ -1072,12 +1074,12 @@ function InstallFromClawHub({
       if (r.needsForce) {
         setForceForSlug(slug);
         setErrorText(t('skillsTab.flaggedSuspicious', {
-          defaultValue: '"{{slug}}" is flagged as suspicious by VirusTotal. Re-confirm to install with --force.',
+          defaultValue: '"{{slug}}" 被 VirusTotal 标记为可疑。再点一次以 --force 安装。',
           slug,
         }));
         return;
       }
-      setErrorText(r.stderr || r.stdout || `Install failed (exit ${r.exitCode})`);
+      setErrorText(r.stderr || r.stdout || `安装失败（退出码 ${r.exitCode}）`);
     } catch (e) {
       setErrorText((e as Error).message);
     } finally {
@@ -1094,7 +1096,7 @@ function InstallFromClawHub({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('skillsTab.searchPlaceholder', { defaultValue: 'Search clawhub.com…' }) as string}
+            placeholder={t('skillsTab.searchPlaceholder', { defaultValue: '在 clawhub.com 搜索…' }) as string}
             className="h-8 w-full rounded-md border border-neutral-200 bg-white pl-8 pr-2 text-[13px] outline-none focus:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:focus:border-neutral-600"
           />
           {searching ? (
@@ -1114,8 +1116,8 @@ function InstallFromClawHub({
         {results.length === 0 && !searching ? (
           <div className="flex h-full items-center justify-center text-xxs text-neutral-500 dark:text-neutral-400">
             {query.trim()
-              ? t('skillsTab.noResults', { defaultValue: 'No results.' })
-              : t('skillsTab.searchHint', { defaultValue: 'Type to search clawhub.com.' })}
+              ? t('skillsTab.noResults', { defaultValue: '没有结果。' })
+              : t('skillsTab.searchHint', { defaultValue: '输入关键词搜索 clawhub.com。' })}
           </div>
         ) : (
           <ul className="divide-y divide-neutral-100 dark:divide-neutral-900">
@@ -1149,10 +1151,10 @@ function InstallFromClawHub({
                     )}
                     <span>
                       {isInstalling
-                        ? t('skillsTab.installing', { defaultValue: 'Installing…' })
+                        ? t('skillsTab.installing', { defaultValue: '安装中…' })
                         : isForce
-                          ? t('skillsTab.installForce', { defaultValue: 'Install (force)' })
-                          : t('skillsTab.install', { defaultValue: 'Install' })}
+                          ? t('skillsTab.installForce', { defaultValue: '强制安装' })
+                          : t('skillsTab.install', { defaultValue: '安装' })}
                     </span>
                   </button>
                 </li>
@@ -1566,7 +1568,7 @@ function ImportFromFolder({
         const data = await r.json().catch(() => ({} as Record<string, unknown>));
         if (!r.ok) {
           if (data.validation) setValidation(data.validation as ValidationResult);
-          throw new Error((data as { error?: string }).error || `Upload failed (${r.status})`);
+          throw new Error((data as { error?: string }).error || `上传失败（${r.status}）`);
         }
         const result = data as { slug: string; scope: 'user' | 'project'; skill: Skill | null };
         onImported({ slug: result.slug, name: result.skill?.name || result.slug, scope: result.scope });
@@ -1594,7 +1596,7 @@ function ImportFromFolder({
     } catch (e) {
       const msg = (e as Error).message;
       if (/already exists/i.test(msg) && !force) {
-        setErrorText(msg + ' ' + t('skillsTab.importEnableForce', { defaultValue: 'Enable "Overwrite" to replace it.' }));
+        setErrorText(msg + ' ' + t('skillsTab.importEnableForce', { defaultValue: '勾选“覆盖”来替换。' }));
       } else {
         setErrorText(msg);
       }
@@ -1608,8 +1610,8 @@ function ImportFromFolder({
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {/* Source: pick or paste */}
         <Field
-          label={t('skillsTab.importSource', { defaultValue: 'Source folder' })}
-          hint={!batchMode ? (t('skillsTab.importSourceHintBoth', { defaultValue: 'Pick a folder via the native dialog, or paste an absolute path. ~ is expanded server-side.' }) as string) : undefined}
+          label={t('skillsTab.importSource', { defaultValue: '源文件夹' })}
+          hint={!batchMode ? (t('skillsTab.importSourceHintBoth', { defaultValue: '通过原生对话框选择文件夹，或粘贴绝对路径。~ 在服务端展开。' }) as string) : undefined}
         >
           <div className="flex items-stretch gap-2">
             <button
@@ -1624,7 +1626,7 @@ function ImportFromFolder({
               )}
             >
               <Folder className="h-3.5 w-3.5" strokeWidth={1.75} />
-              <span>{t('skillsTab.pickFolder', { defaultValue: 'Pick folder…' })}</span>
+              <span>{t('skillsTab.pickFolder', { defaultValue: '选择文件夹…' })}</span>
             </button>
             <button
               type="button"
@@ -1638,7 +1640,7 @@ function ImportFromFolder({
               )}
             >
               {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} /> : <FolderSearch className="h-3.5 w-3.5" strokeWidth={1.75} />}
-              <span>{scanning ? t('skillsTab.scanning', { defaultValue: 'Scanning…' }) : t('skillsTab.scan', { defaultValue: 'Scan' })}</span>
+              <span>{scanning ? t('skillsTab.scanning', { defaultValue: '扫描中…' }) : t('skillsTab.scan', { defaultValue: '扫描' })}</span>
             </button>
             <input
               ref={fileInputRef}
@@ -1677,7 +1679,7 @@ function ImportFromFolder({
               <div className="min-w-0 flex-1 truncate">
                 <span className="font-medium">{picked.rootName}</span>
                 <span className="ml-2 text-neutral-500 dark:text-neutral-400">
-                  {picked.files.length} {t('skillsTab.files', { defaultValue: 'files' })} ·{' '}
+                  {picked.files.length} {t('skillsTab.files', { defaultValue: '个文件' })} ·{' '}
                   {formatBytes(picked.manifest.reduce((acc, m) => acc + m.size, 0))}
                 </span>
               </div>
@@ -1701,7 +1703,7 @@ function ImportFromFolder({
               <span className="min-w-0 flex-1 truncate text-[12px] font-medium">{batchParentName}</span>
               <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 {t('skillsTab.foundSkills', {
-                  defaultValue: 'Found {{count}} skills in {{total}} subfolders',
+                  defaultValue: '在 {{total}} 个子文件夹中找到 {{count}} 个技能',
                   count: skillCandidates.length,
                   total: batchCandidates!.length,
                 })}
@@ -1718,7 +1720,7 @@ function ImportFromFolder({
 
             {skillCandidates.length === 0 ? (
               <div className="px-3 py-4 text-center text-[12px] text-neutral-500 dark:text-neutral-400">
-                {t('skillsTab.noSkillsFound', { defaultValue: 'No skills found in this folder.' })}
+                {t('skillsTab.noSkillsFound', { defaultValue: '该文件夹下没有找到技能。' })}
               </div>
             ) : (
               <>
@@ -1734,7 +1736,7 @@ function ImportFromFolder({
                       />
                       <span className="font-medium">
                         {t('skillsTab.selectAll', {
-                          defaultValue: 'Select All ({{count}})',
+                          defaultValue: '全选 ({{count}})',
                           count: skillCandidates.length,
                         })}
                       </span>
@@ -1746,7 +1748,7 @@ function ImportFromFolder({
                 {batchImporting && (
                   <div className="border-b border-neutral-100 px-3 py-1.5 text-[11px] text-neutral-500 dark:border-neutral-900 dark:text-neutral-400">
                     {t('skillsTab.batchProgress', {
-                      defaultValue: 'Importing {{current}}/{{total}}…',
+                      defaultValue: '正在导入 {{current}}/{{total}}…',
                       current: Array.from(batchResults.values()).filter((r) => r.status === 'success' || r.status === 'error').length,
                       total: selectedCount,
                     })}
@@ -1755,7 +1757,7 @@ function ImportFromFolder({
                 {batchDone && (
                   <div className="border-b border-neutral-100 px-3 py-1.5 text-[11px] font-medium dark:border-neutral-900">
                     {t('skillsTab.batchComplete', {
-                      defaultValue: 'Batch import complete: {{success}} succeeded, {{failed}} failed',
+                      defaultValue: '批量导入完成：{{success}} 个成功，{{failed}} 个失败',
                       success: Array.from(batchResults.values()).filter((r) => r.status === 'success').length,
                       failed: Array.from(batchResults.values()).filter((r) => r.status === 'error').length,
                     })}
@@ -1804,7 +1806,7 @@ function ImportFromFolder({
                             </span>
                             {!isSkill && (
                               <span className="shrink-0 text-[11px] text-neutral-400 dark:text-neutral-600">
-                                ({t('skillsTab.noSkillMd', { defaultValue: 'No SKILL.md' })})
+                                ({t('skillsTab.noSkillMd', { defaultValue: '无 SKILL.md' })})
                               </span>
                             )}
                           </div>
@@ -1817,7 +1819,7 @@ function ImportFromFolder({
                           )}
                           {isSkill && (
                             <div className="mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-500">
-                              {candidate.fileCount} {t('skillsTab.files', { defaultValue: 'files' })} · {formatBytes(candidate.totalSize)}
+                              {candidate.fileCount} {t('skillsTab.files', { defaultValue: '个文件' })} · {formatBytes(candidate.totalSize)}
                             </div>
                           )}
                           {result?.status === 'error' && result.error && (
@@ -1838,7 +1840,7 @@ function ImportFromFolder({
                   <ScopeSelector scope={scope} onChange={setScope} projectAvailable={projectAvailable} t={t} />
                   <label className="flex cursor-pointer items-center gap-2 text-[12px]">
                     <input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} disabled={batchImporting} />
-                    <span>{t('skillsTab.importForce', { defaultValue: 'Overwrite if exists' })}</span>
+                    <span>{t('skillsTab.importForce', { defaultValue: '已存在时覆盖' })}</span>
                   </label>
                 </div>
               </div>
@@ -1848,8 +1850,8 @@ function ImportFromFolder({
           <>
             {/* ---- Single import mode (existing UI) ---- */}
             <Field
-              label={t('skillsTab.importSlug', { defaultValue: 'Slug (target folder name)' })}
-              hint={t('skillsTab.importSlugHint', { defaultValue: 'Defaults to the source folder name. Edit to override.' }) as string}
+              label={t('skillsTab.importSlug', { defaultValue: 'Slug（目标文件夹名）' })}
+              hint={t('skillsTab.importSlugHint', { defaultValue: '默认用源文件夹名，可手动改。' }) as string}
             >
               <input
                 type="text"
@@ -1868,7 +1870,7 @@ function ImportFromFolder({
               />
             </Field>
 
-            <Field label={t('skillsTab.importMode', { defaultValue: 'Import mode' })}>
+            <Field label={t('skillsTab.importMode', { defaultValue: '导入方式' })}>
               <div className="flex flex-col gap-1.5 text-[12px]">
                 <label className="flex cursor-pointer items-start gap-2">
                   <input
@@ -1879,9 +1881,9 @@ function ImportFromFolder({
                     className="mt-0.5"
                   />
                   <span>
-                    <span className="font-medium">{t('skillsTab.importModeCopy', { defaultValue: 'Copy' })}</span>
+                    <span className="font-medium">{t('skillsTab.importModeCopy', { defaultValue: '复制' })}</span>
                     <span className="ml-1 text-neutral-500 dark:text-neutral-400">
-                      {t('skillsTab.importModeCopyHint', { defaultValue: '— independent copy, edits live in the skills folder.' })}
+                      {t('skillsTab.importModeCopyHint', { defaultValue: '— 独立副本，编辑只发生在 skills 目录。' })}
                     </span>
                   </span>
                 </label>
@@ -1895,11 +1897,11 @@ function ImportFromFolder({
                     className="mt-0.5"
                   />
                   <span>
-                    <span className="font-medium">{t('skillsTab.importModeSymlink', { defaultValue: 'Symlink' })}</span>
+                    <span className="font-medium">{t('skillsTab.importModeSymlink', { defaultValue: '软链' })}</span>
                     <span className="ml-1 text-neutral-500 dark:text-neutral-400">
                       {picked
-                        ? t('skillsTab.symlinkUnavailable', { defaultValue: '— unavailable for picker uploads (no source path on disk).' })
-                        : t('skillsTab.importModeSymlinkHint', { defaultValue: '— edits in the source folder propagate live; deleting the source breaks the skill.' })}
+                        ? t('skillsTab.symlinkUnavailable', { defaultValue: '— 选择器上传不支持（没有磁盘上的源路径）。' })
+                        : t('skillsTab.importModeSymlinkHint', { defaultValue: '— 源文件夹的编辑实时同步到 skill；源被删则 skill 失效。' })}
                     </span>
                   </span>
                 </label>
@@ -1912,7 +1914,7 @@ function ImportFromFolder({
               <ScopeSelector scope={scope} onChange={setScope} projectAvailable={projectAvailable} t={t} />
               <label className="flex cursor-pointer items-center gap-2 text-[12px]">
                 <input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} />
-                <span>{t('skillsTab.importForce', { defaultValue: 'Overwrite if exists' })}</span>
+                <span>{t('skillsTab.importForce', { defaultValue: '已存在时覆盖' })}</span>
               </label>
             </div>
           </>
@@ -1937,7 +1939,7 @@ function ImportFromFolder({
               className="inline-flex h-8 items-center gap-1.5 rounded-md bg-neutral-900 px-3 text-[12px] font-medium text-white transition hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
             >
               <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-              <span>{t('skillsTab.batchDone', { defaultValue: 'Done' })}</span>
+              <span>{t('skillsTab.batchDone', { defaultValue: '完成' })}</span>
             </button>
           ) : (
             <button
@@ -1953,8 +1955,8 @@ function ImportFromFolder({
               )}
               <span>
                 {batchImporting
-                  ? t('skillsTab.importing', { defaultValue: 'Importing…' })
-                  : t('skillsTab.importNSkills', { defaultValue: 'Import {{count}} skills', count: selectedCount })}
+                  ? t('skillsTab.importing', { defaultValue: '导入中…' })
+                  : t('skillsTab.importNSkills', { defaultValue: '导入 {{count}} 个技能', count: selectedCount })}
               </span>
             </button>
           )
@@ -1972,8 +1974,8 @@ function ImportFromFolder({
             )}
             <span>
               {importing
-                ? t('skillsTab.importing', { defaultValue: 'Importing…' })
-                : t('skillsTab.importAction', { defaultValue: 'Import skill' })}
+                ? t('skillsTab.importing', { defaultValue: '导入中…' })
+                : t('skillsTab.importAction', { defaultValue: '导入技能' })}
             </span>
           </button>
         )}
@@ -1996,7 +1998,7 @@ function ValidationPanel({
     <div className="mt-4 rounded-md border border-neutral-200 dark:border-neutral-800">
       <div className="flex items-center gap-2 border-b border-neutral-200 px-3 py-2 text-[12px] font-medium dark:border-neutral-800">
         <ShieldCheck className="h-3.5 w-3.5 text-neutral-500" strokeWidth={1.75} />
-        <span>{t('skillsTab.complianceCheck', { defaultValue: 'Compliance check' })}</span>
+        <span>{t('skillsTab.complianceCheck', { defaultValue: '合规检查' })}</span>
         {validating ? (
           <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin text-neutral-400" strokeWidth={1.75} />
         ) : result?.ok ? (
@@ -2008,13 +2010,13 @@ function ValidationPanel({
       <div className="space-y-1.5 px-3 py-2 text-[12px]">
         {result?.stats ? (
           <div className="flex items-center gap-3 text-neutral-500 dark:text-neutral-400">
-            <span>{result.stats.fileCount} {t('skillsTab.files', { defaultValue: 'files' })}</span>
+            <span>{result.stats.fileCount} {t('skillsTab.files', { defaultValue: '个文件' })}</span>
             <span>·</span>
             <span>{formatBytes(result.stats.totalBytes)}</span>
             {result.frontmatter && (result.frontmatter as { name?: string }).name ? (
               <>
                 <span>·</span>
-                <span className="truncate">name: <span className="font-mono">{(result.frontmatter as { name: string }).name}</span></span>
+                <span className="truncate">名称：<span className="font-mono">{(result.frontmatter as { name: string }).name}</span></span>
               </>
             ) : null}
           </div>
@@ -2042,7 +2044,7 @@ function ValidationPanel({
         {result?.ok && (!result.warnings || result.warnings.length === 0) ? (
           <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
             <CheckCircle2 className="h-3 w-3" strokeWidth={2} />
-            <span>{t('skillsTab.complianceClean', { defaultValue: 'All checks passed.' })}</span>
+            <span>{t('skillsTab.complianceClean', { defaultValue: '全部通过。' })}</span>
           </div>
         ) : null}
       </div>
@@ -2112,7 +2114,7 @@ function CreateFromScratch({
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field label={t('skillsTab.fieldSlug', { defaultValue: 'Slug' })} hint={t('skillsTab.slugHint', { defaultValue: 'Folder name, e.g. my-skill' }) as string}>
+          <Field label={t('skillsTab.fieldSlug', { defaultValue: 'Slug' })} hint={t('skillsTab.slugHint', { defaultValue: '文件夹名，例如 my-skill' }) as string}>
             <input
               type="text"
               value={slug}
@@ -2126,17 +2128,17 @@ function CreateFromScratch({
               )}
             />
           </Field>
-          <Field label={t('skillsTab.fieldName', { defaultValue: 'Display name' })}>
+          <Field label={t('skillsTab.fieldName', { defaultValue: '显示名' })}>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={slug || t('skillsTab.fieldNamePlaceholder', { defaultValue: 'Optional, defaults to slug' }) as string}
+              placeholder={slug || t('skillsTab.fieldNamePlaceholder', { defaultValue: '可选，默认用 slug' }) as string}
               className="h-8 w-full rounded-md border border-neutral-200 bg-white px-2 text-[13px] outline-none focus:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:focus:border-neutral-600"
             />
           </Field>
         </div>
-        <Field label={t('skillsTab.fieldDescription', { defaultValue: 'Description' })} hint={t('skillsTab.descHint', { defaultValue: 'Shown in the slash menu — describe what this skill does and when to invoke it.' }) as string}>
+        <Field label={t('skillsTab.fieldDescription', { defaultValue: '描述' })} hint={t('skillsTab.descHint', { defaultValue: '会显示在 slash 菜单 — 简要说明这个技能做什么、什么时候用。' }) as string}>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -2144,13 +2146,13 @@ function CreateFromScratch({
             className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-[13px] outline-none focus:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:focus:border-neutral-600"
           />
         </Field>
-        <Field label={t('skillsTab.fieldBody', { defaultValue: 'Initial body (Markdown)' })} hint={t('skillsTab.bodyHint', { defaultValue: 'Optional. Edit in detail later from the main view.' }) as string}>
+        <Field label={t('skillsTab.fieldBody', { defaultValue: '初始正文（Markdown）' })} hint={t('skillsTab.bodyHint', { defaultValue: '可选，之后可以在主视图里详细编辑。' }) as string}>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={8}
             className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-[12px] outline-none focus:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:focus:border-neutral-600"
-            placeholder={'# My Skill\n\nDescribe what this skill does...'}
+            placeholder={'# 我的技能\n\n描述这个技能能做什么...'}
           />
         </Field>
         <div className="mt-3">
@@ -2171,7 +2173,7 @@ function CreateFromScratch({
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-neutral-900 px-3 text-[12px] font-medium text-white transition hover:bg-neutral-700 disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
         >
           {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} /> : <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />}
-          <span>{creating ? t('skillsTab.creating', { defaultValue: 'Creating…' }) : t('skillsTab.create', { defaultValue: 'Create skill' })}</span>
+          <span>{creating ? t('skillsTab.creating', { defaultValue: '创建中…' }) : t('skillsTab.create', { defaultValue: '创建技能' })}</span>
         </button>
       </div>
     </div>

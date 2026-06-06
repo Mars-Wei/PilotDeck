@@ -162,7 +162,7 @@ export default function ProjectCreationWizard({
             onClick={onClose}
             className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
             disabled={isCreating}
-            aria-label="Close"
+            aria-label="关闭"
           >
             <X className="h-5 w-5" strokeWidth={1.75} />
           </button>

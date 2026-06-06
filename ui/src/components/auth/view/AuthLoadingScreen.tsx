@@ -22,7 +22,7 @@ export default function AuthLoadingScreen() {
           ))}
         </div>
 
-        <p className="mt-2 text-muted-foreground">Loading...</p>
+        <p className="mt-2 text-muted-foreground">加载中...</p>
       </div>
     </div>
   );

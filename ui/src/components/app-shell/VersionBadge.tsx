@@ -36,21 +36,21 @@ export function VersionBadge() {
       setLogs(result.lines);
       setPhase('success');
     } else {
-      setLogs(result.lines.length > 0 ? result.lines : ['Update failed']);
+      setLogs(result.lines.length > 0 ? result.lines : ['更新失败']);
       setPhase('error');
     }
   }, [triggerUpdate]);
 
   const handleRestart = useCallback(async () => {
     // Immediately blank the entire page with a restart splash
-    document.title = 'Restarting OPC Brain...';
+    document.title = '正在重启 OPC Brain...';
     document.body.innerHTML = '';
     document.body.style.cssText = 'margin:0;background:#0a0a0a;display:flex;align-items:center;justify-content:center;height:100vh';
     document.body.innerHTML = `
       <div style="text-align:center;font-family:system-ui,-apple-system,sans-serif">
         <svg style="width:40px;height:40px;margin-bottom:16px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>
-        <p style="color:#ccc;font-size:1.1rem;margin:0 0 8px">Restarting OPC Brain...</p>
-        <p style="color:#666;font-size:0.8rem;margin:0">Page will reload automatically when server is ready.</p>
+        <p style="color:#ccc;font-size:1.1rem;margin:0 0 8px">正在重启 OPC Brain...</p>
+        <p style="color:#666;font-size:0.8rem;margin:0">服务恢复后页面会自动刷新。</p>
       </div>
       <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
 
@@ -87,7 +87,7 @@ export function VersionBadge() {
             ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60'
             : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700',
         )}
-        title={info.hasUpdate ? `Update available (${info.behindCount} commits behind)` : `Version: ${info.commitSha}`}
+        title={info.hasUpdate ? `有可用更新（落后 ${info.behindCount} 个提交）` : `版本：${info.commitSha}`}
       >
         <GitCommit className="h-3 w-3" strokeWidth={2} />
         <span>{info.commitSha}</span>
@@ -104,7 +104,7 @@ export function VersionBadge() {
           >
             <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-700">
               <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                {info.hasUpdate ? 'Update Available' : 'Version Info'}
+                {info.hasUpdate ? '有可用更新' : '版本信息'}
               </h2>
               <button
                 type="button"
@@ -126,7 +126,7 @@ export function VersionBadge() {
                     {info.currentCommit}
                   </div>
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Branch: {info.branch}
+                    分支：{info.branch}
                   </div>
                 </div>
               </div>
@@ -134,7 +134,7 @@ export function VersionBadge() {
               {info.hasUpdate && phase === 'idle' && (
                 <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
                   <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    {info.behindCount} new commit{info.behindCount > 1 ? 's' : ''} available
+                    有 {info.behindCount} 个新提交可用
                   </p>
                   {info.newCommits.length > 0 && (
                     <ul className="mt-2 space-y-1">
@@ -148,7 +148,7 @@ export function VersionBadge() {
                       ))}
                       {info.newCommits.length > 5 && (
                         <li className="text-xs text-blue-600 dark:text-blue-400">
-                          ... and {info.newCommits.length - 5} more
+                          ... 还有 {info.newCommits.length - 5} 个
                         </li>
                       )}
                     </ul>
@@ -161,7 +161,7 @@ export function VersionBadge() {
                   <div className="flex items-center gap-2 mb-2">
                     <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                      Updating...
+                      正在更新...
                     </span>
                   </div>
                   <div className="max-h-40 overflow-y-auto rounded bg-neutral-900 p-2">
@@ -180,7 +180,7 @@ export function VersionBadge() {
                   <div className="flex items-center gap-2 mb-2">
                     <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                     <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                      Update complete!
+                      更新完成！
                     </span>
                   </div>
                   {logs.length > 0 && (
@@ -200,7 +200,7 @@ export function VersionBadge() {
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     <span className="text-sm font-medium text-red-800 dark:text-red-200">
-                      Update failed
+                      更新失败
                     </span>
                   </div>
                   {logs.length > 0 && (
@@ -225,7 +225,7 @@ export function VersionBadge() {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
-                  Update Now
+                  立即更新
                 </button>
               )}
               {phase === 'success' && (
@@ -235,7 +235,7 @@ export function VersionBadge() {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
-                  Restart to Apply
+                  重启以应用
                 </button>
               )}
               {(phase === 'idle' || phase === 'error') && (
@@ -244,7 +244,7 @@ export function VersionBadge() {
                   onClick={handleClose}
                   className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                 >
-                  Close
+                  关闭
                 </button>
               )}
             </div>

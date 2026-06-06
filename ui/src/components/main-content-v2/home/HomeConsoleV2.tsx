@@ -1,24 +1,25 @@
 import { useCallback, useMemo } from 'react';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
-import { useHomeDashboardData, type HomeSessionCard } from '../../../hooks/useHomeDashboardData';
-import { useRoutingDashboard } from '../../../hooks/useRoutingDashboard';
+import type { HomeDashboardData, HomeSessionCard } from '../../../hooks/useHomeDashboardData';
+import type { DashboardData } from '../../../hooks/useRoutingDashboard';
 import WelcomeSection from './WelcomeSection';
 import TodaySummary from './TodaySummary';
 import ContinueWork from './ContinueWork';
 import ProjectsOverview from './ProjectsOverview';
 import ActivityTimeline from './ActivityTimeline';
 import QuickTools from './QuickTools';
+import { formatCost } from './homeUtils';
 
 type HomeConsoleV2Props = {
   projects: Project[];
-  processingSessions: Set<string>;
-  unreadSessionIds: Set<string>;
   onSelectProjectByName?: (projectName: string) => void;
   onSelectSession?: (project: Project, sessionId: string, fallbackSession?: ProjectSession) => void;
   onStartNewSession: (project: Project) => void;
   onCreateProject?: () => void;
   onShowSettings: () => void;
   setActiveTab: (tab: AppTab) => void;
+  homeData: HomeDashboardData;
+  routingData?: DashboardData | null;
 };
 
 function pickDefaultProject(projects: Project[]): Project | null {
@@ -27,24 +28,33 @@ function pickDefaultProject(projects: Project[]): Project | null {
 
 export default function HomeConsoleV2({
   projects,
-  processingSessions,
-  unreadSessionIds,
   onSelectProjectByName,
   onSelectSession,
   onStartNewSession,
   onCreateProject,
   onShowSettings,
   setActiveTab,
+  homeData,
+  routingData = null,
 }: HomeConsoleV2Props) {
-  const homeData = useHomeDashboardData({
-    projects,
-    processingSessions,
-    unreadSessionIds,
-  });
-  const routing = useRoutingDashboard();
-
   const defaultProject = useMemo(() => pickDefaultProject(projects), [projects]);
-  const costBucket = routing.data?.overall?.total;
+  const costBucket = routingData?.overall?.total;
+  const hasTodayCost = homeData.cost.hasTodayWindow && homeData.cost.todayRequestCount > 0;
+  const hasRecentCost = homeData.cost.requestCount > 0;
+  const recentCost = hasTodayCost
+    ? homeData.cost.todayAmount
+    : hasRecentCost
+      ? homeData.cost.recentAmount
+      : costBucket?.estimatedCost ?? 0;
+  const recentSaved = hasTodayCost
+    ? homeData.cost.todaySaved
+    : hasRecentCost
+      ? homeData.cost.recentSaved
+      : costBucket?.savedCost ?? 0;
+  const costScope = hasTodayCost ? 'today' : 'recent';
+  const costFooter = hasTodayCost
+    ? `本周累计 ${formatCost(homeData.cost.weekTotal)}`
+    : '查看数据';
 
   const selectProject = useCallback(
     (projectName: string) => {
@@ -115,8 +125,10 @@ export default function HomeConsoleV2({
           onQuickSubmit={(text) => startNewSession(text)}
         />
         <TodaySummary
-          recentCost={costBucket?.estimatedCost ?? 0}
-          recentSaved={costBucket?.savedCost ?? 0}
+          recentCost={recentCost}
+          recentSaved={recentSaved}
+          costScope={costScope}
+          costFooter={costFooter}
           taskStats={homeData.taskStats}
           unreadCount={homeData.unreadCount}
           unreadSessionCount={homeData.unreadSessions.length}

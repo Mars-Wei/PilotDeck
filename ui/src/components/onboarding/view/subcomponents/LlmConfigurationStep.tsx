@@ -19,7 +19,7 @@ const CUSTOM_PROVIDER_ID = '__custom__';
 
 const CUSTOM_PROVIDER: CatalogProvider = {
   id: CUSTOM_PROVIDER_ID,
-  displayName: 'Custom',
+  displayName: '自定义',
   protocol: 'openai',
   defaultUrl: '',
   models: [],
@@ -133,14 +133,14 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
       const data = await res.json();
       if (data.ok) {
         setTestStatus('success');
-        setTestMessage(data.message || 'Connected successfully.');
+        setTestMessage(data.message || '连接成功。');
       } else {
         setTestStatus('error');
-        setTestMessage(data.error || 'Connection failed.');
+        setTestMessage(data.error || '连接失败。');
       }
     } catch (err) {
       setTestStatus('error');
-      setTestMessage(err instanceof Error ? err.message : 'Connection failed.');
+      setTestMessage(err instanceof Error ? err.message : '连接失败。');
     }
   }, [canTest, selectedProvider, effectiveUrl, apiKey, effectiveModelId, effectiveProtocol]);
 
@@ -161,7 +161,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
 
       const providerId = effectiveProviderId;
       const modelId = effectiveModelId;
-      if (!providerId) throw new Error('Provider ID is required.');
+      if (!providerId) throw new Error('请填写提供商 ID。');
 
       if (!existingConfig.schemaVersion) {
         (existingConfig as Record<string, unknown>).schemaVersion = 1;
@@ -210,13 +210,13 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
 
       if (!saveRes.ok) {
         const err = await saveRes.json();
-        throw new Error(err.error || 'Failed to save configuration');
+        throw new Error(err.error || '保存配置失败');
       }
 
       await onSaved();
     } catch (err) {
       setTestStatus('error');
-      setTestMessage(err instanceof Error ? err.message : 'Failed to save.');
+      setTestMessage(err instanceof Error ? err.message : '保存失败。');
     } finally {
       setSaving(false);
     }
@@ -225,9 +225,9 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
   return (
     <div className="mx-auto w-full max-w-xl space-y-8">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">LLM Provider Setup</h2>
+        <h2 className="text-lg font-semibold text-foreground">LLM 提供商设置</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Select your provider and enter your API key. Model capabilities are auto-configured.
+          选择提供商并填写 API 密钥。模型能力会自动配置。
         </p>
       </div>
 
@@ -236,7 +236,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
       {/* Provider grid */}
       <div>
         <div className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Provider
+          提供商
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {CATALOG_PROVIDERS.map((provider) => (
@@ -252,7 +252,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
             >
               <div className="font-medium">{provider.displayName}</div>
               <div className="mt-0.5 text-[11px] opacity-60">
-                {provider.models.length} model{provider.models.length === 1 ? '' : 's'}
+                {provider.models.length} 个模型
               </div>
               {selectedProvider?.id === provider.id && (
                 <Check className="absolute right-2 top-2 h-4 w-4 text-foreground" strokeWidth={2.5} />
@@ -270,8 +270,8 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
           >
             <Plus className="h-4 w-4" />
             <div>
-              <div className="font-medium">Custom</div>
-              <div className="mt-0.5 text-[11px] opacity-60">Any OpenAI / Anthropic endpoint</div>
+              <div className="font-medium">自定义</div>
+              <div className="mt-0.5 text-[11px] opacity-60">任意 OpenAI / Anthropic 端点</div>
             </div>
             {isCustomMode && (
               <Check className="absolute right-2 top-2 h-4 w-4 text-foreground" strokeWidth={2.5} />
@@ -284,7 +284,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
             <div className="space-y-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-4">
               <div>
                 <label htmlFor="custom-provider-id" className="mb-1 block text-sm font-medium text-foreground">
-                  Provider ID
+                  提供商 ID
                 </label>
                 <input
                   id="custom-provider-id"
@@ -297,13 +297,13 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
                   spellCheck={false}
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Used as the YAML key. Lowercase, no spaces.
+                  用作 YAML 键名。请使用小写，不要包含空格。
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1">
                   <label htmlFor="custom-protocol" className="mb-1 block text-sm font-medium text-foreground">
-                    Protocol
+                    协议
                   </label>
                   <div className="relative">
                     <select
@@ -334,7 +334,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
                   />
                 {customProtocol === 'openai' && (
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    OpenAI-compatible base URLs should include the API version path, for example ending in <span className="font-mono">/v1</span>.
+                    OpenAI 兼容的 Base URL 应包含 API 版本路径，例如以 <span className="font-mono">/v1</span> 结尾。
                   </p>
                 )}
                 </div>
@@ -345,7 +345,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
           {/* API Key */}
           <div>
             <label htmlFor="llm-api-key" className="mb-1 block text-sm font-medium text-foreground">
-              API Key
+              API 密钥
             </label>
             <input
               id="llm-api-key"
@@ -362,7 +362,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
           {/* Model picker */}
           <div>
             <label htmlFor="llm-model" className="mb-1 block text-sm font-medium text-foreground">
-              Model
+              模型
             </label>
             {selectedModels.length > 0 ? (
               <div className="relative">
@@ -384,7 +384,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
                 type="text"
                 value={customModelId}
                 onChange={(e) => { setCustomModelId(e.target.value); setTestStatus('idle'); setTestMessage(''); }}
-                placeholder="Enter model ID..."
+                placeholder="输入模型 ID..."
                 className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/40 focus:outline-none"
                 autoComplete="off"
                 spellCheck={false}
@@ -396,7 +396,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
                   type="text"
                   value={customModelId}
                   onChange={(e) => { setCustomModelId(e.target.value); setTestStatus('idle'); setTestMessage(''); }}
-                  placeholder="Or type a custom model ID..."
+                  placeholder="或输入自定义模型 ID..."
                   className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none"
                   autoComplete="off"
                   spellCheck={false}
@@ -413,7 +413,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              {showAdvanced ? 'Hide' : 'Show'} advanced settings
+              {showAdvanced ? '隐藏' : '显示'}高级设置
             </button>
             {showAdvanced && (
               <div className="mt-3 space-y-3 rounded-lg border border-border/60 bg-muted/30 p-3">
@@ -433,12 +433,12 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
                   />
                   {(selectedProvider?.protocol ?? customProtocol) === 'openai' && (
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      OpenAI-compatible base URLs should include the API version path, for example ending in <span className="font-mono">/v1</span>.
+                      OpenAI 兼容的 Base URL 应包含 API 版本路径，例如以 <span className="font-mono">/v1</span> 结尾。
                     </p>
                   )}
                 </div>
                 <div className="text-[11px] text-muted-foreground">
-                  Protocol: <span className="font-mono">{selectedProvider?.protocol ?? customProtocol}</span> &middot; Default URL: <span className="font-mono">{selectedDefaultUrl}</span>
+                  协议：<span className="font-mono">{selectedProvider?.protocol ?? customProtocol}</span> &middot; 默认 URL：<span className="font-mono">{selectedDefaultUrl}</span>
                 </div>
               </div>
             )}
@@ -448,7 +448,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
           {/* Actions */}
           <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-6">
             {testStatus !== 'success' && (
-              <span className="mr-auto text-xs text-muted-foreground">Test connection first.</span>
+              <span className="mr-auto text-xs text-muted-foreground">请先测试连接。</span>
             )}
             <button
               type="button"
@@ -459,10 +459,10 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
               {testStatus === 'testing' ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Testing...
+                  测试中...
                 </span>
               ) : (
-                'Test Connection'
+                '测试连接'
               )}
             </button>
             <button
@@ -474,10 +474,10 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
               {saving ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Saving...
+                  保存中...
                 </span>
               ) : (
-                'Save'
+                '保存'
               )}
             </button>
           </div>

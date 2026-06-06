@@ -286,9 +286,9 @@ export default function MessagesPaneV2({
   }, []);
 
   const suggestedPrompts: string[] = [
-    t('emptyChat.prompts.plan', { defaultValue: 'Plan a refactor for this project' }),
-    t('emptyChat.prompts.summary', { defaultValue: 'Summarize recent changes' }),
-    t('emptyChat.prompts.review', { defaultValue: 'Review the most recent file I touched' }),
+    t('emptyChat.prompts.plan', { defaultValue: '为这个项目规划一次重构' }),
+    t('emptyChat.prompts.summary', { defaultValue: '总结最近的改动' }),
+    t('emptyChat.prompts.review', { defaultValue: '检查我最近修改的文件' }),
   ];
 
   const isEmpty = !isLoadingSessionMessages && chatMessages.length === 0;
@@ -642,7 +642,7 @@ export default function MessagesPaneV2({
         <div className="mx-auto flex h-full max-w-[720px] flex-col items-center justify-center gap-3 px-6 py-10 text-center">
           <XCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
           <div className="text-[15px] font-medium text-neutral-900 dark:text-neutral-100">
-            {t('session.loadFailedTitle', { defaultValue: 'Could not load this conversation' })}
+            {t('session.loadFailedTitle', { defaultValue: '无法加载这个会话' })}
           </div>
           <div className="max-w-[520px] text-[13px] leading-5 text-neutral-500 dark:text-neutral-400">
             {sessionLoadError}
@@ -653,7 +653,7 @@ export default function MessagesPaneV2({
               onClick={onRetrySessionLoad}
               className="inline-flex h-8 items-center rounded-md border border-neutral-200 px-3 text-[13px] font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
             >
-              {t('session.retryLoad', { defaultValue: 'Retry' })}
+              {t('session.retryLoad', { defaultValue: '重试' })}
             </button>
           ) : null}
         </div>
@@ -661,15 +661,15 @@ export default function MessagesPaneV2({
         <div className="mx-auto flex h-full max-w-[720px] items-center justify-center px-6 py-10 text-[13px] text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2">
             <div className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-neutral-400" />
-            <span>{t('loading', { defaultValue: 'Loading...' })}</span>
+            <span>{t('loading', { defaultValue: '加载中...' })}</span>
           </div>
         </div>
       ) : isNewConversationEmpty ? (
         <div className="mx-auto flex h-full max-w-[720px] flex-col items-center justify-center gap-4 px-6 py-10 text-center">
           <div className="text-[15px] font-medium text-neutral-900 dark:text-neutral-100">
             {selectedProject
-              ? t('emptyChat.title', { defaultValue: 'Start a new conversation' })
-              : t('emptyChat.noProject', { defaultValue: 'Pick a project from the sidebar' })}
+              ? t('emptyChat.title', { defaultValue: '开始新的会话' })
+              : t('emptyChat.noProject', { defaultValue: '请从侧边栏选择一个项目' })}
           </div>
           {selectedProject ? (
             <div className="flex flex-col gap-1.5">
@@ -691,21 +691,21 @@ export default function MessagesPaneV2({
           <div className="text-[15px] font-medium text-neutral-900 dark:text-neutral-100">
             {isReadOnlyBackgroundSession
               ? t('emptyChat.readonlyBackgroundTitle', {
-                  defaultValue: 'No displayable messages in this task transcript',
+                  defaultValue: '这个任务记录中没有可显示的消息',
                 })
               : t('emptyChat.emptySessionTitle', {
-                  defaultValue: 'No displayable messages in this conversation',
+                  defaultValue: '这个会话中没有可显示的消息',
                 })}
           </div>
           <div className="max-w-[520px] text-[13px] leading-5 text-neutral-500 dark:text-neutral-400">
             {isReadOnlyBackgroundSession
               ? t('emptyChat.readonlyBackgroundDescription', {
                   defaultValue:
-                    'This read-only background task transcript only contains records the chat view cannot display.',
+                    '这个只读后台任务记录只包含当前聊天视图无法显示的内容。',
                 })
               : t('emptyChat.emptySessionDescription', {
                   defaultValue:
-                    'This conversation exists, but it does not contain messages that can be rendered here.',
+                    '这个会话存在，但里面没有当前页面可渲染的消息。',
                 })}
           </div>
         </div>
@@ -718,7 +718,7 @@ export default function MessagesPaneV2({
         >
           {isLoadingMoreMessages && !isLoadingAllMessages && !allMessagesLoaded ? (
             <div className="pb-3 text-center text-[12px] text-neutral-500 dark:text-neutral-400">
-              {t('messages.loadingOlder', { defaultValue: 'Loading older messages...' })}
+              {t('messages.loadingOlder', { defaultValue: '正在加载更早的消息...' })}
             </div>
           ) : null}
 
@@ -728,7 +728,7 @@ export default function MessagesPaneV2({
                 {t('messages.showingOf', {
                   shown: chatMessages.length,
                   total: totalMessages,
-                  defaultValue: `Showing ${chatMessages.length} of ${totalMessages}`,
+                  defaultValue: `显示 ${chatMessages.length} / ${totalMessages} 条`,
                 })}
               </span>
               <button
@@ -736,7 +736,7 @@ export default function MessagesPaneV2({
                 onClick={loadEarlierMessages}
                 className="text-[12px] text-neutral-700 underline-offset-2 hover:underline dark:text-neutral-300"
               >
-                {t('messages.loadEarlier', { defaultValue: 'Load earlier' })}
+                {t('messages.loadEarlier', { defaultValue: '加载更早消息' })}
               </button>
             </div>
           ) : null}
@@ -747,7 +747,7 @@ export default function MessagesPaneV2({
                 {t('messages.showingLast', {
                   count: visibleMessageCount,
                   total: chatMessages.length,
-                  defaultValue: `Showing last ${visibleMessageCount} of ${chatMessages.length}`,
+                  defaultValue: `显示最近 ${visibleMessageCount} 条，共 ${chatMessages.length} 条`,
                 })}
               </span>
               <button
@@ -755,7 +755,7 @@ export default function MessagesPaneV2({
                 onClick={loadAllMessages}
                 className="text-[12px] text-neutral-700 underline-offset-2 hover:underline dark:text-neutral-300"
               >
-                {t('messages.loadAll', { defaultValue: 'Load all' })}
+                {t('messages.loadAll', { defaultValue: '加载全部' })}
               </button>
             </div>
           ) : null}
@@ -830,7 +830,7 @@ function getLiveStatusStep(
     const progress = workingStatus.compactProgress;
     return {
       id: 'live-compact',
-      title: t('working.compacting', { defaultValue: 'Compacting context...' }),
+      title: t('working.compacting', { defaultValue: '正在压缩上下文...' }),
       detail: progress.label || progress.stage || '',
       phase: 'compact',
       state: progress.state || 'running',
@@ -841,7 +841,7 @@ function getLiveStatusStep(
   if (rawStatus.includes('permission')) {
     return {
       id: 'live-permission',
-      title: t('working.waitingForPermission', { defaultValue: 'Waiting for permission' }),
+      title: t('working.waitingForPermission', { defaultValue: '等待授权' }),
       phase: 'permission',
       state: 'running',
       severity: 'warning',
@@ -850,7 +850,7 @@ function getLiveStatusStep(
   if (rawStatus.includes('compact')) {
     return {
       id: 'live-compact',
-      title: t('working.compacting', { defaultValue: 'Compacting context...' }),
+      title: t('working.compacting', { defaultValue: '正在压缩上下文...' }),
       phase: 'compact',
       state: 'running',
     };
@@ -859,13 +859,13 @@ function getLiveStatusStep(
   return hasAssistantContent
     ? {
         id: 'live-generation',
-        title: t('working.generating', { defaultValue: 'Generating response' }),
+        title: t('working.generating', { defaultValue: '正在生成回复' }),
         phase: 'generation',
         state: 'running',
       }
     : {
         id: 'live-thinking',
-        title: t('working.thinking', { defaultValue: 'Thinking' }),
+        title: t('working.thinking', { defaultValue: '思考中' }),
         phase: 'thinking',
         state: 'running',
       };

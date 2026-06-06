@@ -4,7 +4,7 @@
  * Configures i18next for internationalization support.
  * Features:
  * - Language detection from localStorage
- * - Fallback to English for missing translations
+ * - Fallback to Simplified Chinese for missing translations
  * - Development mode warnings for missing keys
  *
  * Supported locales: en, zh-CN. Other locales were retired during the
@@ -39,18 +39,33 @@ import zhAlwaysOn from './locales/zh-CN/alwaysOn.json';
 import zhRouting from './locales/zh-CN/routing.json';
 // eslint-disable-next-line import-x/order
 import zhCodeEditor from './locales/zh-CN/codeEditor.json';
+// eslint-disable-next-line import-x/order
+import zhTasks from './locales/zh-CN/tasks.json';
 
 import { languages } from './languages.js';
 
+const LANGUAGE_STORAGE_KEY = 'userLanguage';
+const DEFAULT_LANGUAGE_MIGRATION_KEY = 'defaultLanguageMigratedToZh';
+const DEFAULT_LANGUAGE = 'zh-CN';
+
 const getSavedLanguage = () => {
   try {
-    const saved = localStorage.getItem('userLanguage');
+    const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const migratedToChineseDefault = localStorage.getItem(DEFAULT_LANGUAGE_MIGRATION_KEY) === '1';
+    if (saved === 'en' && !migratedToChineseDefault) {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, DEFAULT_LANGUAGE);
+      localStorage.setItem(DEFAULT_LANGUAGE_MIGRATION_KEY, '1');
+      return DEFAULT_LANGUAGE;
+    }
+    if (!migratedToChineseDefault) {
+      localStorage.setItem(DEFAULT_LANGUAGE_MIGRATION_KEY, '1');
+    }
     if (saved && languages.some(lang => lang.value === saved)) {
       return saved;
     }
-    return 'en';
+    return DEFAULT_LANGUAGE;
   } catch {
-    return 'en';
+    return DEFAULT_LANGUAGE;
   }
 };
 
@@ -77,13 +92,14 @@ i18n
         sidebar: zhSidebar,
         chat: zhChat,
         codeEditor: zhCodeEditor,
+        tasks: zhTasks,
         alwaysOn: zhAlwaysOn,
         routing: zhRouting,
       },
     },
 
     lng: getSavedLanguage(),
-    fallbackLng: 'en',
+    fallbackLng: 'zh-CN',
     debug: import.meta.env.DEV,
 
     ns: ['common', 'settings', 'auth', 'sidebar', 'chat', 'codeEditor', 'tasks', 'alwaysOn', 'routing'],
@@ -111,7 +127,7 @@ i18n
 
 i18n.on('languageChanged', (lng) => {
   try {
-    localStorage.setItem('userLanguage', lng);
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lng);
   } catch (error) {
     console.error('Failed to save language preference:', error);
   }

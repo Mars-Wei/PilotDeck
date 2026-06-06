@@ -726,7 +726,7 @@ export function useProjectsState({
         const trimmedTitle = (optimisticTitle ?? '').replace(/\s+/g, ' ').trim();
         const placeholder: ProjectSession = {
           id: sessionId,
-          title: trimmedTitle ? trimmedTitle.slice(0, 80) : 'New session',
+          title: trimmedTitle ? trimmedTitle.slice(0, 80) : '新会话',
           created_at: now,
           updated_at: now,
           lastActivity: now,

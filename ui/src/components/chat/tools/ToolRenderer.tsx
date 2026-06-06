@@ -66,7 +66,7 @@ class ToolRendererErrorBoundary extends React.Component<
     if (this.state.error) {
       return (
         <div className="my-1 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/20 dark:text-amber-200">
-          <div className="font-medium">Tool output could not be rendered.</div>
+          <div className="font-medium">工具输出无法渲染。</div>
           <div className="mt-0.5 opacity-80">{this.props.toolName}</div>
         </div>
       );

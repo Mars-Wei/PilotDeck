@@ -51,9 +51,9 @@ export default function AgentConnectionsStep({
   return (
     <div className="space-y-6">
       <div className="mb-6 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-foreground">Connect Your AI Agents</h2>
+        <h2 className="mb-2 text-2xl font-bold text-foreground">连接你的 AI 智能体</h2>
         <p className="text-muted-foreground">
-          Login to one or more AI coding assistants. All are optional.
+          登录一个或多个 AI 编程助手。所有连接都是可选的。
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export default function AgentConnectionsStep({
       </div>
 
       <div className="pt-2 text-center text-sm text-muted-foreground">
-        <p>You can configure these later in Settings.</p>
+        <p>你也可以稍后在设置中配置这些连接。</p>
       </div>
     </div>
   );
