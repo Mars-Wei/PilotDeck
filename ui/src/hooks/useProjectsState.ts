@@ -205,6 +205,8 @@ const isUpdateAdditive = (
 
 const VALID_TABS: Set<string> = new Set([
   'home',
+  'sessions',
+  'projects',
   'chat',
   'always-on',
   'files',

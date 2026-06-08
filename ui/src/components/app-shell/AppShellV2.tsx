@@ -131,7 +131,7 @@ export default function AppShellV2() {
   });
 
   const isRootHomeRoute = !projectNameParam && !sessionId && !selectedProject;
-  const effectiveActiveTab = isRootHomeRoute ? 'home' : activeTab;
+  const effectiveActiveTab = isRootHomeRoute && activeTab !== 'sessions' && activeTab !== 'projects' ? 'home' : activeTab;
   const homeData = useHomeDashboardData({
     projects: sidebarSharedProps.projects,
     processingSessions,
@@ -190,6 +190,7 @@ export default function AppShellV2() {
 
   useEffect(() => {
     if (projectNameParam || sessionId || selectedProject) return;
+    if (activeTab === 'sessions' || activeTab === 'projects') return;
     if (activeTab !== 'home') {
       setActiveTab('home');
     }

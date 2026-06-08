@@ -71,6 +71,8 @@ export class SmoothTextStream {
   private lastChunkAtMs: number | null = null;
   private lastFrameAtMs: number | null = null;
   private averageCharsPerSecond = DEFAULT_AVERAGE_CHARS_PER_SECOND;
+  private finalizeWhenDrained = false;
+  private finalizeCallbacks: Array<() => void> = [];
 
   constructor(private readonly options: SmoothTextStreamOptions) {}
 
@@ -96,16 +98,29 @@ export class SmoothTextStream {
       this.options.emit(this.renderedContent);
     }
     if (finalize) {
-      this.options.finalize?.();
-      this.targetContent = '';
-      this.renderedContent = '';
-      this.lastChunkAtMs = null;
-      this.lastFrameAtMs = null;
+      this.completeFinalize();
     }
+  }
+
+  finish(onFinalize?: () => void): void {
+    if (onFinalize) {
+      this.finalizeCallbacks.push(onFinalize);
+    }
+
+    if (this.renderedContent === this.targetContent) {
+      this.cancelScheduledFrame();
+      this.completeFinalize();
+      return;
+    }
+
+    this.finalizeWhenDrained = true;
+    this.schedulePump();
   }
 
   cancel(): void {
     this.cancelScheduledFrame();
+    this.finalizeWhenDrained = false;
+    this.finalizeCallbacks = [];
   }
 
   getSnapshot(): SmoothTextStreamSnapshot {
@@ -223,7 +238,25 @@ export class SmoothTextStream {
 
     if (this.renderedContent.length < this.targetContent.length) {
       this.schedulePump();
+      return;
     }
+
+    if (this.finalizeWhenDrained) {
+      this.completeFinalize();
+    }
+  }
+
+  private completeFinalize(): void {
+    this.finalizeWhenDrained = false;
+    this.options.finalize?.();
+    for (const callback of this.finalizeCallbacks) {
+      callback();
+    }
+    this.finalizeCallbacks = [];
+    this.targetContent = '';
+    this.renderedContent = '';
+    this.lastChunkAtMs = null;
+    this.lastFrameAtMs = null;
   }
 
   private get frameMs(): number {

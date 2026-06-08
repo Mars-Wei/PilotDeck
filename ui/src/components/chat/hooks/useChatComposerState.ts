@@ -49,7 +49,7 @@ interface UseChatComposerStateArgs {
   isLoading: boolean;
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
-  sendMessage: (message: unknown) => void;
+  sendMessage: (message: unknown) => boolean;
   sendByCtrlEnter?: boolean;
   onSessionActive?: (sessionId?: string | null) => void;
   onSessionProcessing?: (sessionId?: string | null) => void;
@@ -186,6 +186,7 @@ export function useChatComposerState({
     ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
   >(null);
   const inputValueRef = useRef(input);
+  const submitInFlightRef = useRef(false);
 
   // One-shot flag set by `handleCustomCommand` when re-submitting passthrough
   // slash content (e.g. `/projects` for bundled stubs, `/canvas` for skills).
@@ -620,9 +621,10 @@ export function useChatComposerState({
       event.preventDefault();
       const currentInput = inputValueRef.current;
       const hasAttachments = attachedImages.length > 0;
-      if ((!currentInput.trim() && !hasAttachments) || isLoading || !selectedProject) {
+      if ((!currentInput.trim() && !hasAttachments) || isLoading || submitInFlightRef.current || !selectedProject) {
         return;
       }
+      submitInFlightRef.current = true;
 
       // Intercept slash commands: if input starts with /commandName, execute as command with args.
       // Skip when handleCustomCommand just pushed a passthrough back into the
@@ -637,6 +639,7 @@ export function useChatComposerState({
         const matchedCommand = slashCommands.find((cmd: SlashCommand) => cmd.name === commandName);
         if (matchedCommand) {
           executeCommand(matchedCommand, trimmedInput);
+          submitInFlightRef.current = false;
           setInput('');
           inputValueRef.current = '';
           setAttachedImages([]);
@@ -716,6 +719,7 @@ export function useChatComposerState({
             content: `Failed to upload attachments: ${message}`,
             timestamp: new Date(),
           }, submitTargetSessionId);
+          submitInFlightRef.current = false;
           return;
         }
       }
@@ -781,18 +785,34 @@ export function useChatComposerState({
       const toolsSettings = getToolsSettings();
       const sessionSummary = getNotificationSessionSummary(submitSelectedSession, userVisibleInput);
 
-      startSessionCommand({
-        sendMessage,
-        selectedProject,
-        command: messageContent,
-        sessionId: effectiveSessionId,
-        temporarySessionId: sessionToActivate,
-        toolsSettings,
-        permissionMode,
-        model,
-        sessionSummary,
-        images: uploadedImages,
-      });
+      try {
+        startSessionCommand({
+          sendMessage,
+          selectedProject,
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          temporarySessionId: sessionToActivate,
+          toolsSettings,
+          permissionMode,
+          model,
+          sessionSummary,
+          images: uploadedImages,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addMessage({
+          type: 'error',
+          content: errorMessage,
+          timestamp: new Date(),
+        }, submitTargetSessionId);
+        setIsLoading(false);
+        setCanAbortSession(false);
+        setClaudeStatus(null);
+        setPilotDeckStatus(null);
+        onSessionInactive?.(sessionToActivate);
+        submitInFlightRef.current = false;
+        return;
+      }
 
       setInput('');
       inputValueRef.current = '';
@@ -808,6 +828,9 @@ export function useChatComposerState({
       }
 
       safeLocalStorage.removeItem(`draft_input_${selectedProject.name}`);
+      window.setTimeout(() => {
+        submitInFlightRef.current = false;
+      }, 0);
     },
     [
       selectedSession,

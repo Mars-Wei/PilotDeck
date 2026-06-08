@@ -36,6 +36,8 @@ import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
 
 const ChatInterfaceV2 = lazy(() => import('../../chat-v2/ChatInterfaceV2'));
+const SessionsV2 = lazy(() => import('../../main-content-v2/SessionsV2'));
+const ProjectsV2 = lazy(() => import('../../main-content-v2/ProjectsV2'));
 const AlwaysOnV2 = lazy(() => import('../../main-content-v2/AlwaysOnV2'));
 const FilesV2 = lazy(() => import('../../main-content-v2/FilesV2'));
 const ShellV2 = lazy(() => import('../../main-content-v2/ShellV2'));
@@ -84,6 +86,22 @@ function getConsolePageMeta(
       title: sessionLabel ? '会话' : '会话工作台',
       description: sessionLabel ? `${projectLabel} / ${sessionLabel}` : `${projectLabel} 的智能代理工作区`,
       icon: MessageSquare,
+    };
+  }
+
+  if (activeTab === 'sessions') {
+    return {
+      title: '会话列表',
+      description: '查看所有项目的最近会话、未读和运行状态',
+      icon: MessageSquare,
+    };
+  }
+
+  if (activeTab === 'projects') {
+    return {
+      title: '项目列表',
+      description: '查看所有项目、最近活动和会话数量',
+      icon: FolderOpen,
     };
   }
 
@@ -170,16 +188,23 @@ function ConsolePageFrame({
   meta,
   children,
   dense = false,
+  centered = false,
 }: {
   meta: ConsolePageMeta;
   children: React.ReactNode;
   dense?: boolean;
+  centered?: boolean;
 }) {
   const Icon = meta.icon;
 
   return (
-    <div className="h-full overflow-hidden bg-surface-50 text-surface-900 dark:bg-surface-950 dark:text-surface-100">
-      <div className="flex h-full min-h-0 flex-col px-4 py-4 lg:px-6 lg:py-5">
+    <div className="flex h-full min-w-0 flex-1 overflow-hidden bg-surface-50 text-surface-900 dark:bg-surface-950 dark:text-surface-100">
+      <div
+        className={cn(
+          'flex h-full min-h-0 flex-col px-4 py-4 lg:px-6 lg:py-5',
+          centered && 'mx-auto w-full max-w-6xl',
+        )}
+      >
         <div className="mb-4 flex shrink-0 items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
@@ -313,7 +338,7 @@ function MainContent({
     ) {
       lastUserMsgAtRef.current = new Date().toISOString();
     }
-    sendMessage(message);
+    return sendMessage(message);
   }, [sendMessage]);
 
   const publishPresence = useCallback(() => {
@@ -491,7 +516,7 @@ function MainContent({
     );
   }
 
-  if (!selectedProject && activeTab !== 'dashboard' && activeTab !== 'home') {
+  if (!selectedProject && activeTab !== 'dashboard' && activeTab !== 'home' && activeTab !== 'sessions' && activeTab !== 'projects') {
     return (
       <MainContentStateView
         mode="empty"
@@ -684,6 +709,8 @@ function SplitBody(props: SplitBodyProps) {
   const fullScreenToolTabs = new Set([
     'shell',
     'home',
+    'sessions',
+    'projects',
     'git',
     'always-on',
     'dashboard',
@@ -762,6 +789,18 @@ function SplitBody(props: SplitBodyProps) {
     };
   }, [clampFilesChatWidth, isFilesSplitResizing]);
 
+  const handleSessionListSelect = useCallback(
+    (project: Project, sessionId: string, fallbackSession?: ProjectSession) => {
+      if (onSelectSession) {
+        onSelectSession(project, sessionId, fallbackSession);
+      } else {
+        onNavigateToSession(sessionId);
+      }
+      setActiveTab('chat');
+    },
+    [onNavigateToSession, onSelectSession, setActiveTab],
+  );
+
   const renderTool = () => {
     if (activeTab === 'home') {
       if (!homeDashboardData) return null;
@@ -776,6 +815,33 @@ function SplitBody(props: SplitBodyProps) {
           setActiveTab={setActiveTab}
           homeData={homeDashboardData}
           routingData={routingDashboardData}
+        />
+      );
+    }
+    if (activeTab === 'sessions') {
+      return (
+        <SessionsV2
+          projects={projects}
+          selectedProject={selectedProject}
+          selectedSession={selectedSession}
+          unreadSessionIds={unreadSessionIds}
+          processingSessions={processingSessions}
+          onSelectSession={handleSessionListSelect}
+          onStartNewSession={onStartNewSession}
+          onCreateProject={onCreateProject}
+        />
+      );
+    }
+    if (activeTab === 'projects') {
+      return (
+        <ProjectsV2
+          projects={projects}
+          selectedProject={selectedProject}
+          onSelectProject={(projectName) => {
+            onSelectProjectByName?.(projectName);
+            setActiveTab('chat');
+          }}
+          onCreateProject={onCreateProject}
         />
       );
     }
@@ -820,6 +886,14 @@ function SplitBody(props: SplitBodyProps) {
   const showChat = !showFullScreenTool;
   const keepHiddenChatMounted = showChat || (activeTab !== 'home' && selectedProject !== null);
   const showUnifiedFrame = showFullScreenTool && activeTab !== 'home';
+  const shouldCenterToolFrame = new Set([
+    'sessions',
+    'projects',
+    'always-on',
+    'memory',
+    'skills',
+    'dashboard',
+  ]).has(activeTab);
 
   return (
     <div
@@ -834,7 +908,7 @@ function SplitBody(props: SplitBodyProps) {
       ) : null}
 
       {showUnifiedFrame ? (
-        <ConsolePageFrame meta={pageMeta}>
+        <ConsolePageFrame meta={pageMeta} centered={shouldCenterToolFrame}>
           <div className="h-full min-h-0 overflow-hidden">
             <Suspense fallback={<PaneFallback />}>
               {renderTool()}

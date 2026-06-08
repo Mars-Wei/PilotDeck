@@ -11,7 +11,7 @@ import {
 import type { AppTab, Project } from '../../../types/app';
 import { projectName } from './homeUtils';
 
-export type HomeNavId = AppTab | 'projects';
+export type HomeNavId = AppTab;
 
 type MenuItem = {
   id: HomeNavId;
@@ -39,7 +39,7 @@ export default function HomeSidebar({
 }: HomeSidebarProps) {
   const menuItems: MenuItem[] = [
     { id: 'home', label: '首页', icon: Home },
-    { id: 'chat', label: '会话', icon: MessageSquare, badge: unreadCount > 0 ? String(unreadCount) : undefined },
+    { id: 'sessions', label: '会话', icon: MessageSquare, badge: unreadCount > 0 ? String(unreadCount) : undefined },
     { id: 'projects', label: '项目', icon: FolderOpen },
     { id: 'always-on', label: '任务', icon: Zap, badge: runningCount > 0 ? `${runningCount} 运行中` : undefined },
     { id: 'memory', label: '记忆', icon: Brain },
@@ -52,7 +52,7 @@ export default function HomeSidebar({
       <div className="flex-1 space-y-1 px-2 py-4 lg:px-3">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.id === activeId || (item.id === 'projects' && activeId === 'files');
+          const isActive = item.id === activeId;
           return (
             <button
               key={item.id}

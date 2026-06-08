@@ -5,7 +5,7 @@ import {
   normalizeOpenAIStreamEvent,
   type OpenAIStreamState,
 } from "../providers/openai/stream.js";
-import type { CanonicalModelEvent, ModelProtocol } from "../protocol/canonical.js";
+import type { CanonicalModelEvent, ModelDefinition, ModelProtocol } from "../protocol/canonical.js";
 
 export type StreamNormalizerState = {
   anthropic: AnthropicStreamState;
@@ -23,10 +23,13 @@ export function normalizeStreamEvent(
   protocol: ModelProtocol,
   raw: unknown,
   state: StreamNormalizerState = createStreamNormalizerState(),
+  model?: ModelDefinition,
 ): CanonicalModelEvent[] {
   if (protocol === "anthropic") {
     return normalizeAnthropicStreamEvent(raw, state.anthropic);
   }
 
-  return normalizeOpenAIStreamEvent(raw, state.openai);
+  return normalizeOpenAIStreamEvent(raw, state.openai, {
+    reasoningAsThinking: model?.capabilities.supportsThinking !== false,
+  });
 }

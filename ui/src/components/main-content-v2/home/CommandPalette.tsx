@@ -53,7 +53,8 @@ const NAV_COMMANDS: Array<{
   tab?: AppTab;
 }> = [
   { id: 'home', title: '首页', subtitle: '返回控制台概览', icon: Home, tab: 'home' },
-  { id: 'chat', title: '会话', subtitle: '打开默认工作区会话', icon: Bot, tab: 'chat' },
+  { id: 'sessions', title: '会话', subtitle: '查看所有项目的会话列表', icon: Bot, tab: 'sessions' },
+  { id: 'projects', title: '项目', subtitle: '查看所有项目列表', icon: Folder, tab: 'projects' },
   { id: 'files', title: '文件', subtitle: '查看项目文件', icon: Folder, tab: 'files' },
   { id: 'always-on', title: '后台任务', subtitle: '查看 Always-On 后台任务', icon: Radio, tab: 'always-on' },
   { id: 'tasks', title: '任务', subtitle: '查看 TaskMaster 项目任务', icon: ClipboardList, tab: 'tasks' },

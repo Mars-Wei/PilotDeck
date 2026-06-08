@@ -50,7 +50,7 @@ export async function* streamModel(
   options: ModelRuntimeOptions = {},
 ): AsyncIterable<CanonicalModelEvent> {
   const streamingRequest = { ...request, stream: true };
-  const { provider } = validateModelRequest(streamingRequest, config);
+  const { provider, model } = validateModelRequest(streamingRequest, config);
 
   yield {
     type: "request_started",
@@ -105,7 +105,7 @@ export async function* streamModel(
 
     try {
       for await (const rawEvent of readServerSentEvents(response.body, options.signal)) {
-        for (const event of normalizeStreamEvent(provider.protocol, rawEvent, state)) {
+        for (const event of normalizeStreamEvent(provider.protocol, rawEvent, state, model)) {
           checkpoint.onEvent(event);
           yield event;
         }

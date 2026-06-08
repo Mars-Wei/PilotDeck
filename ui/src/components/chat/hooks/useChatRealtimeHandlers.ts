@@ -179,18 +179,24 @@ export function useChatRealtimeHandlers({
     const flushStream = (sessionId: string, finalize = false) => {
       const state = streamBySessionRef.current.get(sessionId);
       if (!state) return;
-      state.flush(finalize);
       if (finalize) {
-        streamBySessionRef.current.delete(sessionId);
+        state.finish(() => {
+          streamBySessionRef.current.delete(sessionId);
+        });
+        return;
       }
+      state.flush(finalize);
     };
     const flushThinking = (sessionId: string, finalize = false) => {
       const state = thinkingBySessionRef.current.get(sessionId);
       if (!state) return;
-      state.flush(finalize);
       if (finalize) {
-        thinkingBySessionRef.current.delete(sessionId);
+        state.finish(() => {
+          thinkingBySessionRef.current.delete(sessionId);
+        });
+        return;
       }
+      state.flush(finalize);
     };
 
     if (!msg.kind) {

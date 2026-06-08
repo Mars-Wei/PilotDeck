@@ -66,8 +66,8 @@ export default function HomeConsoleV2({
 
   const openTab = useCallback(
     (tab: AppTab) => {
-      if (tab === 'home') {
-        setActiveTab('home');
+      if (tab === 'home' || tab === 'sessions') {
+        setActiveTab(tab);
         return;
       }
       if (!defaultProject && tab !== 'dashboard') {
@@ -140,7 +140,7 @@ export default function HomeConsoleV2({
         <ContinueWork
           sessions={homeData.activeSessions}
           onEnterSession={enterSession}
-          onShowAll={() => openTab('chat')}
+          onShowAll={() => openTab('sessions')}
         />
         <ProjectsOverview
           projects={homeData.recentProjects}

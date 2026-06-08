@@ -63,8 +63,8 @@ export default function HomeChrome({
 
   const openTab = useCallback(
     (tab: AppTab) => {
-      if (tab === 'home') {
-        onSetActiveTab('home');
+      if (tab === 'home' || tab === 'sessions' || tab === 'projects') {
+        onSetActiveTab(tab);
         return;
       }
       if (!defaultProject && tab !== 'dashboard') {
@@ -89,18 +89,9 @@ export default function HomeChrome({
 
   const handleNavClick = useCallback(
     (id: HomeNavId) => {
-      if (id === 'projects') {
-        if (defaultProject) {
-          onSelectProjectByName?.(defaultProject.name);
-          onSetActiveTab('files');
-        } else {
-          onCreateProject?.();
-        }
-        return;
-      }
       openTab(id);
     },
-    [defaultProject, onCreateProject, onSelectProjectByName, onSetActiveTab, openTab],
+    [openTab],
   );
 
   return (

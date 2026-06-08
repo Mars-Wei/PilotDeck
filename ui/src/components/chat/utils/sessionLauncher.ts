@@ -3,7 +3,7 @@ import type { ChatAttachment, PilotDeckSettings, PermissionMode } from '../types
 import { getPilotDeckSettings, safeLocalStorage } from './chatStorage';
 
 type StartSessionOptions = {
-  sendMessage: (message: unknown) => void;
+  sendMessage: (message: unknown) => boolean;
   selectedProject: Project;
   command: string;
   sessionId?: string | null;
@@ -95,7 +95,7 @@ export function startSessionCommand({
     sessionId || temporarySessionId || createTemporarySessionId();
   const resolvedProjectPath = getSelectedProjectPath(selectedProject);
 
-  sendMessage({
+  const sent = sendMessage({
     type: 'pilotdeck-command',
     command,
     options: {
@@ -113,6 +113,10 @@ export function startSessionCommand({
       ...(workspaceCwd ? { workspaceCwd } : {}),
     },
   });
+
+  if (!sent) {
+    throw new Error('聊天连接已断开，请检查 /ws WebSocket 代理或刷新页面后重试。');
+  }
 
   return sessionToActivate;
 }
