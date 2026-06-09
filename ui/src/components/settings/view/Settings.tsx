@@ -41,7 +41,7 @@ type SettingsPage = 'main' | 'config' | 'mcp' | 'permissions' | 'chatInput' | 'c
 type ThemeMode = 'system' | 'light' | 'dark';
 
 const pageFromInitialTab = (tab: string): SettingsPage => {
-  if (tab === 'config') return 'config';
+  if (tab === 'config' || tab.startsWith('config:')) return 'config';
   if (tab === 'mcp') return 'mcp';
   if (tab === 'permissions') return 'permissions';
   return 'main';
@@ -119,7 +119,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'appearance' }:
               />
             )}
 
-            {page === 'config' && <PilotDeckConfigTab projects={projects} />}
+            {page === 'config' && <PilotDeckConfigTab projects={projects} initialSection={initialTab.split(':')[1]} />}
             {page === 'mcp' && <McpServersTab projects={projects} />}
             {page === 'permissions' && <PermissionsSettingsTab />}
             {page === 'chatInput' && <ChatInputSettingsPage />}

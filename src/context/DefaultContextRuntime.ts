@@ -168,6 +168,14 @@ export class DefaultContextRuntime implements ContextRuntime {
     });
 
     const parts = [...prompt.parts];
+    if (this.memoryResolver) {
+      parts.push([
+        "## Long-Term Memory",
+        "This runtime has managed long-term memory enabled.",
+        "When the user explicitly asks you to remember, save, or record a preference/fact for the future, acknowledge it directly. Do not say you lack persistent memory and do not create ad-hoc memory files.",
+        "The runtime captures the turn and persists explicit memory requests after the response.",
+      ].join("\n"));
+    }
     if (this.memoryAttachmentBuilder) {
       const memory = await this.memoryAttachmentBuilder.build({
         query: extractRecentUserText(projection.messages) ?? "",

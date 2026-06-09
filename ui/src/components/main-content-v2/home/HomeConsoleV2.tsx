@@ -83,7 +83,7 @@ export default function HomeConsoleV2({
   );
 
   const startNewSession = useCallback(
-    (prompt?: string) => {
+    (prompt?: string, options: { autoSubmit?: boolean } = {}) => {
       const project = defaultProject;
       if (!project) {
         onCreateProject?.();
@@ -94,8 +94,18 @@ export default function HomeConsoleV2({
       setActiveTab('chat');
       if (prompt) {
         window.sessionStorage.setItem('pilotdeck-home-pending-prompt', prompt);
+        if (options.autoSubmit) {
+          window.sessionStorage.setItem('pilotdeck-home-pending-prompt-autosubmit', prompt);
+        } else {
+          window.sessionStorage.removeItem('pilotdeck-home-pending-prompt-autosubmit');
+        }
         window.setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('pilotdeck-home-prompt', { detail: { prompt } }));
+          window.dispatchEvent(new CustomEvent('pilotdeck-home-prompt', {
+            detail: {
+              prompt,
+              autoSubmit: Boolean(options.autoSubmit),
+            },
+          }));
         }, 0);
       }
     },
@@ -122,7 +132,7 @@ export default function HomeConsoleV2({
           }}
           onNewTask={() => openTab('always-on')}
           onImportDoc={() => openTab('files')}
-          onQuickSubmit={(text) => startNewSession(text)}
+          onQuickSubmit={(text) => startNewSession(text, { autoSubmit: true })}
         />
         <TodaySummary
           recentCost={recentCost}

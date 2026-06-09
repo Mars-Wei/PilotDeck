@@ -47,11 +47,13 @@ interface UseChatComposerStateArgs {
   permissionMode: PermissionMode | string;
   cycleRunMode: () => void;
   isLoading: boolean;
+  isChatConnected?: boolean;
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
   sendMessage: (message: unknown) => boolean;
   sendByCtrlEnter?: boolean;
   onSessionActive?: (sessionId?: string | null) => void;
+  onSessionInactive?: (sessionId?: string | null) => void;
   onSessionProcessing?: (sessionId?: string | null) => void;
   onSessionActivityBump?: (
     projectName: string,
@@ -106,6 +108,7 @@ const createFakeSubmitEvent = () => {
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024;
 const MAX_ATTACHMENTS = 10;
 const HOME_PROMPT_STORAGE_KEY = 'pilotdeck-home-pending-prompt';
+const HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY = 'pilotdeck-home-pending-prompt-autosubmit';
 
 type UploadedAttachmentFile = {
   name: string;
@@ -144,11 +147,13 @@ export function useChatComposerState({
   permissionMode,
   cycleRunMode,
   isLoading,
+  isChatConnected = true,
   canAbortSession,
   tokenBudget,
   sendMessage,
   sendByCtrlEnter,
   onSessionActive,
+  onSessionInactive,
   onSessionProcessing,
   onSessionActivityBump,
   onInputFocusChange,
@@ -179,6 +184,7 @@ export function useChatComposerState({
   const [imageErrors, setImageErrors] = useState<Map<string, string>>(new Map());
   const [isTextareaExpanded, setIsTextareaExpanded] = useState(false);
   const [thinkingMode, setThinkingMode] = useState('none');
+  const [pendingHomeAutoSubmit, setPendingHomeAutoSubmit] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
@@ -187,6 +193,8 @@ export function useChatComposerState({
   >(null);
   const inputValueRef = useRef(input);
   const submitInFlightRef = useRef(false);
+  const pendingHomeAutoSubmitRef = useRef<string | null>(null);
+  const homePromptDraftGuardRef = useRef<{ projectName: string | null; prompt: string } | null>(null);
 
   // One-shot flag set by `handleCustomCommand` when re-submitting passthrough
   // slash content (e.g. `/projects` for bundled stubs, `/canvas` for skills).
@@ -624,6 +632,14 @@ export function useChatComposerState({
       if ((!currentInput.trim() && !hasAttachments) || isLoading || submitInFlightRef.current || !selectedProject) {
         return;
       }
+      if (!isChatConnected) {
+        addMessage({
+          type: 'error',
+          content: '聊天连接正在重连，请稍后再试。',
+          timestamp: new Date(),
+        }, selectedSession?.id || currentSessionId || null);
+        return;
+      }
       submitInFlightRef.current = true;
 
       // Intercept slash commands: if input starts with /commandName, execute as command with args.
@@ -647,6 +663,9 @@ export function useChatComposerState({
           setImageErrors(new Map());
           resetCommandMenuState();
           setIsTextareaExpanded(false);
+          pendingHomeAutoSubmitRef.current = null;
+          setPendingHomeAutoSubmit(null);
+          homePromptDraftGuardRef.current = null;
           if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
           }
@@ -816,6 +835,9 @@ export function useChatComposerState({
 
       setInput('');
       inputValueRef.current = '';
+      pendingHomeAutoSubmitRef.current = null;
+      setPendingHomeAutoSubmit(null);
+      homePromptDraftGuardRef.current = null;
       resetCommandMenuState();
       setAttachedImages([]);
       setUploadingImages(new Map());
@@ -838,6 +860,7 @@ export function useChatComposerState({
       model,
       currentSessionId,
       executeCommand,
+      isChatConnected,
       isLoading,
       onSessionActive,
       onSessionActivityBump,
@@ -869,6 +892,17 @@ export function useChatComposerState({
 
   useEffect(() => {
     if (!selectedProject) {
+      return;
+    }
+    const pendingHomePrompt =
+      typeof window !== 'undefined'
+        ? window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY)
+        : null;
+    const guardedHomePrompt = homePromptDraftGuardRef.current;
+    if (
+      pendingHomePrompt ||
+      (guardedHomePrompt && guardedHomePrompt.projectName === selectedProject.name)
+    ) {
       return;
     }
     const savedInput = safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
@@ -932,11 +966,15 @@ export function useChatComposerState({
   );
 
   const applyIncomingPrompt = useCallback(
-    (prompt: string) => {
+    (prompt: string, options: { autoSubmit?: boolean } = {}) => {
       const normalized = prompt.replace(/\s+/g, ' ').trim();
       if (!normalized) return;
       setInput(normalized);
       inputValueRef.current = normalized;
+      homePromptDraftGuardRef.current = {
+        projectName: selectedProject?.name ?? null,
+        prompt: normalized,
+      };
       resetCommandMenuState();
       requestAnimationFrame(() => {
         const node = textareaRef.current;
@@ -946,8 +984,12 @@ export function useChatComposerState({
         node.style.height = 'auto';
         node.style.height = `${node.scrollHeight}px`;
       });
+      if (options.autoSubmit) {
+        pendingHomeAutoSubmitRef.current = normalized;
+        setPendingHomeAutoSubmit(normalized);
+      }
     },
-    [resetCommandMenuState],
+    [resetCommandMenuState, selectedProject?.name],
   );
 
   useEffect(() => {
@@ -956,16 +998,25 @@ export function useChatComposerState({
     const consumeStoredPrompt = () => {
       const stored = window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY);
       if (!stored) return;
+      const autoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+      const autoSubmit = autoSubmitPrompt === '1' || autoSubmitPrompt === stored;
       window.sessionStorage.removeItem(HOME_PROMPT_STORAGE_KEY);
-      applyIncomingPrompt(stored);
+      applyIncomingPrompt(stored, { autoSubmit });
     };
 
     consumeStoredPrompt();
 
     const handleHomePrompt = (event: Event) => {
-      const detail = (event as CustomEvent<{ prompt?: unknown }>).detail;
+      const detail = (event as CustomEvent<{ prompt?: unknown; autoSubmit?: unknown }>).detail;
       if (typeof detail?.prompt === 'string') {
-        applyIncomingPrompt(detail.prompt);
+        const stored = window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY);
+        if (!stored || stored !== detail.prompt) return;
+        const autoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+        const autoSubmit = detail.autoSubmit === true
+          || autoSubmitPrompt === '1'
+          || autoSubmitPrompt === detail.prompt;
+        window.sessionStorage.removeItem(HOME_PROMPT_STORAGE_KEY);
+        applyIncomingPrompt(detail.prompt, { autoSubmit });
       }
     };
 
@@ -974,6 +1025,49 @@ export function useChatComposerState({
       window.removeEventListener('pilotdeck-home-prompt', handleHomePrompt);
     };
   }, [applyIncomingPrompt, selectedProject]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const storedAutoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+    if (!storedAutoSubmitPrompt || pendingHomeAutoSubmitRef.current || pendingHomeAutoSubmit) {
+      return;
+    }
+    if (input.trim() !== storedAutoSubmitPrompt) {
+      return;
+    }
+    pendingHomeAutoSubmitRef.current = storedAutoSubmitPrompt;
+    setPendingHomeAutoSubmit(storedAutoSubmitPrompt);
+  }, [input, pendingHomeAutoSubmit]);
+
+  useEffect(() => {
+    const storedAutoSubmitPrompt =
+      typeof window !== 'undefined'
+        ? window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY)
+        : null;
+    const pendingPrompt = pendingHomeAutoSubmit || pendingHomeAutoSubmitRef.current || storedAutoSubmitPrompt;
+    if (
+      !pendingPrompt ||
+      !selectedProject ||
+      isLoading ||
+      submitInFlightRef.current ||
+      !isChatConnected ||
+      !handleSubmitRef.current
+    ) {
+      return;
+    }
+    if (input.trim() !== pendingPrompt || inputValueRef.current.trim() !== pendingPrompt) {
+      return;
+    }
+
+    pendingHomeAutoSubmitRef.current = null;
+    setPendingHomeAutoSubmit(null);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+    }
+    void handleSubmitRef.current(createFakeSubmitEvent());
+  }, [input, isChatConnected, isLoading, pendingHomeAutoSubmit, selectedProject]);
 
   const insertAtCursor = useCallback(
     (char: string) => {

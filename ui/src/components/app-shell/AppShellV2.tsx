@@ -108,6 +108,8 @@ export default function AppShellV2() {
     activeTab,
     isLoadingProjects,
     externalMessageUpdate,
+    showSettings,
+    settingsInitialTab,
     setActiveTab,
     setSelectedSession,
     setIsInputFocused,
@@ -337,7 +339,8 @@ export default function AppShellV2() {
     }
   }, [isConnected, selectedSession?.id, sendMessage]);
 
-  const onShowSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
+  const onShowSettings = useCallback(() => openSettings('appearance'), [openSettings]);
+  const onOpenApiKeys = useCallback(() => openSettings('config:models'), [openSettings]);
   const onCloseSettings = useCallback(() => setShowSettings(false), [setShowSettings]);
 
   // Project creation wizard (local existing / new local / github clone). The
@@ -455,9 +458,10 @@ export default function AppShellV2() {
           alwaysOnError={homeData.alwaysOnError}
           onSetActiveTab={handleSelectTab}
           onSelectProjectByName={handleSelectProjectByName}
-          onOpenSession={handleSelectSession}
+          onOpenSession={(item) => handleSelectSession(item.project, item.session.id, item.session)}
           onCreateProject={handleOpenNewProject}
           onShowSettings={onShowSettings}
+          onOpenApiKeys={onOpenApiKeys}
         >
           <MainAreaV2
             projects={sidebarSharedProps.projects}
@@ -466,6 +470,7 @@ export default function AppShellV2() {
             activeTab={effectiveActiveTab}
             setActiveTab={handleSelectTab}
             ws={ws}
+            isConnected={isConnected}
             sendMessage={sendMessage}
             latestMessage={latestMessage}
             isMobile={isMobile}
@@ -497,14 +502,14 @@ export default function AppShellV2() {
         </HomeChrome>
       </main>
 
-      {sidebarSharedProps.showSettings
+      {showSettings
         ? ReactDOM.createPortal(
             <Suspense fallback={<PortalFallback label="加载设置..." />}>
               <SettingsComponent
-                isOpen={sidebarSharedProps.showSettings}
+                isOpen={showSettings}
                 onClose={onCloseSettings}
                 projects={sidebarSharedProps.projects.map(normalizeProjectForSettings)}
-                initialTab={sidebarSharedProps.settingsInitialTab || 'appearance'}
+                initialTab={settingsInitialTab || 'appearance'}
               />
             </Suspense>,
             document.body,

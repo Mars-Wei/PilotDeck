@@ -1336,8 +1336,16 @@ function renderUserSummary() {
   clearNode(userSummaryEl);
   const summary = state.userSummary;
   const identityBackground = summary?.identityBackground || [];
+  const userNotes = (state.overview?.recentMemoryFiles || [])
+    .filter((entry) => entry.type === "user" && String(entry.relativePath || "").includes("UserIdentityNotes/"))
+    .slice(0, 12);
   if (!summary || !identityBackground.length) {
-    userSummaryEl.append(el("div", "empty-state", t("user.emptySummary")));
+    if (userNotes.length === 0) {
+      userSummaryEl.append(el("div", "empty-state", t("user.emptySummary")));
+    } else {
+      userSummaryEl.append(el("div", "empty-state", t("user.emptySummary")));
+      userNotes.forEach((record) => userSummaryEl.append(buildEntryCard(record)));
+    }
     updateCounts(); applyPageChrome(); return;
   }
   const card = el("div", "entry-card"); card.dataset.kind = "feedback";

@@ -39,37 +39,40 @@ const useWebSocketProviderState = (): WebSocketContextType => {
   const wsRef = useRef<WebSocket | null>(null);
   const unmountedRef = useRef(false); // Track if component is unmounted
   const hasConnectedRef = useRef(false); // Track if we've ever connected (to detect reconnects)
+  const connectionIdRef = useRef(0);
   const [latestMessage, setLatestMessage] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const subscribersRef = useRef<Set<WSSubscriber>>(new Set());
   const { token } = useAuth();
 
-  useEffect(() => {
-    connect();
-    
-    return () => {
-      unmountedRef.current = true;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, [token]); // everytime token changes, we reconnect
-
   const connect = useCallback(() => {
     if (unmountedRef.current) return; // Prevent connection if unmounted
     try {
+      const connectionId = connectionIdRef.current + 1;
+      connectionIdRef.current = connectionId;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+
       // Construct WebSocket URL
       const wsUrl = buildWebSocketUrl(token);
 
       if (!wsUrl) return console.warn('No authentication token found for WebSocket connection');
       
       const websocket = new WebSocket(wsUrl);
+      wsRef.current = websocket;
+      setIsConnected(false);
+
+      const isCurrentConnection = () =>
+        !unmountedRef.current && connectionIdRef.current === connectionId && wsRef.current === websocket;
 
       websocket.onopen = () => {
+        if (!isCurrentConnection()) {
+          websocket.close();
+          return;
+        }
         setIsConnected(true);
         wsRef.current = websocket;
         if (hasConnectedRef.current) {
@@ -87,6 +90,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       };
 
       websocket.onmessage = (event) => {
+        if (!isCurrentConnection()) return;
         try {
           const data = JSON.parse(event.data);
           // Synchronously fan out to subscribers BEFORE the React state
@@ -111,6 +115,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       };
 
       websocket.onclose = () => {
+        if (!isCurrentConnection()) return;
         setIsConnected(false);
         wsRef.current = null;
         
@@ -122,6 +127,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       };
 
       websocket.onerror = (error) => {
+        if (!isCurrentConnection()) return;
         console.error('WebSocket error:', error);
       };
 
@@ -129,6 +135,26 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       console.error('Error creating WebSocket connection:', error);
     }
   }, [token]); // everytime token changes, we reconnect
+
+  useEffect(() => {
+    unmountedRef.current = false;
+    connect();
+
+    return () => {
+      unmountedRef.current = true;
+      connectionIdRef.current += 1;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      const socket = wsRef.current;
+      wsRef.current = null;
+      setIsConnected(false);
+      if (socket && socket.readyState !== WebSocket.CLOSED) {
+        socket.close();
+      }
+    };
+  }, [connect]); // everytime token changes, we reconnect
 
   const sendMessage = useCallback((message: any) => {
     const socket = wsRef.current;

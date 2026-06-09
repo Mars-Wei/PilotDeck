@@ -189,6 +189,7 @@ export interface ChatInterfaceProps {
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   ws: WebSocket | null;
+  isConnected?: boolean;
   sendMessage: (message: unknown) => boolean;
   latestMessage: any;
   onFileOpen?: (filePath: string, diffInfo?: any) => void;

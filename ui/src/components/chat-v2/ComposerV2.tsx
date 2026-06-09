@@ -85,6 +85,7 @@ export type ComposerV2Props = {
   isDragActive: boolean;
 
   isLoading: boolean;
+  isChatConnected?: boolean;
   canAbortSession: boolean;
   isAbortPending?: boolean;
   isSubmitPending?: boolean;
@@ -276,6 +277,7 @@ export default function ComposerV2({
   getInputProps,
   isDragActive,
   isLoading,
+  isChatConnected = true,
   canAbortSession,
   isAbortPending = false,
   isSubmitPending = false,
@@ -309,7 +311,7 @@ export default function ComposerV2({
 
   const hasDraftContent = input.trim().length > 0 || attachedImages.length > 0;
   const hasUploadingImages = uploadingImages.size > 0;
-  const disabled = !hasDraftContent || isLoading || isSubmitPending || hasUploadingImages;
+  const disabled = !hasDraftContent || !isChatConnected || isLoading || isSubmitPending || hasUploadingImages;
   const contextStatus = getContextStatus(tokenBudget);
   const selectedPermissionOption =
     PERMISSION_MODE_OPTIONS.find((option) => option.mode === permissionMode) ||
@@ -801,7 +803,9 @@ export default function ComposerV2({
                           (isSubmitPending || hasUploadingImages) && 'cursor-wait',
                         )}
                         title={
-                          isSubmitPending || hasUploadingImages
+                          !isChatConnected
+                            ? (t('input.reconnecting', { defaultValue: '聊天连接正在重连...' }) as string)
+                            : isSubmitPending || hasUploadingImages
                             ? (t('input.sending', { defaultValue: '发送中...' }) as string)
                             : (t('input.send', { defaultValue: '发送' }) as string)
                         }

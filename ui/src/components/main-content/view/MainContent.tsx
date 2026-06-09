@@ -256,6 +256,7 @@ function MainContent({
   activeTab,
   setActiveTab,
   ws,
+  isConnected = true,
   sendMessage,
   latestMessage,
   isMobile,
@@ -538,6 +539,7 @@ function MainContent({
           tasksEnabled={tasksEnabled}
           setActiveTab={setActiveTab}
           ws={ws}
+          isConnected={isConnected}
           sendMessage={trackedSendMessage}
           latestMessage={latestMessage}
           handleFileOpen={handleFileOpen}
@@ -615,6 +617,7 @@ type SplitBodyProps = {
   tasksEnabled: boolean;
   setActiveTab: (tab: any) => void;
   ws: any;
+  isConnected?: boolean;
   sendMessage: any;
   latestMessage: any;
   handleFileOpen: (filePath: string, diffInfo?: CodeEditorDiffInfo | null) => void;
@@ -661,6 +664,7 @@ function SplitBody(props: SplitBodyProps) {
     tasksEnabled,
     setActiveTab,
     ws,
+    isConnected = true,
     sendMessage,
     latestMessage,
     handleFileOpen,
@@ -839,7 +843,7 @@ function SplitBody(props: SplitBodyProps) {
           selectedProject={selectedProject}
           onSelectProject={(projectName) => {
             onSelectProjectByName?.(projectName);
-            setActiveTab('chat');
+            setActiveTab('sessions');
           }}
           onCreateProject={onCreateProject}
         />
@@ -943,6 +947,7 @@ function SplitBody(props: SplitBodyProps) {
                   selectedProject={selectedProject}
                   selectedSession={selectedSession}
                   ws={ws}
+                  isConnected={isConnected}
                   sendMessage={sendMessage}
                   latestMessage={latestMessage}
                   onFileOpen={handleFileOpen}

@@ -30,6 +30,7 @@ function ChatInterfaceV2({
   selectedProject,
   selectedSession,
   ws,
+  isConnected = true,
   sendMessage,
   // latestMessage is intentionally not consumed here — useChatRealtimeHandlers
   // now subscribes to the WebSocket directly so React 18 state batching can't
@@ -102,6 +103,7 @@ function ChatInterfaceV2({
 
   const effectivePermissionMode =
     runMode === 'plan' ? 'plan' : permissionMode;
+  const isChatConnected = isConnected || ws?.readyState === WebSocket.OPEN;
 
   const {
     chatMessages,
@@ -204,11 +206,13 @@ function ChatInterfaceV2({
     permissionMode: effectivePermissionMode,
     cycleRunMode,
     isLoading,
+    isChatConnected,
     canAbortSession,
     tokenBudget,
     sendMessage,
     sendByCtrlEnter,
     onSessionActive,
+    onSessionInactive,
     onSessionProcessing,
     onSessionActivityBump,
     onInputFocusChange,
@@ -402,6 +406,7 @@ function ChatInterfaceV2({
       getInputProps={getInputProps as (...args: unknown[]) => Record<string, unknown>}
       isDragActive={isDragActive}
       isLoading={isLoading}
+      isChatConnected={isChatConnected}
       canAbortSession={canAbortSession}
       isAbortPending={isAbortPending}
       tokenBudget={tokenBudget}

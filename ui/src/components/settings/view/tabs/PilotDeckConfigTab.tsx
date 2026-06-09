@@ -211,6 +211,10 @@ const SECTION_ICONS: Record<SectionId, LucideIcon> = {
   customEnv: FileCog,
 };
 
+function normalizeSectionId(section?: string): SectionId | null {
+  return SECTIONS.some((item) => item.id === section) ? (section as SectionId) : null;
+}
+
 // ── Config status presentation ──────────────────────────────────────────
 
 type SubsystemKey = 'processEnv' | 'memory' | 'router' | 'gateway';
@@ -2967,7 +2971,13 @@ function ConfigSectionHome({ onSelect }: { onSelect: (section: SectionId) => voi
 
 // ── Main tab ───────────────────────────────────────────────────────────
 
-export default function PilotDeckConfigTab({ projects = [] }: { projects?: SettingsProject[] }) {
+export default function PilotDeckConfigTab({
+  projects = [],
+  initialSection,
+}: {
+  projects?: SettingsProject[];
+  initialSection?: string;
+}) {
   const { t } = useTranslation('settings');
   const {
     path,
@@ -2991,8 +3001,15 @@ export default function PilotDeckConfigTab({ projects = [] }: { projects?: Setti
 
 	  // Active form section. Null means the config page is showing its grouped
   // navigation home, matching the outer Settings page interaction model.
-  const [activeSection, setActiveSection] = useState<SectionId | null>(null);
+  const [activeSection, setActiveSection] = useState<SectionId | null>(() => normalizeSectionId(initialSection));
   const [showConfigDetails, setShowConfigDetails] = useState(false);
+
+  useEffect(() => {
+    const nextSection = normalizeSectionId(initialSection);
+    if (nextSection) {
+      setActiveSection(nextSection);
+    }
+  }, [initialSection]);
 
   // Parse `raw` into a typed config for the form. Memoised so we don't
   // reparse on every keystroke unrelated to YAML, but raw IS the source of

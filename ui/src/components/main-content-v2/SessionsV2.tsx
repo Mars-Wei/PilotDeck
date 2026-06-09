@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Circle,
   Clock3,
@@ -76,7 +76,7 @@ export default function SessionsV2({
   onCreateProject,
 }: SessionsV2Props) {
   const [query, setQuery] = useState('');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [projectFilter, setProjectFilter] = useState<string>(() => selectedProject?.name ?? 'all');
   const defaultProject = useMemo(() => pickDefaultProject(projects, selectedProject), [projects, selectedProject]);
   const allSessions = useMemo(() => flattenSessions(projects), [projects]);
   const loadedSessionCount = allSessions.length;
@@ -85,6 +85,10 @@ export default function SessionsV2({
     [projects],
   );
   const hasUnloadedSessions = totalSessionCount > loadedSessionCount;
+
+  useEffect(() => {
+    setProjectFilter(selectedProject?.name ?? 'all');
+  }, [selectedProject?.name]);
 
   const filteredSessions = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -103,6 +107,18 @@ export default function SessionsV2({
 
   const unreadCount = unreadSessionIds.size;
   const runningCount = Array.from(processingSessions).length;
+  const hasSearchQuery = query.trim().length > 0;
+  const filteredProjectName = projects.find((project) => project.name === projectFilter);
+  const emptyTitle = hasSearchQuery
+    ? '没有匹配的会话'
+    : projectFilter !== 'all'
+      ? '该项目暂无会话'
+      : '暂无会话';
+  const emptyDescription = hasSearchQuery
+    ? '换一个关键词或项目筛选条件后再试。'
+    : projectFilter !== 'all'
+      ? `${filteredProjectName ? projectName(filteredProjectName) : '该项目'} 还没有会话，新建会话后会显示在这里。`
+      : '开始新会话后，这里会显示所有项目的会话列表。';
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white text-surface-900 dark:bg-surface-900 dark:text-surface-100">
@@ -232,12 +248,10 @@ export default function SessionsV2({
               <MessageSquare className="h-6 w-6" strokeWidth={1.75} />
             </span>
             <h2 className="text-sm font-semibold text-surface-900 dark:text-surface-100">
-              {query || projectFilter !== 'all' ? '没有匹配的会话' : '暂无会话'}
+              {emptyTitle}
             </h2>
             <p className="mt-1 max-w-sm text-sm text-surface-500 dark:text-surface-400">
-              {query || projectFilter !== 'all'
-                ? '换一个关键词或项目筛选条件后再试。'
-                : '开始新会话后，这里会显示所有项目的会话列表。'}
+              {emptyDescription}
             </p>
           </div>
         )}

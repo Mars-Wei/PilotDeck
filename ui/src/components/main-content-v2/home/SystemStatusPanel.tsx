@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   Activity,
-  CircleHelp,
   KeyRound,
   RadioTower,
   Router,
@@ -25,8 +24,8 @@ type SystemStatusPanelProps = {
   alerts: HomeAlertItem[];
   alwaysOnError: string | null;
   onOpenDashboard: () => void;
-  onOpenAlwaysOn: () => void;
   onOpenSettings: () => void;
+  onOpenApiKeys: () => void;
 };
 
 export default function SystemStatusPanel({
@@ -41,8 +40,8 @@ export default function SystemStatusPanel({
   alerts,
   alwaysOnError,
   onOpenDashboard,
-  onOpenAlwaysOn,
   onOpenSettings,
+  onOpenApiKeys,
 }: SystemStatusPanelProps) {
   const total = routingData?.overall?.total;
   const hasTodayCost = Boolean(homeCost?.hasTodayWindow && homeCost.todayRequestCount > 0);
@@ -180,13 +179,20 @@ export default function SystemStatusPanel({
         </Panel>
 
         <Panel title="快捷操作">
-          <QuickAction icon={Settings} label="设置" onClick={onOpenSettings} />
-          <QuickAction icon={KeyRound} label="API 密钥" onClick={onOpenDashboard} />
-          <QuickAction icon={CircleHelp} label="帮助" onClick={onOpenAlwaysOn} />
+          <QuickAction
+            icon={Settings}
+            label="设置"
+            onClick={onOpenSettings}
+          />
+          <QuickAction
+            icon={KeyRound}
+            label="API 密钥"
+            onClick={onOpenApiKeys}
+          />
           {taskStats.running > 0 ? (
             <button
               type="button"
-              onClick={onOpenAlwaysOn}
+              onClick={onOpenSettings}
               className="mt-2 w-full rounded-lg bg-amber-50 px-3 py-2 text-left text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15"
             >
               {taskStats.running} 个任务运行中

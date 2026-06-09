@@ -268,12 +268,14 @@ function buildWorkspaceSnapshot(repository, { query = '', limit = 100, offset = 
 }
 
 function buildDashboardSnapshot(service, repository, { query = '', selectedProjectId = '' } = {}) {
+  const snapshot = service.snapshot(200);
   return {
     overview: {
-      ...service.overview(),
+      ...snapshot.overview,
       scheduler: getMemorySchedulerStatus(),
+      recentMemoryFiles: snapshot.recentMemoryFiles || [],
     },
-    settings: getGlobalMemorySettings(),
+    settings: snapshot.settings || getGlobalMemorySettings(),
     workspace: buildWorkspaceSnapshot(repository, {
       query,
       limit: 200,

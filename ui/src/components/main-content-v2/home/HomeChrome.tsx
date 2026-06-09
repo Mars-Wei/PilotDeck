@@ -28,6 +28,7 @@ type HomeChromeProps = {
   onOpenSession?: (item: HomeSessionCard) => void;
   onCreateProject?: () => void;
   onShowSettings: () => void;
+  onOpenApiKeys: () => void;
 };
 
 function pickDefaultProject(projects: Project[]): Project | null {
@@ -55,6 +56,7 @@ export default function HomeChrome({
   onOpenSession,
   onCreateProject,
   onShowSettings,
+  onOpenApiKeys,
 }: HomeChromeProps) {
   const defaultProject = useMemo(() => pickDefaultProject(projects), [projects]);
   const homeStatus = useHomeStatus({
@@ -135,8 +137,8 @@ export default function HomeChrome({
           alerts={alerts}
           alwaysOnError={alwaysOnError}
           onOpenDashboard={() => openTab('dashboard')}
-          onOpenAlwaysOn={() => openTab('always-on')}
           onOpenSettings={onShowSettings}
+          onOpenApiKeys={onOpenApiKeys}
         />
       </div>
     </div>
