@@ -87,6 +87,11 @@ export const api = {
     authenticatedFetch(`/api/always-on/events?limit=${encodeURIComponent(limit)}${since ? `&since=${encodeURIComponent(since)}` : ''}`),
   allCronJobs: () =>
     authenticatedFetch('/api/always-on/cron-jobs'),
+  cronCreate: (body) =>
+    authenticatedFetch('/api/always-on/cron-jobs', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   homeStatus: () =>
     authenticatedFetch('/api/home/status'),
   homeSummary: () =>
@@ -239,9 +244,15 @@ export const api = {
 
     // Add a new task
     addTask: (projectName, { prompt, title, description, priority, dependencies }) =>
-      authenticatedFetch(`/api/taskmaster/add-task/${projectName}`, {
+      authenticatedFetch(`/api/taskmaster/add-task/${encodeURIComponent(projectName)}`, {
         method: 'POST',
-        body: JSON.stringify({ prompt, title, description, priority, dependencies }),
+        body: JSON.stringify({
+          prompt,
+          title,
+          description,
+          priority,
+          ...(dependencies ? { dependencies } : {}),
+        }),
       }),
 
     // Parse PRD to generate tasks

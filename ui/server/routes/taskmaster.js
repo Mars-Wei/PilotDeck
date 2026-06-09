@@ -25,6 +25,36 @@ const __dirname = dirname(__filename);
 
 const router = express.Router();
 
+const taskMasterCliArgs = (...args) => ['-y', '-p', 'task-master-ai', 'task-master', ...args];
+
+async function ensureTaskMasterTasksFile(projectPath) {
+    const tasksDir = path.join(projectPath, '.taskmaster', 'tasks');
+    const tasksFilePath = path.join(tasksDir, 'tasks.json');
+
+    try {
+        await fsPromises.access(tasksFilePath, fs.constants.F_OK);
+        return;
+    } catch (error) {
+        // Missing tasks.json is normal for fresh TaskMaster init in newer versions.
+    }
+
+    await fsPromises.mkdir(tasksDir, { recursive: true });
+    await fsPromises.writeFile(
+        tasksFilePath,
+        JSON.stringify({
+            master: {
+                tasks: [],
+                metadata: {
+                    created: new Date().toISOString(),
+                    updated: new Date().toISOString(),
+                    description: 'Default tasks tag',
+                },
+            },
+        }, null, 2),
+        'utf8',
+    );
+}
+
 /**
  * Check if TaskMaster CLI is installed globally
  * @returns {Promise<Object>} Installation status result
@@ -996,7 +1026,7 @@ router.post('/init/:projectName', async (req, res) => {
         }
 
         // Run taskmaster init command
-        const initProcess = spawn('npx', ['task-master', 'init'], {
+        const initProcess = spawn('npx', taskMasterCliArgs('init', '--yes', '--skip-install', '--no-aliases', '--no-git'), {
             cwd: projectPath,
             stdio: ['pipe', 'pipe', 'pipe']
         });
@@ -1014,6 +1044,10 @@ router.post('/init/:projectName', async (req, res) => {
 
         initProcess.on('close', (code) => {
             if (code === 0) {
+                ensureTaskMasterTasksFile(projectPath).catch((error) => {
+                    console.error('Failed to ensure TaskMaster tasks file:', error);
+                });
+
                 // Broadcast TaskMaster project update via WebSocket
                 if (req.app.locals.wss) {
                     broadcastTaskMasterProjectUpdate(
@@ -1040,8 +1074,6 @@ router.post('/init/:projectName', async (req, res) => {
             }
         });
 
-        // Send 'yes' responses to automated prompts
-        initProcess.stdin.write('yes\n');
         initProcess.stdin.end();
 
     } catch (error) {
@@ -1080,14 +1112,19 @@ router.post('/add-task/:projectName', async (req, res) => {
             });
         }
 
+        await ensureTaskMasterTasksFile(projectPath);
+
         // Build the task-master add-task command
-        const args = ['task-master-ai', 'add-task'];
+        const args = taskMasterCliArgs('add-task');
         
-        if (prompt) {
+        if (title && description) {
+            args.push('--title', title);
+            args.push('--description', description);
+            if (prompt && prompt !== description) {
+                args.push('--details', prompt);
+            }
+        } else if (prompt) {
             args.push('--prompt', prompt);
-            args.push('--research'); // Use research for AI-generated tasks
-        } else {
-            args.push('--prompt', `Create a task titled "${title}" with description: ${description}`);
         }
         
         if (priority) {
@@ -1179,7 +1216,7 @@ router.put('/update-task/:projectName/:taskId', async (req, res) => {
 
         // If only updating status, use set-status command
         if (status && Object.keys(req.body).length === 1) {
-            const setStatusProcess = spawn('npx', ['task-master-ai', 'set-status', `--id=${taskId}`, `--status=${status}`], {
+            const setStatusProcess = spawn('npx', taskMasterCliArgs('set-status', `--id=${taskId}`, `--status=${status}`), {
                 cwd: projectPath,
                 stdio: ['pipe', 'pipe', 'pipe']
             });
@@ -1231,7 +1268,7 @@ router.put('/update-task/:projectName/:taskId', async (req, res) => {
             
             const prompt = `Update task with the following changes: ${updates.join(', ')}`;
 
-            const updateProcess = spawn('npx', ['task-master-ai', 'update-task', `--id=${taskId}`, `--prompt=${prompt}`], {
+            const updateProcess = spawn('npx', taskMasterCliArgs('update-task', `--id=${taskId}`, `--prompt=${prompt}`), {
                 cwd: projectPath,
                 stdio: ['pipe', 'pipe', 'pipe']
             });
@@ -1317,7 +1354,7 @@ router.post('/parse-prd/:projectName', async (req, res) => {
         }
 
         // Build the command args
-        const args = ['task-master-ai', 'parse-prd', prdPath];
+        const args = taskMasterCliArgs('parse-prd', prdPath);
         
         if (numTasks) {
             args.push('--num-tasks', numTasks.toString());

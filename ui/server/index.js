@@ -529,6 +529,74 @@ app.get('/api/always-on/cron-jobs', authenticateToken, async (_req, res) => {
     }
 });
 
+app.post('/api/always-on/cron-jobs', authenticateToken, async (req, res) => {
+    try {
+        const {
+            message,
+            prompt,
+            schedule,
+            projectName,
+            projectKey,
+            timezone,
+            mode,
+        } = req.body || {};
+
+        const normalizedMessage = String(message || prompt || '').trim();
+        if (!normalizedMessage) {
+            return res.status(400).json({ error: 'message is required' });
+        }
+
+        if (!schedule || typeof schedule !== 'object') {
+            return res.status(400).json({ error: 'schedule is required' });
+        }
+
+        let normalizedSchedule;
+        if (schedule.type === 'cron' && typeof schedule.expression === 'string' && schedule.expression.trim()) {
+            normalizedSchedule = {
+                type: 'cron',
+                expression: schedule.expression.trim(),
+                ...(schedule.timezone ? { timezone: String(schedule.timezone) } : {}),
+            };
+        } else if (schedule.type === 'once' && typeof schedule.runAt === 'string' && schedule.runAt.trim()) {
+            normalizedSchedule = {
+                type: 'once',
+                runAt: schedule.runAt.trim(),
+            };
+        } else {
+            return res.status(400).json({ error: 'schedule must be a cron expression or future one-time runAt' });
+        }
+
+        let resolvedProjectKey = typeof projectKey === 'string' && projectKey.trim()
+            ? projectKey.trim()
+            : undefined;
+
+        if (!resolvedProjectKey && typeof projectName === 'string' && projectName.trim()) {
+            try {
+                resolvedProjectKey = await extractProjectDirectory(projectName.trim());
+            } catch (error) {
+                return res.status(404).json({
+                    error: 'Project not found',
+                    message: `Project "${projectName}" does not exist`,
+                });
+            }
+        }
+
+        const gateway = await getPilotDeckGateway();
+        const result = await gateway.cronCreate({
+            message: normalizedMessage,
+            schedule: normalizedSchedule,
+            ...(resolvedProjectKey ? { projectKey: resolvedProjectKey } : {}),
+            ...(timezone ? { timezone: String(timezone) } : {}),
+            ...(mode ? { mode } : {}),
+        });
+
+        res.json(result);
+    } catch (error) {
+        console.error('[always-on-cron-create] failed:', error);
+        res.status(500).json({ error: error?.message || 'cron create failed' });
+    }
+});
+
 app.post('/api/always-on/cron-jobs/:taskId/run-now', authenticateToken, async (req, res) => {
     try {
         const gateway = await getPilotDeckGateway();
