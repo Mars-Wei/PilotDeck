@@ -16,7 +16,7 @@
     "error": "错误",
     "tool": "工具",
     "claude": "Claude",
-    "pilotdeck": "PilotDeck",
+    "pilotdeck": "OPC Brain",
     "cursor": "Cursor",
     "codex": "Codex",
     "gemini": "Gemini"
@@ -35,7 +35,7 @@
   "compact": {
     "label": "上下文已压缩",
     "level": "{{level}} 级",
-    "tokens": "压缩前 {{tokens}} tokens",
+    "tokens": "压缩前 {{tokens}} 令牌",
     "stages": {
       "context_collapse": "上下文折叠",
       "session_memory": "会话记忆压缩",
@@ -136,8 +136,8 @@
   "interactive": {
     "title": "交互式提示",
     "waiting": "等待您在 CLI 中响应",
-    "instruction": "请在 PilotDeck 运行的终端中选择一个选项。",
-    "selectedOption": "✓ PilotDeck 选择了选项 {{number}}",
+    "instruction": "请在 OPC Brain 运行的终端中选择一个选项。",
+    "selectedOption": "✓ OPC Brain 选择了选项 {{number}}",
     "instructionDetail": "在 CLI 中，您可以使用方向键或输入数字来交互式地选择此选项。"
   },
   "thinking": {
@@ -226,7 +226,41 @@
       "change": "选择运行模式",
       "agentDescription": "直接处理并执行任务",
       "planDescription": "先产出计划，确认后再执行"
-    }
+    },
+    "contextStatus": "已使用 {{percent}}%。已用 {{used}} / {{total}} 令牌。接近上限时会自动压缩。",
+    "contextStatusTitle": "上下文窗口",
+    "contextStatusUsed": "已使用 {{used}} / {{total}} 令牌。",
+    "contextStatusAutoCompact": "会话接近配置上限时会自动压缩。",
+    "contextStatusUnknown": "上下文用量未知。下一次模型响应后会显示。",
+    "contextStatusUnknownBody": "尚未收到令牌预算。下一次模型响应后会显示。"
+  },
+  "permissionBanner": {
+    "rememberSaved": "允许（已保存）",
+    "remember": "允许并记住",
+    "required": "需要授权",
+    "tool": "工具：",
+    "allowRule": "允许规则：",
+    "viewInput": "查看工具输入",
+    "viewInputs": "查看 {{count}} 个工具输入",
+    "allowOnce": "仅允许一次",
+    "deny": "拒绝",
+    "denyMessage": "用户拒绝了工具调用"
+  },
+  "slash": {
+    "currentModel": "当前模型",
+    "availableModels": "可用模型",
+    "tokenUsage": "令牌用量",
+    "estimatedCost": "预估成本",
+    "input": "输入",
+    "output": "输出",
+    "total": "总计",
+    "model": "模型",
+    "systemStatus": "系统状态",
+    "version": "版本",
+    "uptime": "运行时长",
+    "provider": "供应商",
+    "platform": "平台",
+    "warning": "警告"
   },
   "commandMenu": {
     "empty": "暂无可用命令",
@@ -242,14 +276,14 @@
   "thinkingMode": {
     "selector": {
       "title": "思考模式",
-      "description": "扩展思考给 PilotDeck 更多时间来评估替代方案",
+      "description": "扩展思考给 OPC Brain 更多时间来评估替代方案",
       "active": "激活",
       "tip": "更高的思考模式需要更多时间，但提供更彻底的分析"
     },
     "modes": {
       "none": {
         "name": "标准",
-        "description": "常规 PilotDeck 响应",
+        "description": "常规 OPC Brain 响应",
         "prefix": ""
       },
       "think": {
@@ -286,11 +320,11 @@
       "google": "由 Google 提供"
     },
     "readyPrompt": {
-      "claude": "已就绪：使用 {{model}} 的 PilotDeck。请在下方开始输入您的消息。",
+      "claude": "已就绪：使用 {{model}} 的 OPC Brain。请在下方开始输入您的消息。",
       "cursor": "准备好使用带有 {{model}} 的 Cursor。请在下方开始输入您的消息。",
       "codex": "准备好使用带有 {{model}} 的 Codex。请在下方开始输入您的消息。",
       "gemini": "准备好使用带有 {{model}} 的 Gemini。请在下方开始输入您的消息。",
-      "pilotdeck": "准备好使用带有 {{model}} 的 PilotDeck。请在下方开始输入您的消息。",
+      "pilotdeck": "准备好使用带有 {{model}} 的 OPC Brain。请在下方开始输入您的消息。",
       "default": "请在上方选择一个提供者以开始"
     }
   },
@@ -334,37 +368,37 @@
     },
     "loading": "正在加载终端...",
     "connecting": "正在连接到 Shell...",
-    "startSession": "启动新的 PilotDeck 会话",
+    "startSession": "启动新的 OPC Brain 会话",
     "resumeSession": "恢复会话：{{displayName}}...",
     "runCommand": "在 {{projectName}} 中运行 {{command}}",
-    "startCli": "在 {{projectName}} 中启动 PilotDeck CLI",
+    "startCli": "在 {{projectName}} 中启动 OPC Brain CLI",
     "defaultCommand": "命令"
   },
   "pilotdeckStatus": {
     "actions": {
-      "thinking": "Thinking",
-      "processing": "Processing",
-      "analyzing": "Analyzing",
-      "working": "Working",
-      "computing": "Computing",
-      "reasoning": "Reasoning"
+      "thinking": "思考中",
+      "processing": "处理中",
+      "analyzing": "分析中",
+      "working": "工作中",
+      "computing": "计算中",
+      "reasoning": "推理中"
     },
     "state": {
-      "live": "Live",
-      "paused": "Paused"
+      "live": "实时",
+      "paused": "已暂停"
     },
     "elapsed": {
-      "seconds": "{{count}}s",
-      "minutesSeconds": "{{minutes}}m {{seconds}}s",
-      "label": "{{time}} elapsed",
-      "startingNow": "Starting now"
+      "seconds": "{{count}} 秒",
+      "minutesSeconds": "{{minutes}} 分 {{seconds}} 秒",
+      "label": "已用 {{time}}",
+      "startingNow": "刚刚开始"
     },
     "controls": {
-      "stopGeneration": "Stop Generation",
-      "pressEscToStop": "Press Esc anytime to stop"
+      "stopGeneration": "停止生成",
+      "pressEscToStop": "可随时按 Esc 停止"
     },
     "providers": {
-      "assistant": "Assistant"
+      "assistant": "助手"
     }
   },
   "projectSelection": {
@@ -374,11 +408,29 @@
     "nextTaskPrompt": "开始下一个任务"
   },
   "composer": {
-    "placeholder": "告诉 PilotDeck 你想完成什么…",
-    "welcomePlaceholder": "告诉 PilotDeck 你想完成什么…"
+    "placeholder": "告诉 OPC Brain 你想完成什么…",
+    "welcomePlaceholder": "告诉 OPC Brain 你想完成什么…"
   },
   "welcome": {
     "greetingWithProject": "今天想做点什么？",
     "noProject": "从左侧选择一个项目开始"
+  },
+  "gemini": {
+    "permissionMode": "Gemini 权限模式",
+    "description": "控制 Gemini CLI 如何处理操作审批。",
+    "modes": {
+      "default": {
+        "title": "标准（执行前请求批准）",
+        "description": "Gemini 在执行命令、写入文件和抓取网页资源前会请求批准。"
+      },
+      "autoEdit": {
+        "title": "自动编辑（跳过文件审批）",
+        "description": "Gemini 会自动批准文件编辑和网页抓取，但执行 Shell 命令前仍会询问。"
+      },
+      "yolo": {
+        "title": "全自动（跳过所有权限确认）",
+        "description": "Gemini 会不经确认执行所有操作，请谨慎使用。"
+      }
+    }
   }
 }

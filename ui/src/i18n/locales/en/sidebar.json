@@ -13,11 +13,11 @@
     "untitledSession": "Untitled Session",
     "newSession": "New Session",
     "codexSession": "Codex Session",
-    "fetchingProjects": "Fetching your PilotDeck projects and sessions",
+    "fetchingProjects": "Fetching your OPC Brain projects and sessions",
     "projects": "projects",
     "noMatchingProjects": "No matching projects",
     "tryDifferentSearch": "Try adjusting your search term",
-    "runPilotDeckCli": "Run PilotDeck CLI in a project directory to get started"
+    "runPilotDeckCli": "Run OPC Brain CLI in a project directory to get started"
   },
   "general": {
     "title": "General",
@@ -32,7 +32,7 @@
     "label": "Context menu"
   },
   "app": {
-    "title": "PilotDeck",
+    "title": "OPC Brain",
     "subtitle": "AI coding assistant interface"
   },
   "sessions": {

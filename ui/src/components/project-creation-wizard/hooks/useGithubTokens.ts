@@ -43,7 +43,7 @@ export const useGithubTokens = ({
         }
       } catch (error) {
         if (!isDisposed) {
-          setLoadError(error instanceof Error ? error.message : 'Failed to load GitHub tokens');
+          setLoadError(error instanceof Error ? error.message : '加载 GitHub 令牌失败');
         }
       } finally {
         if (!isDisposed) {

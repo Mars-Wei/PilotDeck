@@ -44,7 +44,7 @@ type SettingsPage = 'main' | 'config' | 'mcp' | 'permissions' | 'chatInput' | 'c
 type ThemeMode = 'system' | 'light' | 'dark';
 
 const pageFromInitialTab = (tab: string): SettingsPage => {
-  if (tab === 'config') return 'config';
+  if (tab === 'config' || tab.startsWith('config:')) return 'config';
   if (tab === 'mcp') return 'mcp';
   if (tab === 'permissions') return 'permissions';
   return 'main';
@@ -122,7 +122,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'appearance' }:
               />
             )}
 
-            {page === 'config' && <PilotDeckConfigTab projects={projects} />}
+            {page === 'config' && <PilotDeckConfigTab projects={projects} initialSection={initialTab.split(':')[1]} />}
             {page === 'mcp' && <McpServersTab projects={projects} />}
             {page === 'permissions' && <PermissionsSettingsTab />}
             {page === 'chatInput' && <ChatInputSettingsPage />}
@@ -548,14 +548,14 @@ function VersionUpdateSection() {
   };
 
   const handleRestart = async () => {
-    document.title = 'Restarting PilotDeck...';
+    document.title = '正在重启 OPC Brain...';
     document.body.innerHTML = '';
     document.body.style.cssText = 'margin:0;background:#0a0a0a;display:flex;align-items:center;justify-content:center;height:100vh';
     document.body.innerHTML = `
       <div style="text-align:center;font-family:system-ui,-apple-system,sans-serif">
         <svg style="width:40px;height:40px;margin-bottom:16px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>
-        <p style="color:#ccc;font-size:1.1rem;margin:0 0 8px">Restarting PilotDeck...</p>
-        <p style="color:#666;font-size:0.8rem;margin:0">Page will reload automatically when server is ready.</p>
+        <p style="color:#ccc;font-size:1.1rem;margin:0 0 8px">正在重启 OPC Brain...</p>
+        <p style="color:#666;font-size:0.8rem;margin:0">服务恢复后页面会自动刷新。</p>
       </div>
       <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
     triggerRestart().catch(() => {});

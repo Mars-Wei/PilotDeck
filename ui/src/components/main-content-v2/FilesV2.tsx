@@ -465,7 +465,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
   if (!selectedProject) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-[13px] text-neutral-500 dark:bg-neutral-950 dark:text-neutral-400">
-        {t('fileTree.selectProject', { defaultValue: 'Pick a project to browse files.' })}
+        {t('fileTree.selectProject', { defaultValue: '选择一个项目以浏览文件。' })}
       </div>
     );
   }
@@ -528,8 +528,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             type="button"
             onClick={() => handleNewFile('', 0)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.context.newFile', { defaultValue: 'New File' }) as string}
-            aria-label={t('fileTree.context.newFile', { defaultValue: 'New File' }) as string}
+            title={t('fileTree.context.newFile', { defaultValue: '新建文件' }) as string}
+            aria-label={t('fileTree.context.newFile', { defaultValue: '新建文件' }) as string}
           >
             <FilePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
@@ -537,8 +537,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             type="button"
             onClick={() => handleNewFolder('', 0)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.context.newFolder', { defaultValue: 'New Folder' }) as string}
-            aria-label={t('fileTree.context.newFolder', { defaultValue: 'New Folder' }) as string}
+            title={t('fileTree.context.newFolder', { defaultValue: '新建文件夹' }) as string}
+            aria-label={t('fileTree.context.newFolder', { defaultValue: '新建文件夹' }) as string}
           >
             <FolderPlus className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
@@ -548,8 +548,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
               onClick={(e) => { e.stopPropagation(); setUploadMenuOpen((open) => !open); }}
               disabled={uploadingProject}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              title={t('fileTree.upload', { defaultValue: 'Upload files or folder' }) as string}
-              aria-label={t('fileTree.upload', { defaultValue: 'Upload files or folder' }) as string}
+              title={t('fileTree.upload', { defaultValue: '上传文件或文件夹' }) as string}
+              aria-label={t('fileTree.upload', { defaultValue: '上传文件或文件夹' }) as string}
             >
               {uploadingProject ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
@@ -564,14 +564,14 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                   onClick={(e) => { e.stopPropagation(); setUploadMenuOpen(false); fileInputRef.current?.click(); }}
                   className="block w-full px-3 py-1.5 text-left text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900"
                 >
-                  {t('fileTree.uploadFiles', { defaultValue: 'Upload files' })}
+                  {t('fileTree.uploadFiles', { defaultValue: '上传文件' })}
                 </button>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setUploadMenuOpen(false); folderInputRef.current?.click(); }}
                   className="block w-full px-3 py-1.5 text-left text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900"
                 >
-                  {t('fileTree.uploadFolder', { defaultValue: 'Upload folder' })}
+                  {t('fileTree.uploadFolder', { defaultValue: '上传文件夹' })}
                 </button>
               </div>
             ) : null}
@@ -601,8 +601,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             onClick={handleDownloadProject}
             disabled={downloadingProject}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.downloadProject', { defaultValue: 'Download project as zip' }) as string}
-            aria-label={t('fileTree.downloadProject', { defaultValue: 'Download project as zip' }) as string}
+            title={t('fileTree.downloadProject', { defaultValue: '下载项目 ZIP' }) as string}
+            aria-label={t('fileTree.downloadProject', { defaultValue: '下载项目 ZIP' }) as string}
           >
             {downloadingProject ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
@@ -615,8 +615,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             onClick={handleDeleteActive}
             disabled={!activePath}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-40 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.deleteSelected', { defaultValue: 'Delete selected' }) as string}
-            aria-label={t('fileTree.deleteSelected', { defaultValue: 'Delete selected' }) as string}
+            title={t('fileTree.deleteSelected', { defaultValue: '删除选中项' }) as string}
+            aria-label={t('fileTree.deleteSelected', { defaultValue: '删除选中项' }) as string}
           >
             <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
@@ -625,8 +625,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             onClick={refreshFiles}
             disabled={loading}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.refresh', { defaultValue: 'Refresh' }) as string}
-            aria-label={t('fileTree.refresh', { defaultValue: 'Refresh' }) as string}
+            title={t('fileTree.refresh', { defaultValue: '刷新' }) as string}
+            aria-label={t('fileTree.refresh', { defaultValue: '刷新' }) as string}
           >
             <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} strokeWidth={1.75} />
           </button>
@@ -635,8 +635,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
             onClick={collapseAll}
             disabled={!hasExpanded}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 disabled:opacity-40 dark:text-neutral-300 dark:hover:bg-neutral-900"
-            title={t('fileTree.collapseAll', { defaultValue: 'Collapse all' }) as string}
-            aria-label={t('fileTree.collapseAll', { defaultValue: 'Collapse all' }) as string}
+            title={t('fileTree.collapseAll', { defaultValue: '全部折叠' }) as string}
+            aria-label={t('fileTree.collapseAll', { defaultValue: '全部折叠' }) as string}
           >
             <ChevronsDownUp className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
@@ -645,8 +645,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
               type="button"
               onClick={onClose}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              title={t('fileTree.close', { defaultValue: 'Close file tree' }) as string}
-              aria-label={t('fileTree.close', { defaultValue: 'Close file tree' }) as string}
+              title={t('fileTree.close', { defaultValue: '关闭文件树' }) as string}
+              aria-label={t('fileTree.close', { defaultValue: '关闭文件树' }) as string}
             >
               <X className="h-3.5 w-3.5" strokeWidth={1.75} />
             </button>
@@ -661,11 +661,11 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
         {loading && files.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-6 text-xxs text-neutral-500 dark:text-neutral-400">
             <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.75} />
-            <span>{t('loading', { defaultValue: 'Loading…' })}</span>
+            <span>{t('loading', { defaultValue: '加载中...' })}</span>
           </div>
         ) : flat.length === 0 ? (
           <div className="py-6 text-center text-xxs text-neutral-500 dark:text-neutral-400">
-            {t('fileTree.empty', { defaultValue: 'This project is empty.' })}
+            {t('fileTree.empty', { defaultValue: '这个项目是空的。' })}
           </div>
         ) : (
           <ul className="space-y-0.5 px-4">
@@ -760,8 +760,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                           type="button"
                           onClick={(event) => handleDownloadFile(event, node)}
                           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-neutral-500 opacity-0 transition group-hover/row:opacity-100 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                          title={t('fileTree.downloadFile', { defaultValue: 'Download file' }) as string}
-                          aria-label={t('fileTree.downloadFile', { defaultValue: 'Download file' }) as string}
+                          title={t('fileTree.downloadFile', { defaultValue: '下载文件' }) as string}
+                          aria-label={t('fileTree.downloadFile', { defaultValue: '下载文件' }) as string}
                         >
                           <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
@@ -771,8 +771,8 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                           type="button"
                           onClick={(event) => handleOpenHtmlPreview(event, node)}
                           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-neutral-500 transition hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                          title={t('fileTree.openHtmlPreview', { defaultValue: 'Open HTML preview in new tab' }) as string}
-                          aria-label={t('fileTree.openHtmlPreview', { defaultValue: 'Open HTML preview in new tab' }) as string}
+                          title={t('fileTree.openHtmlPreview', { defaultValue: '在新标签页预览 HTML' }) as string}
+                          aria-label={t('fileTree.openHtmlPreview', { defaultValue: '在新标签页预览 HTML' }) as string}
                         >
                           <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
@@ -793,7 +793,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
       {contextMenu ? (
         <div
           role="menu"
-          aria-label={t('fileTree.context.menuLabel', { defaultValue: 'File context menu' }) as string}
+          aria-label={t('fileTree.context.menuLabel', { defaultValue: '文件上下文菜单' }) as string}
           onClick={(event) => event.stopPropagation()}
           onContextMenu={(event) => event.preventDefault()}
           className={cn(
@@ -818,7 +818,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                     className={menuItemClass}
                   >
                     <FilePlus className={menuIconClass} strokeWidth={1.75} />
-                    {t('fileTree.context.newFile', { defaultValue: 'New File' })}
+                    {t('fileTree.context.newFile', { defaultValue: '新建文件' })}
                   </button>
                   <button
                     type="button"
@@ -832,7 +832,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                     className={menuItemClass}
                   >
                     <FolderPlus className={menuIconClass} strokeWidth={1.75} />
-                    {t('fileTree.context.newFolder', { defaultValue: 'New Folder' })}
+                    {t('fileTree.context.newFolder', { defaultValue: '新建文件夹' })}
                   </button>
                   <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
                 </>
@@ -854,7 +854,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                     className={menuItemClass}
                   >
                     <Download className={menuIconClass} strokeWidth={1.75} />
-                    {t('fileTree.context.download', { defaultValue: 'Download' })}
+                    {t('fileTree.context.download', { defaultValue: '下载' })}
                   </button>
                   <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
                 </>
@@ -871,7 +871,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                 className={menuItemClass}
               >
                 <Pencil className={menuIconClass} strokeWidth={1.75} />
-                {t('fileTree.context.rename', { defaultValue: 'Rename' })}
+                {t('fileTree.context.rename', { defaultValue: '重命名' })}
               </button>
               <button
                 type="button"
@@ -880,7 +880,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                 className={menuItemClass}
               >
                 <ClipboardCopy className={menuIconClass} strokeWidth={1.75} />
-                {t('fileTree.context.copyPath', { defaultValue: 'Copy Path' })}
+                {t('fileTree.context.copyPath', { defaultValue: '复制路径' })}
               </button>
               <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
               <button
@@ -890,7 +890,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                 className={cn(menuItemClass, 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30')}
               >
                 <Trash2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-                {t('fileTree.context.delete', { defaultValue: 'Delete' })}
+                {t('fileTree.context.delete', { defaultValue: '删除' })}
               </button>
             </>
           ) : (
@@ -902,7 +902,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                 className={menuItemClass}
               >
                 <FilePlus className={menuIconClass} strokeWidth={1.75} />
-                {t('fileTree.context.newFile', { defaultValue: 'New File' })}
+                {t('fileTree.context.newFile', { defaultValue: '新建文件' })}
               </button>
               <button
                 type="button"
@@ -911,7 +911,7 @@ export default function FilesV2({ selectedProject, onFileOpen, onClose }: FilesV
                 className={menuItemClass}
               >
                 <FolderPlus className={menuIconClass} strokeWidth={1.75} />
-                {t('fileTree.context.newFolder', { defaultValue: 'New Folder' })}
+                {t('fileTree.context.newFolder', { defaultValue: '新建文件夹' })}
               </button>
             </>
           )}

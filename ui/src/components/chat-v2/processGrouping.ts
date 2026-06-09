@@ -942,13 +942,13 @@ export function formatCompletedProcessTitle(
     }));
   }
   if (counts.subagentCount > 0) {
-    labels.push(t('process.live.subagentCompleted', { defaultValue: 'Subagent finished' }));
+    labels.push(t('process.live.subagentCompleted', { defaultValue: '子任务已完成' }));
   }
   if (counts.compactCount > 0) {
-    labels.push(t('process.live.compactCompleted', { defaultValue: 'Compacted context' }));
+    labels.push(t('process.live.compactCompleted', { defaultValue: '已压缩上下文' }));
   }
   if (counts.thinkingCount > 0 && labels.length === 0) {
-    labels.push(t('process.live.thoughtCompleted', { defaultValue: 'Thought through next step' }));
+    labels.push(t('process.live.thoughtCompleted', { defaultValue: '已完成思考' }));
   }
   if (labels.length === 0 && counts.otherToolCount > 0) {
     labels.push(t('process.live.toolCalls', {
@@ -972,7 +972,7 @@ export function getRunningProcessTitle(
 ): string {
   const latestMessage = [...group.messages].reverse().find((message) => isProcessMessage(message));
   if (!latestMessage) {
-    return t('working.processing', { defaultValue: 'Processing' });
+    return t('working.processing', { defaultValue: '处理中' });
   }
 
   const kind = getProcessToolKind(latestMessage);
@@ -980,33 +980,33 @@ export function getRunningProcessTitle(
   if (kind === 'edit') {
     return target
       ? t('process.live.runningEditTarget', { target, defaultValue: `Editing ${target}` })
-      : t('process.live.runningEdit', { defaultValue: 'Editing file' });
+      : t('process.live.runningEdit', { defaultValue: '正在编辑文件' });
   }
   if (kind === 'read') {
     return target
       ? t('process.live.runningReadTarget', { target, defaultValue: `Reading ${target}` })
-      : t('process.live.runningRead', { defaultValue: 'Reading file' });
+      : t('process.live.runningRead', { defaultValue: '正在读取文件' });
   }
   if (kind === 'search') {
     return target
       ? t('process.live.runningSearchTarget', { target, defaultValue: `Searching ${target}` })
-      : t('process.live.runningSearch', { defaultValue: 'Searching' });
+      : t('process.live.runningSearch', { defaultValue: '正在搜索' });
   }
   if (kind === 'command') {
     return target
       ? t('process.live.runningCommandTarget', { target, defaultValue: `Running ${target}` })
-      : t('process.live.runningCommand', { defaultValue: 'Running command' });
+      : t('process.live.runningCommand', { defaultValue: '正在运行命令' });
   }
   if (kind === 'subagent') {
-    return t('process.live.runningSubagent', { defaultValue: 'Running subagent' });
+    return t('process.live.runningSubagent', { defaultValue: '正在运行子任务' });
   }
   if (kind === 'compact') {
-    return t('working.compacting', { defaultValue: 'Compacting context...' });
+    return t('working.compacting', { defaultValue: '正在压缩上下文...' });
   }
   if (kind === 'thinking') {
-    return t('working.thinking', { defaultValue: 'Thinking' });
+    return t('working.thinking', { defaultValue: '思考中' });
   }
-  return latestMessage.title || latestMessage.content || latestMessage.toolName || t('working.processing', { defaultValue: 'Processing' });
+  return latestMessage.title || latestMessage.content || latestMessage.toolName || t('working.processing', { defaultValue: '处理中' });
 }
 
 export function getLiveProcessGroupStep(
@@ -1068,19 +1068,19 @@ export function processSummaryToTrace(
     toolCalls > 0
       ? {
           key: 'toolCalls',
-          label: t('process.metrics.toolCalls', { count: toolCalls, defaultValue: '{{count}} tool calls' }),
+          label: t('process.metrics.toolCalls', { count: toolCalls, defaultValue: '{{count}} 次工具调用' }),
         }
       : null,
     searches > 0
       ? {
           key: 'searches',
-          label: t('process.metrics.searches', { count: searches, defaultValue: '{{count}} searches' }),
+          label: t('process.metrics.searches', { count: searches, defaultValue: '{{count}} 次搜索' }),
         }
       : null,
     errors > 0
       ? {
           key: 'errors',
-          label: t('process.metrics.errors', { count: errors, defaultValue: '{{count}} errors' }),
+          label: t('process.metrics.errors', { count: errors, defaultValue: '{{count}} 个错误' }),
         }
       : null,
   ].filter((metric): metric is ProcessTraceMetric => Boolean(metric));
@@ -1106,10 +1106,10 @@ export function processSummaryToTrace(
     label,
     collapsedDetail: '',
     statusLabel: status === 'failed'
-      ? t('process.summary.failed', { defaultValue: 'Process failed' })
+      ? t('process.summary.failed', { defaultValue: '过程失败' })
       : status === 'cancelled'
-        ? t('process.summary.cancelled', { defaultValue: 'Process stopped' })
-        : t('process.summary.completed', { defaultValue: 'Process completed' }),
+        ? t('process.summary.cancelled', { defaultValue: '过程已停止' })
+        : t('process.summary.completed', { defaultValue: '过程已完成' }),
     status,
     metrics,
     steps,

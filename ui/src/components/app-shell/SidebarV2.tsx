@@ -24,6 +24,7 @@ import {
 import type { TFunction } from 'i18next';
 import type { AppTab, Project, ProjectSession } from '../../types/app';
 import { cn } from '../../lib/utils.js';
+import BrandLogo from '../brand/BrandLogo';
 import { isImeEnterEvent } from '../../utils/ime';
 import {
   projectDisplayName,
@@ -32,8 +33,6 @@ import {
   setSessionCustomTitle,
   useCustomNamesVersion,
 } from '../../lib/customNames';
-import pilotdeckLogoDark from '../../assets/pilotdeck-wordmark-dark.png';
-import pilotdeckLogoLight from '../../assets/pilotdeck-wordmark-light.png';
 
 const asTimestamp = (value: unknown): number => {
   if (typeof value === 'number') return value;
@@ -132,20 +131,20 @@ const collectSessionsForProject = (project: Project): FlatSession[] => {
 const formatRelative = (ts: number, t: TFunction): string => {
   if (!ts) return '';
   const diff = Date.now() - ts;
-  if (diff < 60_000) return t('sidebar:time.justNow', { defaultValue: 'just now' });
+  if (diff < 60_000) return t('sidebar:time.justNow', { defaultValue: '刚刚' });
   if (diff < 3_600_000) {
     const minutes = Math.floor(diff / 60_000);
-    if (minutes === 1) return t('sidebar:time.oneMinuteAgo', { defaultValue: '1 min ago' });
-    return t('sidebar:time.minutesAgo', { count: minutes, defaultValue: `${minutes} mins ago` });
+    if (minutes === 1) return t('sidebar:time.oneMinuteAgo', { defaultValue: '1 分钟前' });
+    return t('sidebar:time.minutesAgo', { count: minutes, defaultValue: `${minutes} 分钟前` });
   }
   if (diff < 86_400_000) {
     const hours = Math.floor(diff / 3_600_000);
-    if (hours === 1) return t('sidebar:time.oneHourAgo', { defaultValue: '1 hour ago' });
-    return t('sidebar:time.hoursAgo', { count: hours, defaultValue: `${hours} hours ago` });
+    if (hours === 1) return t('sidebar:time.oneHourAgo', { defaultValue: '1 小时前' });
+    return t('sidebar:time.hoursAgo', { count: hours, defaultValue: `${hours} 小时前` });
   }
   const days = Math.floor(diff / 86_400_000);
-  if (days === 1) return t('sidebar:time.oneDayAgo', { defaultValue: '1 day ago' });
-  return t('sidebar:time.daysAgo', { count: days, defaultValue: `${days} days ago` });
+  if (days === 1) return t('sidebar:time.oneDayAgo', { defaultValue: '1 天前' });
+  return t('sidebar:time.daysAgo', { count: days, defaultValue: `${days} 天前` });
 };
 
 type SessionIndicatorStatus = 'processing' | 'unread' | 'idle';
@@ -686,10 +685,10 @@ export default function SidebarV2({
             className="block w-full rounded-md bg-neutral-200/70 px-2 py-1 text-left text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
           >
             <div className="truncate text-[12.5px]">
-              {t('sidebar:sessions.newSession', { defaultValue: 'New Session' })}
+              {t('sidebar:sessions.newSession', { defaultValue: '新建会话' })}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {t('sidebar:sessions.unsaved', { defaultValue: 'Not saved yet' })}
+              {t('sidebar:sessions.unsaved', { defaultValue: '尚未保存' })}
             </div>
           </button>
         ) : null}
@@ -718,10 +717,10 @@ export default function SidebarV2({
                   : 'idle';
             const indicatorLabel =
               indicatorStatus === 'processing'
-                ? t('sidebar:sessions.processing', { defaultValue: 'Agent is running' })
+                ? t('sidebar:sessions.processing', { defaultValue: '智能体运行中' })
                 : indicatorStatus === 'unread'
-                  ? t('sidebar:sessions.unread', { defaultValue: 'Unread messages' })
-                  : t('sidebar:sessions.idle', { defaultValue: 'No unread messages' });
+                  ? t('sidebar:sessions.unread', { defaultValue: '有未读消息' })
+                  : t('sidebar:sessions.idle', { defaultValue: '无未读消息' });
 
             return (
               <div
@@ -745,7 +744,7 @@ export default function SidebarV2({
                       onBlur={commitSessionRename}
                       onKeyDown={(event) => handleRenameKey(event, 'session')}
                       onClick={(event) => event.stopPropagation()}
-                      placeholder={t('sidebar:renamePlaceholder', { defaultValue: 'Rename - empty to reset' }) as string}
+                      placeholder={t('sidebar:renamePlaceholder', { defaultValue: '重命名 - 留空恢复默认' }) as string}
                       className="w-full rounded-sm border border-neutral-300 bg-white px-1.5 py-0.5 text-[12.5px] text-neutral-900 outline-none focus:border-neutral-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
                     />
                   </div>
@@ -780,7 +779,7 @@ export default function SidebarV2({
                       </div>
                       <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
                         {isOptimisticRow
-                          ? t('sidebar:sessions.sending', { defaultValue: 'Sending…' })
+                          ? t('sidebar:sessions.sending', { defaultValue: '发送中…' })
                           : formatRelative(lastActivity, t)}
                       </div>
                     </div>
@@ -792,7 +791,7 @@ export default function SidebarV2({
           })
         ) : (
           <div className="px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-            {t('sidebar:sessions.noSessions', { defaultValue: 'No sessions yet' })}
+            {t('sidebar:sessions.noSessions', { defaultValue: '暂无会话' })}
           </div>
         )}
 
@@ -821,15 +820,15 @@ export default function SidebarV2({
             )}
           >
             {isLoadingMore
-              ? t('sidebar:sessions.loadingMore', { defaultValue: 'Loading more…' })
+              ? t('sidebar:sessions.loadingMore', { defaultValue: '加载更多中…' })
               : (() => {
                   const totalMore = hiddenLoadedCount + (remaining !== null && remaining > 0 ? remaining : 0);
                   return totalMore > 0
                     ? t('sidebar:sessions.showMoreCount', {
                         count: totalMore,
-                        defaultValue: `Show more (${totalMore})`,
+                        defaultValue: `显示更多 (${totalMore})`,
                       })
-                    : t('sidebar:sessions.showMore', { defaultValue: 'Show more sessions' });
+                    : t('sidebar:sessions.showMore', { defaultValue: '显示更多会话' });
                 })()}
           </button>
         ) : null}
@@ -847,7 +846,7 @@ export default function SidebarV2({
             }}
             className="block w-full rounded-md px-2 py-1 text-left text-[11px] transition-colors text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           >
-            {t('sidebar:sessions.showLess', { defaultValue: 'Show less' })}
+            {t('sidebar:sessions.showLess', { defaultValue: '收起' })}
           </button>
         ) : null}
       </div>
@@ -860,7 +859,7 @@ export default function SidebarV2({
     const isExpanded = expandedGroups.has(project.name);
     const isRenaming = renamingProject === project.name;
     const label = isGeneral
-      ? t('sidebar:general.name', { defaultValue: 'General' })
+      ? t('sidebar:general.name', { defaultValue: '通用' })
       : projectDisplayName(project);
 
     return (
@@ -884,7 +883,7 @@ export default function SidebarV2({
                 onBlur={commitProjectRename}
                 onKeyDown={(event) => handleRenameKey(event, 'project')}
                 onClick={(event) => event.stopPropagation()}
-                placeholder={t('sidebar:renamePlaceholder', { defaultValue: 'Rename - empty to reset' }) as string}
+                placeholder={t('sidebar:renamePlaceholder', { defaultValue: '重命名 - 留空恢复默认' }) as string}
                 className="w-full rounded-sm border border-neutral-300 bg-white px-1.5 py-0.5 text-[12.5px] text-neutral-900 outline-none focus:border-neutral-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
               />
             </div>
@@ -927,8 +926,8 @@ export default function SidebarV2({
               <button
                 type="button"
                 onClick={(event) => handleNewSession(event, project)}
-                aria-label={t('sidebar:tooltips.newChat', { defaultValue: 'New Chat' }) as string}
-                title={t('sidebar:tooltips.newChat', { defaultValue: 'New Chat' }) as string}
+                aria-label={t('sidebar:tooltips.newChat', { defaultValue: '新建对话' }) as string}
+                title={t('sidebar:tooltips.newChat', { defaultValue: '新建对话' }) as string}
                 className={cn(
                   'inline-flex h-6 w-6 items-center justify-center rounded-md',
                   'text-neutral-500 hover:bg-neutral-200/70 hover:text-neutral-900',
@@ -970,30 +969,19 @@ export default function SidebarV2({
                 navigate('/');
               }
             }}
-            aria-label="PilotDeck"
-            title="PilotDeck"
+            aria-label="OPC Brain"
+            title="OPC Brain"
             className="flex min-w-0 shrink items-center gap-2 rounded-md p-1 transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 dark:focus-visible:ring-neutral-700"
           >
-            <img
-              src={pilotdeckLogoLight}
-              alt="PilotDeck"
-              className="h-7 w-auto max-w-[150px] select-none object-contain dark:hidden"
-              draggable={false}
-            />
-            <img
-              src={pilotdeckLogoDark}
-              alt="PilotDeck"
-              className="hidden h-7 w-auto max-w-[150px] select-none object-contain dark:block"
-              draggable={false}
-            />
+            <BrandLogo iconClassName="h-7 w-7" textClassName="max-w-[150px] text-base" />
           </button>
         </div>
         {onCollapse ? (
           <button
             type="button"
             onClick={onCollapse}
-            aria-label={t('sidebar:tooltips.hideSidebar', { defaultValue: 'Hide sidebar' }) as string}
-            title={t('sidebar:tooltips.hideSidebar', { defaultValue: 'Hide sidebar' }) as string}
+            aria-label={t('sidebar:tooltips.hideSidebar', { defaultValue: '隐藏侧边栏' }) as string}
+            title={t('sidebar:tooltips.hideSidebar', { defaultValue: '隐藏侧边栏' }) as string}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
           >
             <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
@@ -1007,7 +995,7 @@ export default function SidebarV2({
       <div className="px-3 pt-3 pb-1">
         <div
           role="tablist"
-          aria-label={t('sidebar:sectionToggle.label', { defaultValue: 'Sidebar section' }) as string}
+          aria-label={t('sidebar:sectionToggle.label', { defaultValue: '侧边栏分区' }) as string}
           className="flex w-full rounded-md bg-neutral-100 p-0.5 dark:bg-neutral-900"
         >
           <button
@@ -1023,7 +1011,7 @@ export default function SidebarV2({
                 : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200',
             )}
           >
-            {t('sidebar:projects.title', { defaultValue: 'Projects' })}
+            {t('sidebar:projects.title', { defaultValue: '项目' })}
           </button>
           <button
             type="button"
@@ -1038,7 +1026,7 @@ export default function SidebarV2({
                 : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200',
             )}
           >
-            {t('sidebar:general.title', { defaultValue: 'General' })}
+            {t('sidebar:general.title', { defaultValue: '通用' })}
           </button>
         </div>
       </div>
@@ -1046,13 +1034,13 @@ export default function SidebarV2({
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-2 pb-2">
         {isLoading && safeProjects.length === 0 ? (
           <div className="px-2 py-4 text-xs text-neutral-500 dark:text-neutral-400">
-            {t('sidebar:sessions.loading', { defaultValue: 'Loading...' })}
+            {t('sidebar:sessions.loading', { defaultValue: '加载中...' })}
           </div>
         ) : activeSection === 'projects' ? (
           <section className="pt-2">
             <div className="flex items-center px-3 pb-1">
               <span className="flex-1 text-[11px] font-medium uppercase tracking-[0.04em] text-neutral-500/90 dark:text-neutral-400/80">
-                {t('sidebar:projects.title', { defaultValue: 'Projects' })}
+                {t('sidebar:projects.title', { defaultValue: '项目' })}
               </span>
               <button
                 type="button"
@@ -1060,13 +1048,13 @@ export default function SidebarV2({
                 disabled={otherProjects.length === 0}
                 aria-label={
                   allProjectGroupsExpanded
-                    ? t('sidebar:projects.collapseAll', { defaultValue: 'Collapse all projects' }) as string
-                    : t('sidebar:projects.expandAll', { defaultValue: 'Expand all projects' }) as string
+                    ? t('sidebar:projects.collapseAll', { defaultValue: '全部折叠项目' }) as string
+                    : t('sidebar:projects.expandAll', { defaultValue: '全部展开项目' }) as string
                 }
                 title={
                   allProjectGroupsExpanded
-                    ? t('sidebar:projects.collapseAll', { defaultValue: 'Collapse all projects' }) as string
-                    : t('sidebar:projects.expandAll', { defaultValue: 'Expand all projects' }) as string
+                    ? t('sidebar:projects.collapseAll', { defaultValue: '全部折叠项目' }) as string
+                    : t('sidebar:projects.expandAll', { defaultValue: '全部展开项目' }) as string
                 }
                 className="inline-flex h-6 w-6 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               >
@@ -1079,8 +1067,8 @@ export default function SidebarV2({
               <button
                 type="button"
                 onClick={onCreateProject}
-                aria-label={t('sidebar:projects.newProject', { defaultValue: 'New Project' }) as string}
-                title={t('sidebar:projects.newProject', { defaultValue: 'New Project' }) as string}
+                aria-label={t('sidebar:projects.newProject', { defaultValue: '新建项目' }) as string}
+                title={t('sidebar:projects.newProject', { defaultValue: '新建项目' }) as string}
                 className="inline-flex h-6 w-6 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -1089,7 +1077,7 @@ export default function SidebarV2({
 
             {otherProjects.length === 0 ? (
               <div className="px-3 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                {t('sidebar:projects.noProjects', { defaultValue: 'No projects found' })}
+                {t('sidebar:projects.noProjects', { defaultValue: '未找到项目' })}
               </div>
             ) : (
               <div className="space-y-0.5">
@@ -1103,13 +1091,13 @@ export default function SidebarV2({
               <>
                 <div className="flex items-center px-3 pb-1">
                   <span className="flex-1 text-[11px] font-medium uppercase tracking-[0.04em] text-neutral-500/90 dark:text-neutral-400/80">
-                    {t('sidebar:general.title', { defaultValue: 'General' })}
+                    {t('sidebar:general.title', { defaultValue: '通用' })}
                   </span>
                   <button
                     type="button"
                     onClick={(event) => handleNewSession(event, generalProject)}
-                    aria-label={t('sidebar:tooltips.newChat', { defaultValue: 'New Chat' }) as string}
-                    title={t('sidebar:tooltips.newChat', { defaultValue: 'New Chat' }) as string}
+                    aria-label={t('sidebar:tooltips.newChat', { defaultValue: '新建对话' }) as string}
+                    title={t('sidebar:tooltips.newChat', { defaultValue: '新建对话' }) as string}
                     className="inline-flex h-6 w-6 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                   >
                     <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -1122,7 +1110,7 @@ export default function SidebarV2({
             ) : (
               <div className="px-3 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                 {t('sidebar:general.missing', {
-                  defaultValue: 'No general workspace found',
+                  defaultValue: '未找到通用工作区',
                 })}
               </div>
             )}
@@ -1134,19 +1122,19 @@ export default function SidebarV2({
         <button
           type="button"
           onClick={onShowSettings}
-          aria-label={t('sidebar:actions.settings', { defaultValue: 'Settings' }) as string}
-          title={t('sidebar:actions.settings', { defaultValue: 'Settings' }) as string}
+          aria-label={t('sidebar:actions.settings', { defaultValue: '设置' }) as string}
+          title={t('sidebar:actions.settings', { defaultValue: '设置' }) as string}
           className="flex h-9 w-full items-center justify-start gap-2 rounded-lg px-6 text-[13px] font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
         >
           <SettingsIcon className="h-4 w-4" strokeWidth={1.75} />
-          <span>{t('sidebar:actions.settings', { defaultValue: 'Settings' })}</span>
+          <span>{t('sidebar:actions.settings', { defaultValue: '设置' })}</span>
         </button>
       </div>
 
       {contextMenu ? (
         <div
           role="menu"
-          aria-label={t('sidebar:contextMenu.label', { defaultValue: 'Context menu' }) as string}
+          aria-label={t('sidebar:contextMenu.label', { defaultValue: '操作菜单' }) as string}
           onClick={(event) => event.stopPropagation()}
           onContextMenu={(event) => event.preventDefault()}
           className={cn(
@@ -1165,7 +1153,7 @@ export default function SidebarV2({
             )}
           >
             <Pencil className="h-3.5 w-3.5 shrink-0 text-neutral-500 dark:text-neutral-400" strokeWidth={1.75} />
-            <span>{t('sidebar:actions.rename', { defaultValue: 'Rename' })}</span>
+            <span>{t('sidebar:actions.rename', { defaultValue: '重命名' })}</span>
           </button>
           <button
             type="button"
@@ -1177,7 +1165,7 @@ export default function SidebarV2({
             )}
           >
             <Trash2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-            <span>{t('sidebar:actions.delete', { defaultValue: 'Delete' })}</span>
+            <span>{t('sidebar:actions.delete', { defaultValue: '删除' })}</span>
           </button>
         </div>
       ) : null}
@@ -1188,8 +1176,8 @@ export default function SidebarV2({
       <div
         role="separator"
         aria-orientation="vertical"
-        aria-label={t('sidebar:tooltips.resize', { defaultValue: 'Resize sidebar' }) as string}
-        title={t('sidebar:tooltips.resize', { defaultValue: 'Drag to resize' }) as string}
+        aria-label={t('sidebar:tooltips.resize', { defaultValue: '调整侧边栏宽度' }) as string}
+        title={t('sidebar:tooltips.resize', { defaultValue: '拖动调整宽度' }) as string}
         onMouseDown={handleResizeStart}
         onDoubleClick={() => {
           setSidebarWidth(SIDEBAR_DEFAULT_WIDTH);

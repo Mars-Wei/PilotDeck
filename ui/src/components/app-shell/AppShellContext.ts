@@ -15,7 +15,7 @@ export type AppShellContextValue = {
   isMobile: boolean;
 
   ws: WebSocket | null;
-  sendMessage: (message: unknown) => void;
+  sendMessage: (message: unknown) => boolean;
   latestMessage: unknown;
   externalMessageUpdate: number;
 

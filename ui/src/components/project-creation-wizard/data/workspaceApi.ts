@@ -32,7 +32,7 @@ export const fetchGithubTokenCredentials = async () => {
   const data = await parseJson<CredentialsResponse>(response);
 
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to load GitHub tokens');
+    throw new Error(data.error || '加载 GitHub 令牌失败');
   }
 
   return (data.credentials || []).filter((credential) => credential.is_active);
@@ -44,7 +44,7 @@ export const browseFilesystemFolders = async (pathToBrowse: string) => {
   const data = await parseJson<BrowseFilesystemResponse>(response);
 
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to browse filesystem');
+    throw new Error(data.error || '浏览文件系统失败');
   }
 
   return {
@@ -58,7 +58,7 @@ export const createFolderInFilesystem = async (folderPath: string) => {
   const data = await parseJson<CreateFolderResponse>(response);
 
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to create folder');
+    throw new Error(data.error || '创建文件夹失败');
   }
 
   return data.path || folderPath;
@@ -69,7 +69,7 @@ export const createWorkspaceRequest = async (payload: CreateWorkspacePayload) =>
   const data = await parseJson<CreateWorkspaceResponse>(response);
 
   if (!response.ok) {
-    throw new Error(data.details || data.error || 'Failed to create workspace');
+    throw new Error(data.details || data.error || '创建工作区失败');
   }
 
   return data.project;
@@ -137,7 +137,7 @@ export const cloneWorkspaceWithProgress = (
         }
 
         if (payload.type === 'error') {
-          settle(() => reject(new Error(payload.message || 'Failed to clone repository')));
+          settle(() => reject(new Error(payload.message || '克隆仓库失败')));
         }
       } catch (error) {
         console.error('Error parsing clone progress event:', error);
@@ -145,6 +145,6 @@ export const cloneWorkspaceWithProgress = (
     };
 
     eventSource.onerror = () => {
-      settle(() => reject(new Error('Connection lost during clone')));
+      settle(() => reject(new Error('克隆过程中连接中断')));
     };
   });

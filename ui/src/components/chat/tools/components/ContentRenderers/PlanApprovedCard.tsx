@@ -41,7 +41,7 @@ export const PlanApprovedCard: React.FC<PlanApprovedCardProps> = ({
           className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-indigo-800 dark:bg-neutral-900 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
         >
           <FileText className="h-3.5 w-3.5" strokeWidth={2} />
-          {t('plan.approvedCard.viewPlan', { defaultValue: 'View Plan' })}
+          {t('plan.approvedCard.viewPlan', { defaultValue: '查看计划' })}
         </button>
       </div>
     </div>

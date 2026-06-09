@@ -179,18 +179,24 @@ export function useChatRealtimeHandlers({
     const flushStream = (sessionId: string, finalize = false) => {
       const state = streamBySessionRef.current.get(sessionId);
       if (!state) return;
-      state.flush(finalize);
       if (finalize) {
-        streamBySessionRef.current.delete(sessionId);
+        state.finish(() => {
+          streamBySessionRef.current.delete(sessionId);
+        });
+        return;
       }
+      state.flush(finalize);
     };
     const flushThinking = (sessionId: string, finalize = false) => {
       const state = thinkingBySessionRef.current.get(sessionId);
       if (!state) return;
-      state.flush(finalize);
       if (finalize) {
-        thinkingBySessionRef.current.delete(sessionId);
+        state.finish(() => {
+          thinkingBySessionRef.current.delete(sessionId);
+        });
+        return;
       }
+      state.flush(finalize);
     };
 
     if (!msg.kind) {
@@ -464,8 +470,8 @@ export function useChatRealtimeHandlers({
         });
         setIsLoading(true);
         setCanAbortSession(true);
-        setClaudeStatus({ text: 'Waiting for permission', tokens: 0, can_interrupt: true });
-        setPilotDeckStatus({ text: 'Waiting for permission', tokens: 0, can_interrupt: true });
+        setClaudeStatus({ text: '等待授权', tokens: 0, can_interrupt: true });
+        setPilotDeckStatus({ text: '等待授权', tokens: 0, can_interrupt: true });
         break;
       }
 

@@ -37,7 +37,7 @@ export default function FolderBrowserModal({
       setCurrentPath(result.path);
       setFolders(result.suggestions);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load folders');
+      setError(loadError instanceof Error ? loadError.message : '加载文件夹失败');
     } finally {
       setLoadingFolders(false);
     }
@@ -85,7 +85,7 @@ export default function FolderBrowserModal({
       resetNewFolderState();
       await loadFolders(createdPath);
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : 'Failed to create folder');
+      setError(createError instanceof Error ? createError.message : '创建文件夹失败');
     } finally {
       setCreatingFolder(false);
     }
@@ -105,7 +105,7 @@ export default function FolderBrowserModal({
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
               <FolderOpen className="h-4 w-4" strokeWidth={1.75} />
             </div>
-            <h3 className="text-lg font-semibold text-foreground">Select Folder</h3>
+            <h3 className="text-lg font-semibold text-foreground">选择文件夹</h3>
           </div>
 
           <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function FolderBrowserModal({
                   ? 'bg-accent text-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               }`}
-              title={showHiddenFolders ? 'Hide hidden folders' : 'Show hidden folders'}
+              title={showHiddenFolders ? '隐藏隐藏文件夹' : '显示隐藏文件夹'}
             >
               {showHiddenFolders ? <Eye className="h-5 w-5" strokeWidth={1.75} /> : <EyeOff className="h-5 w-5" strokeWidth={1.75} />}
             </button>
@@ -127,14 +127,14 @@ export default function FolderBrowserModal({
                   ? 'bg-accent text-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               }`}
-              title="Create new folder"
+              title="新建文件夹"
             >
               <Plus className="h-5 w-5" strokeWidth={1.75} />
             </button>
             <button
               onClick={handleClose}
               className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-              aria-label="Close"
+              aria-label="关闭"
             >
               <X className="h-5 w-5" strokeWidth={1.75} />
             </button>
@@ -148,7 +148,7 @@ export default function FolderBrowserModal({
                 type="text"
                 value={newFolderName}
                 onChange={(event) => setNewFolderName(event.target.value)}
-                placeholder="New folder name"
+                placeholder="新文件夹名称"
                 className="flex-1"
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
@@ -168,10 +168,10 @@ export default function FolderBrowserModal({
                 onClick={handleCreateFolder}
                 disabled={!newFolderName.trim() || creatingFolder}
               >
-                {creatingFolder ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create'}
+                {creatingFolder ? <Loader2 className="h-4 w-4 animate-spin" /> : '创建'}
               </Button>
               <Button size="sm" variant="ghost" onClick={resetNewFolderState}>
-                Cancel
+                取消
               </Button>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function FolderBrowserModal({
 
               {visibleFolders.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  No subfolders found
+                  未找到子文件夹
                 </div>
               ) : (
                 visibleFolders.map((folder) => (
@@ -222,7 +222,7 @@ export default function FolderBrowserModal({
                       onClick={() => onFolderSelected(folder.path, autoAdvanceOnSelect)}
                       className="px-3 text-xs"
                     >
-                      Select
+                      选择
                     </Button>
                   </div>
                 ))
@@ -233,20 +233,20 @@ export default function FolderBrowserModal({
 
         <div className="border-t border-border">
           <div className="flex items-center gap-2 bg-muted/40 px-4 py-3">
-            <span className="text-sm text-muted-foreground">Path:</span>
+            <span className="text-sm text-muted-foreground">路径：</span>
             <code className="flex-1 truncate font-mono text-sm text-foreground">
               {currentPath}
             </code>
           </div>
           <div className="flex items-center justify-end gap-2 p-4">
             <Button variant="outline" onClick={handleClose}>
-              Cancel
+              取消
             </Button>
             <Button
               variant="outline"
               onClick={() => onFolderSelected(currentPath, autoAdvanceOnSelect)}
             >
-              Use this folder
+              使用此文件夹
             </Button>
           </div>
         </div>

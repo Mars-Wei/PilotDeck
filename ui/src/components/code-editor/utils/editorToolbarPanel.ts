@@ -10,6 +10,7 @@ type EditorToolbarLabels = {
   showDiff: string;
   collapse: string;
   expand: string;
+  openInModal: string;
 };
 
 type CreateEditorToolbarPanelParams = {
@@ -84,6 +85,7 @@ export const createEditorToolbarPanelExtension = ({
         showDiff: escapeHtml(labels.showDiff),
         collapse: escapeHtml(labels.collapse),
         expand: escapeHtml(labels.expand),
+        openInModal: escapeHtml(labels.openInModal),
       };
       // Icons are static SVG path fragments controlled by this module.
       const diffVisibilityIcon = getDiffVisibilityIcon(showDiff);
@@ -123,7 +125,7 @@ export const createEditorToolbarPanelExtension = ({
 
       if (isSidebar && onPopOut) {
         toolbarHtml += `
-          <button class="cm-toolbar-btn cm-popout-btn" title="Open in modal">
+          <button class="cm-toolbar-btn cm-popout-btn" title="${escapedLabels.openInModal}">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
             </svg>

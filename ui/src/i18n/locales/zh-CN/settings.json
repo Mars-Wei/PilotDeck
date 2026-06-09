@@ -312,7 +312,7 @@
     "apiDocsLink": "API 文档",
     "documentation": {
       "title": "外部 API 文档",
-      "description": "了解如何使用外部 API 从您的应用程序触发 PilotDeck 会话。",
+      "description": "了解如何使用外部 API 从您的应用程序触发 OPC Brain 会话。",
       "viewLink": "查看 API 文档 →"
     },
     "loading": "加载中...",
@@ -363,7 +363,7 @@
         "description": "Google Gemini AI 助手"
       },
       "pilotdeck": {
-        "description": "OpenBMB PilotDeck AI 助手"
+        "description": "OpenBMB OPC Brain AI 助手"
       }
     },
     "connectionStatus": "连接状态",
@@ -425,7 +425,9 @@
       "bashGitLog": "- 允许所有 git log 命令",
       "bashGitDiff": "- 允许所有 git diff 命令",
       "write": "- 允许所有 Write 工具使用",
-      "bashRm": "- 阻止所有 rm 命令（危险）"
+      "bashRm": "- 阻止所有 rm 命令（危险）",
+      "bashRemoveItem": "- 阻止 PowerShell Remove-Item",
+      "bashDel": "- 阻止 CMD 递归删除"
     },
     "shellExamples": {
       "title": "Shell 命令示例：",
@@ -467,7 +469,7 @@
   "mcpServers": {
     "title": "MCP 服务器",
     "description": {
-      "pilotdeck": "Model Context Protocol 服务器为 PilotDeck 提供额外的工具和数据源",
+      "pilotdeck": "Model Context Protocol 服务器为 OPC Brain 提供额外的工具和数据源",
       "cursor": "Model Context Protocol 服务器为 Cursor 提供额外的工具和数据源",
       "codex": "Model Context Protocol 服务器为 Codex 提供额外的工具和数据源"
     },
@@ -500,7 +502,7 @@
   },
   "mcpConfig": {
     "title": "MCP 服务器",
-    "description": "编辑 PilotDeck MCP 配置。全局配置位于 ~/.pilotdeck/mcp.json；项目配置位于 .pilotdeck/mcp.json，同名服务器会覆盖全局配置。",
+    "description": "编辑 OPC Brain MCP 配置。全局配置位于 ~/.pilotdeck/mcp.json；项目配置位于 .pilotdeck/mcp.json，同名服务器会覆盖全局配置。",
     "project": "项目级配置对应的项目",
     "scopes": {
       "global": "全局",
@@ -545,7 +547,7 @@
     }
   },
   "pilotDeckConfig": {
-    "loading": "正在加载 PilotDeck 配置...",
+    "loading": "正在加载 OPC Brain 配置...",
     "header": {
       "configFile": "配置文件",
       "configPreview": "配置预览",
@@ -555,59 +557,59 @@
       "form": "表单",
       "rawYaml": "原始 YAML"
     },
-	    "actions": {
-	      "opening": "正在打开...",
-	      "revealFile": "在访达中显示",
-	      "refresh": "刷新",
-	      "reloadCurrent": "重新加载当前配置",
-	      "saving": "保存中...",
-	      "saveAndReload": "保存并重新加载当前配置",
-	      "saveAndReloadShort": "保存并重载",
-	      "remove": "移除",
-	      "removeModel": "移除模型",
-	      "add": "添加",
-	      "dismiss": "忽略",
-	      "showDetails": "展开配置详情",
-	      "hideDetails": "收起配置详情"
-	    },
-	    "status": {
-	      "unsavedChanges": "未保存更改",
-	      "noUnsavedChanges": "无未保存更改",
-	      "fixYamlInFilesystem": "请在文件系统中修复配置文件后刷新。",
-	      "subsystems": {
-	        "pending": "等待配置解析。",
-	        "processEnv": {
-	          "label": "进程环境",
-	          "applied": "原生设置已应用到当前进程。"
-	        },
-	        "memory": {
-	          "label": "记忆",
-	          "enabled": "记忆服务已启用。",
-	          "disabled": "memory.enabled 为 false。"
-	        },
-	        "router": {
-	          "label": "路由 (CCR)",
-	          "enabled": "路由看板使用原生记录。",
-	          "disabled": "router.enabled 为 false。"
-	        },
-	        "gateway": {
-	          "label": "网关",
-	          "enabled": "网关已启用。",
-	          "disabled": "gateway.enabled 为 false。"
-	        }
-	      }
-	    },
-	    "rawYaml": {
-	      "configValid": "配置有效",
-	      "unsaved": "（未保存）",
-	      "configInvalid": "配置存在校验错误",
-	      "configInvalidSeeBelow": "配置存在校验错误——见下方",
-	      "errors": "错误",
-	      "warnings": "警告",
-	      "yamlParseError": "配置文件 YAML 解析失败。请在文件系统中修复后刷新。",
-	      "cannotParse": "无法解析配置文件 YAML。请在文件系统中修复后点击刷新。",
-	      "rawYaml": "原始 YAML"
-	    },
+    "actions": {
+      "opening": "正在打开...",
+      "revealFile": "在访达中显示",
+      "refresh": "刷新",
+      "reloadCurrent": "重新加载当前配置",
+      "saving": "保存中...",
+      "saveAndReload": "保存并重新加载当前配置",
+      "saveAndReloadShort": "保存并重载",
+      "remove": "移除",
+      "removeModel": "移除模型",
+      "add": "添加",
+      "dismiss": "忽略",
+      "showDetails": "展开配置详情",
+      "hideDetails": "收起配置详情"
+    },
+    "status": {
+      "unsavedChanges": "未保存更改",
+      "noUnsavedChanges": "无未保存更改",
+      "fixYamlInFilesystem": "请在文件系统中修复配置文件后刷新。",
+      "subsystems": {
+        "pending": "等待配置解析。",
+        "processEnv": {
+          "label": "进程环境",
+          "applied": "原生设置已应用到当前进程。"
+        },
+        "memory": {
+          "label": "记忆",
+          "enabled": "记忆服务已启用。",
+          "disabled": "memory.enabled 为 false。"
+        },
+        "router": {
+          "label": "路由 (CCR)",
+          "enabled": "路由看板使用原生记录。",
+          "disabled": "router.enabled 为 false。"
+        },
+        "gateway": {
+          "label": "网关",
+          "enabled": "网关已启用。",
+          "disabled": "gateway.enabled 为 false。"
+        }
+      }
+    },
+    "rawYaml": {
+      "configValid": "配置有效",
+      "unsaved": "（未保存）",
+      "configInvalid": "配置存在校验错误",
+      "configInvalidSeeBelow": "配置存在校验错误——见下方",
+      "errors": "错误",
+      "warnings": "警告",
+      "yamlParseError": "配置文件 YAML 解析失败。请在文件系统中修复后刷新。",
+      "cannotParse": "无法解析配置文件 YAML。请在文件系统中修复后点击刷新。",
+      "rawYaml": "原始 YAML"
+    },
     "sectionGroups": {
       "basic": "基础",
       "basicDescription": "运行本服务前需要配置模型服务。",
@@ -638,7 +640,7 @@
       },
       "memory": {
         "label": "记忆",
-        "description": "PilotDeck 记忆服务"
+        "description": "OPC Brain 记忆服务"
       },
       "tools": {
         "label": "搜索",
@@ -650,7 +652,7 @@
       },
       "router": {
         "label": "路由",
-        "description": "PilotDeck Router"
+        "description": "OPC Brain 智能路由"
       },
       "gateway": {
         "label": "网关",
@@ -666,6 +668,7 @@
           "host": { "label": "主机", "description": "HTTP/WebSocket 服务器的绑定接口。" },
           "serverPort": { "label": "服务器端口", "description": "Express + WebSocket 端口。" },
           "vitePort": { "label": "Vite 端口", "description": "前端开发服务器（仅在运行 npm run dev 时使用）。" },
+          "proxyPort": { "label": "代理端口", "description": "本地 LLM 代理（OPC Brain 智能体目标）。" },
           "apiTimeout": { "label": "API 超时（毫秒）", "description": "每次请求的上游超时。" },
           "databasePath": { "label": "数据库路径", "description": "SQLite 认证/项目数据库（~ 展开为主目录）。" },
           "workspacesRoot": { "label": "工作区根目录", "description": "项目扫描的根目录。" },
@@ -722,16 +725,16 @@
           "catalogTextOnly": "目录默认仅文本。",
           "noCatalog": "无目录条目，默认仅文本。",
           "imageWarning": "请只在上游确实支持图片时启用。",
-          "maxOutputTokens": "最大输出 Token 数",
-          "maxOutputDescription": "单次回复最多生成的 Token。留空使用默认值。",
-          "maxContextTokens": "最大上下文 Token 数",
+          "maxOutputTokens": "最大输出令牌数",
+          "maxOutputDescription": "单次回复最多生成的令牌数。留空使用默认值。",
+          "maxContextTokens": "最大上下文令牌数",
           "maxContextDescription": "自动压缩参考的上下文窗口。留空使用模型默认值。"
         },
         "subagents": {
           "label": "子智能体默认模型",
           "description": "非路由路径下子智能体默认使用的模型。",
           "inherit": "继承主智能体模型",
-          "routerNote": "启用 PilotDeck Router 或 Token 节省后，子智能体请求会先进入路由器；默认会按子智能体策略重新判定层级并选择模型。这里的默认模型只作为直接子智能体路径或继承兜底，不会覆盖 Router 高级设置中的子智能体路由策略。"
+          "routerNote": "启用 OPC Brain 智能路由或令牌节省后，子智能体请求会先进入路由器；默认会按子智能体策略重新判定层级并选择模型。这里的默认模型只作为直接子智能体路径或继承兜底，不会覆盖智能路由高级设置中的子智能体路由策略。"
         }
       },
       "customEnv": {
@@ -747,39 +750,93 @@
       "alwaysOn": {
         "title": "Always-On",
         "description": "配置全局自动发现，并按工作区单独开关。",
-        "enabled": { "label": "启用", "description": "常驻后台智能体的总开关。" },
+        "enabled": {
+          "label": "启用",
+          "description": "常驻后台智能体的总开关。"
+        },
         "trigger": {
           "title": "触发",
           "description": "控制自动发现何时、多久触发一次。",
-          "autoDiscovery": { "label": "自动发现", "description": "启用后，常驻模式会定期检查已接入的工作区并提出后续计划。" },
-          "tickInterval": { "label": "检查间隔（分钟）", "description": "守护进程检查已接入工作区的频率。" },
-          "cooldown": { "label": "冷却时间（分钟）", "description": "每个工作区两次发现运行之间的最短间隔。" },
-          "dailyBudget": { "label": "每日预算", "description": "每个工作区每天最多自动发现运行次数。" },
-          "heartbeatStale": { "label": "心跳过期（秒）", "description": "超过此时间的心跳视为过期。" },
-          "recentUserMsg": { "label": "最近用户消息（分钟）", "description": "仅在用户于此时间窗口内发送过消息时触发。" },
-          "preferChannel": { "label": "首选频道", "description": "发现智能体偏好使用的交互频道。" }
+          "autoDiscovery": {
+            "label": "自动发现",
+            "description": "启用后，常驻模式会定期检查已接入的工作区并提出后续计划。"
+          },
+          "tickInterval": {
+            "label": "检查间隔（分钟）",
+            "description": "守护进程检查已接入工作区的频率。"
+          },
+          "cooldown": {
+            "label": "冷却时间（分钟）",
+            "description": "每个工作区两次发现运行之间的最短间隔。"
+          },
+          "dailyBudget": {
+            "label": "每日预算",
+            "description": "每个工作区每天最多自动发现运行次数。"
+          },
+          "heartbeatStale": {
+            "label": "心跳过期（秒）",
+            "description": "超过此时间的心跳视为过期。"
+          },
+          "recentUserMsg": {
+            "label": "最近用户消息（分钟）",
+            "description": "仅在用户于此时间窗口内发送过消息时触发。"
+          },
+          "preferChannel": {
+            "label": "首选频道",
+            "description": "发现智能体偏好使用的交互频道。"
+          }
         },
         "dormancy": {
           "title": "休眠",
           "description": "文件系统监听：用户正在活跃编辑时暂停自动发现。",
-          "enabled": { "label": "启用", "description": "当工作区有近期文件变更时暂停发现触发。" },
-          "debounce": { "label": "防抖（毫秒）", "description": "最后一次文件变更后等待此时长再恢复。" },
-          "ignoreGlobs": { "label": "忽略匹配模式", "description": "不参与休眠检测的文件匹配模式，每行一个。" }
+          "enabled": {
+            "label": "启用",
+            "description": "当工作区有近期文件变更时暂停发现触发。"
+          },
+          "debounce": {
+            "label": "防抖（毫秒）",
+            "description": "最后一次文件变更后等待此时长再恢复。"
+          },
+          "ignoreGlobs": {
+            "label": "忽略匹配模式",
+            "description": "不参与休眠检测的文件匹配模式，每行一个。"
+          }
         },
         "workspace": {
           "title": "工作区",
           "description": "常驻模式跑批的工作区隔离策略。",
-          "gitWorktree": { "label": "Git 工作树根目录", "description": "基于 Git 工作树隔离的根目录。" },
-          "snapshotDir": { "label": "快照根目录", "description": "基于快照隔离的根目录。" },
-          "snapshotMaxBytes": { "label": "快照最大字节数", "description": "工作区快照的最大大小。" },
-          "gitLfs": { "label": "Git LFS", "description": "在工作区快照中包含 Git LFS 对象。" }
+          "gitWorktree": {
+            "label": "Git 工作树根目录",
+            "description": "基于 Git 工作树隔离的根目录。"
+          },
+          "snapshotDir": {
+            "label": "快照根目录",
+            "description": "基于快照隔离的根目录。"
+          },
+          "snapshotMaxBytes": {
+            "label": "快照最大字节数",
+            "description": "工作区快照的最大大小。"
+          },
+          "gitLfs": {
+            "label": "Git LFS",
+            "description": "在工作区快照中包含 Git LFS 对象。"
+          }
         },
         "execution": {
           "title": "执行",
           "description": "每次常驻模式跑批的安全上限。",
-          "maxTurns": { "label": "最大轮次", "description": "每次运行的最大智能体轮次数。" },
-          "maxToolCalls": { "label": "最大工具调用数", "description": "每次运行的最大工具调用总数。" },
-          "timeout": { "label": "超时（分钟）", "description": "每次运行的硬性超时。" }
+          "maxTurns": {
+            "label": "最大轮次",
+            "description": "每次运行的最大智能体轮次数。"
+          },
+          "maxToolCalls": {
+            "label": "最大工具调用数",
+            "description": "每次运行的最大工具调用总数。"
+          },
+          "timeout": {
+            "label": "超时（分钟）",
+            "description": "每次运行的硬性超时。"
+          }
         },
         "workspaceOptIn": {
           "title": "工作区接入",
@@ -846,9 +903,9 @@
           "auth": {
             "label": "鉴权方式",
             "description": "API Key 的传递方式。",
-            "bearer": "Bearer header",
-            "bodyApiKey": "API Key 放在 JSON body",
-            "queryApiKey": "API Key 放在 query string",
+            "bearer": "Bearer 请求头",
+            "bodyApiKey": "API Key 放在 JSON 正文",
+            "queryApiKey": "API Key 放在 query 参数",
             "none": "不使用 API Key"
           },
           "method": {
@@ -873,60 +930,78 @@
         }
       },
       "router": {
-        "title": "PilotDeck Router",
-        "description": "内嵌路由器，跨提供商路由分发（按层级分流、Token 节省、自动编排）。",
-        "enabled": { "label": "启用", "description": "启用后，智能体通过路由器而非直接使用配置的提供商。" },
+        "title": "OPC Brain 智能路由",
+        "description": "内嵌路由器，跨提供商路由分发（按层级分流、令牌节省、自动编排）。",
+        "enabled": {
+          "label": "启用",
+          "description": "启用后，智能体通过路由器而非直接使用配置的提供商。"
+        },
         "advancedToggle": "高级设置",
         "levels": {
           "modelPlaceholder": "选择已配置模型",
           "default": {
-            "label": "Default",
+            "label": "默认",
             "description": "没有命中特定层级时使用的主路由。"
           },
           "judge": {
             "label": "判定模型",
-            "description": "用于先判定请求复杂度，再选择省 Token 层级的模型。"
+            "description": "用于先判定请求复杂度，再选择省令牌层级的模型。"
           },
           "simple": {
-            "label": "Simple",
+            "label": "简单",
             "description": "快速问答、确认、轻量改写和简单文件操作。"
           },
           "medium": {
-            "label": "Medium",
+            "label": "中等",
             "description": "单次工具调用、短文本生成、少量文件修改和常规代码变更。"
           },
           "complex": {
-            "label": "Complex",
+            "label": "复杂",
             "description": "需要拆分或交给子智能体处理的任务。"
           },
           "reasoning": {
-            "label": "Reasoning",
+            "label": "推理",
             "description": "多文件分析、长上下文、报告和深度推理任务。"
           }
         },
         "zeroUsageRetry": {
-          "label": "Zero-usage 重试",
-          "description": "上游返回零 Token 用量响应时自动重试。",
-          "maxAttempts": { "label": "最大重试次数", "description": "放弃前的最大重试次数。" }
+          "label": "零用量重试",
+          "description": "上游返回零令牌用量响应时自动重试。",
+          "maxAttempts": {
+            "label": "最大重试次数",
+            "description": "放弃前的最大重试次数。"
+          }
         },
         "tokenSaver": {
-          "title": "Token 节省",
+          "title": "令牌节省",
           "description": "轻量级判定器将每轮对话分类到对应层级，并路由到成本适合的模型。",
           "judgeModel": "判定模型",
           "defaultTier": "默认层级",
-          "judgeTimeout": { "label": "判定超时（毫秒）", "description": "等待判定结果的最长时间。" },
-          "subagentPolicy": { "label": "子智能体策略", "description": "子智能体的路由方式：'judge' 重新评估每个子智能体轮次，'skip' 保持子智能体直接路由。" }
+          "judgeTimeout": {
+            "label": "判定超时（毫秒）",
+            "description": "等待判定结果的最长时间。"
+          },
+          "subagentPolicy": {
+            "label": "子智能体策略",
+            "description": "子智能体的路由方式：重新判定会评估每个子智能体轮次，直接路由则保持子智能体原路径。"
+          }
         },
         "autoOrchestrate": {
           "title": "自动编排",
           "description": "当判定器分配到特定层级时，自动将复杂轮次展开为并行子智能体。",
           "triggerTiers": "触发层级",
-          "slimPrompt": { "label": "精简系统提示", "description": "为编排的子智能体使用更短的系统提示以节省 Token。" }
+          "slimPrompt": {
+            "label": "精简系统提示",
+            "description": "为编排的子智能体使用更短的系统提示以节省令牌。"
+          }
         },
-        "stats": { "label": "统计收集", "description": "跟踪每个会话的 Token 用量和成本。为仪表板提供数据。" },
+        "stats": {
+          "label": "统计收集",
+          "description": "跟踪每个会话的令牌用量和成本。为仪表板提供数据。"
+        },
         "pricing": {
           "title": "模型定价",
-          "description": "每个模型的自定义定价（$/百万 Token）。在 API 不报告成本时使用。",
+          "description": "每个模型的自定义定价（$/百万令牌）。在 API 不报告成本时使用。",
           "keyFormat": "键格式：",
           "empty": "未配置自定义定价。内置默认值覆盖常见模型（DeepSeek、Claude、GPT、Gemini、GLM、Qwen、Llama 等）。",
           "inputPerM": "输入 $/M",
@@ -964,8 +1039,14 @@
       "gateway": {
         "title": "网关",
         "description": "消息网关（飞书 / Telegram / Discord / Slack）—— 频道级密钥建议用原始 YAML 编辑。",
-        "enabled": { "label": "启用", "description": "启用后，网关主目录将被生成，配有凭据的频道将上线。" },
-        "home": { "label": "网关主目录", "description": "网关状态和各频道配置的工作目录。" }
+        "enabled": {
+          "label": "启用",
+          "description": "启用后，网关主目录将被生成，配有凭据的频道将上线。"
+        },
+        "home": {
+          "label": "网关主目录",
+          "description": "网关状态和各频道配置的工作目录。"
+        }
       },
       "subsystemReload": {
         "title": "子系统重载状态",
@@ -1008,7 +1089,14 @@
     "disable": "禁用",
     "installAriaLabel": "插件 git 仓库 URL",
     "tab": "标签",
-    "runningStatus": "运行中"
+    "runningStatus": "运行中",
+    "starterPluginLabel": "入门插件",
+    "terminalPlugin": {
+      "name": "终端",
+      "badge": "官方",
+      "description": "集成终端，可直接在界面中使用完整 Shell。",
+      "install": "安装"
+    }
   },
   "about": {
     "title": "关于",

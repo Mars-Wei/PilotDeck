@@ -15,11 +15,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       const response = await authenticatedFetch('/api/user/complete-onboarding', { method: 'POST' });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || 'Failed to complete onboarding');
+        throw new Error(data.error || '完成初始化失败');
       }
       await onComplete?.();
     } catch (caughtError) {
-      setErrorMessage(caughtError instanceof Error ? caughtError.message : 'Failed to complete onboarding');
+      setErrorMessage(caughtError instanceof Error ? caughtError.message : '完成初始化失败');
     }
   };
 

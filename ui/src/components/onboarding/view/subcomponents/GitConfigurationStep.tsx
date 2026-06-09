@@ -21,9 +21,9 @@ export default function GitConfigurationStep({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
           <GitBranch className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-foreground">Git Configuration</h2>
+        <h2 className="mb-2 text-2xl font-bold text-foreground">Git 配置</h2>
         <p className="text-muted-foreground">
-          Configure your git identity to ensure proper attribution for commits.
+          配置你的 Git 身份，确保提交记录的作者信息正确。
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function GitConfigurationStep({
         <div>
           <label htmlFor="gitName" className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <User className="h-4 w-4" />
-            Git Name <span className="text-red-500">*</span>
+            Git 用户名 <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -43,13 +43,13 @@ export default function GitConfigurationStep({
             required
             disabled={isSubmitting}
           />
-          <p className="mt-1 text-xs text-muted-foreground">Saved as `git config --global user.name`.</p>
+          <p className="mt-1 text-xs text-muted-foreground">会保存为 `git config --global user.name`。</p>
         </div>
 
         <div>
           <label htmlFor="gitEmail" className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <Mail className="h-4 w-4" />
-            Git Email <span className="text-red-500">*</span>
+            Git 邮箱 <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
@@ -61,7 +61,7 @@ export default function GitConfigurationStep({
             required
             disabled={isSubmitting}
           />
-          <p className="mt-1 text-xs text-muted-foreground">Saved as `git config --global user.email`.</p>
+          <p className="mt-1 text-xs text-muted-foreground">会保存为 `git config --global user.email`。</p>
         </div>
       </div>
     </div>

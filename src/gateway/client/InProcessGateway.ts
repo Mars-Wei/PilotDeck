@@ -142,6 +142,7 @@ export type InProcessGatewayOptions = {
     sessionKey: string;
     projectKey?: string;
     runId: string;
+    forceMemoryFlush?: boolean;
   }) => void;
   telemetry?: TelemetryClient;
 };
@@ -389,6 +390,7 @@ export class InProcessGateway implements Gateway {
         sessionKey: input.sessionKey,
         projectKey: input.projectKey,
         runId,
+        forceMemoryFlush: isExplicitMemoryRequest(input.message),
       });
     }
   }
@@ -1341,6 +1343,31 @@ async function buildAgentInputWithAttachments(
     blocks.push(block);
   }
   return { type: "blocks", content: blocks };
+}
+
+export function isExplicitMemoryRequest(message: string): boolean {
+  const normalized = message.trim().replace(/\s+/g, " ");
+  if (!normalized) return false;
+
+  const lower = normalized.toLowerCase();
+  const chinesePatterns = [
+    /(?:你|帮我|请你)?记(?:一下|住|下来|到记忆里?)/,
+    /(?:保存|写入|加入|添加|记录)(?:到|进)?(?:长期)?记忆/,
+    /(?:以后|之后|下次)(?:请)?记得/,
+    /(?:我的|我有个)(?:偏好|习惯|喜好)/,
+  ];
+  if (chinesePatterns.some((pattern) => pattern.test(normalized))) {
+    return true;
+  }
+
+  const englishPatterns = [
+    /\b(?:please\s+)?remember\s+(?:this|that|it|me|my|i\b)/,
+    /\bsave\s+(?:this|that|it|my|the)\b.{0,80}\b(?:to|in)\s+(?:long[- ]term\s+)?memory\b/,
+    /\b(?:note|record)\s+(?:this|that|it|my)\b/,
+    /\bkeep\s+(?:this|that|it|my)\s+in\s+mind\b/,
+    /\bmy\s+(?:preference|habit|favorite|favourite)\s+is\b/,
+  ];
+  return englishPatterns.some((pattern) => pattern.test(lower));
 }
 
 async function attachmentsToContentBlocks(

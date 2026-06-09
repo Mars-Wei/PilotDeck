@@ -47,11 +47,13 @@ interface UseChatComposerStateArgs {
   permissionMode: PermissionMode | string;
   cycleRunMode: () => void;
   isLoading: boolean;
+  isChatConnected?: boolean;
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
-  sendMessage: (message: unknown) => void;
+  sendMessage: (message: unknown) => boolean;
   sendByCtrlEnter?: boolean;
   onSessionActive?: (sessionId?: string | null) => void;
+  onSessionInactive?: (sessionId?: string | null) => void;
   onSessionProcessing?: (sessionId?: string | null) => void;
   onSessionActivityBump?: (
     projectName: string,
@@ -105,6 +107,8 @@ const createFakeSubmitEvent = () => {
 
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024;
 const MAX_ATTACHMENTS = 10;
+const HOME_PROMPT_STORAGE_KEY = 'pilotdeck-home-pending-prompt';
+const HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY = 'pilotdeck-home-pending-prompt-autosubmit';
 
 type UploadedAttachmentFile = {
   name: string;
@@ -143,11 +147,13 @@ export function useChatComposerState({
   permissionMode,
   cycleRunMode,
   isLoading,
+  isChatConnected = true,
   canAbortSession,
   tokenBudget,
   sendMessage,
   sendByCtrlEnter,
   onSessionActive,
+  onSessionInactive,
   onSessionProcessing,
   onSessionActivityBump,
   onInputFocusChange,
@@ -178,6 +184,7 @@ export function useChatComposerState({
   const [imageErrors, setImageErrors] = useState<Map<string, string>>(new Map());
   const [isTextareaExpanded, setIsTextareaExpanded] = useState(false);
   const [thinkingMode, setThinkingMode] = useState('none');
+  const [pendingHomeAutoSubmit, setPendingHomeAutoSubmit] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
@@ -185,6 +192,9 @@ export function useChatComposerState({
     ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
   >(null);
   const inputValueRef = useRef(input);
+  const submitInFlightRef = useRef(false);
+  const pendingHomeAutoSubmitRef = useRef<string | null>(null);
+  const homePromptDraftGuardRef = useRef<{ projectName: string | null; prompt: string } | null>(null);
 
   // One-shot flag set by `handleCustomCommand` when re-submitting passthrough
   // slash content (e.g. `/projects` for bundled stubs, `/canvas` for skills).
@@ -210,7 +220,7 @@ export function useChatComposerState({
           break;
 
         case 'model': {
-          const modelLines = [`**Current Model**: ${data.current.model}`, '', '**Available Models**:'];
+          const modelLines = [`**当前模型**：${data.current.model}`, '', '**可用模型**：'];
           if (data.available && typeof data.available === 'object') {
             for (const [provider, models] of Object.entries(data.available)) {
               if (Array.isArray(models) && models.length) {
@@ -227,13 +237,13 @@ export function useChatComposerState({
         }
 
         case 'cost': {
-          const costMessage = `**Token Usage**: ${data.tokenUsage.used.toLocaleString()} / ${data.tokenUsage.total.toLocaleString()} (${data.tokenUsage.percentage}%)\n\n**Estimated Cost**:\n- Input: $${data.cost.input}\n- Output: $${data.cost.output}\n- **Total**: $${data.cost.total}\n\n**Model**: ${data.model}`;
+          const costMessage = `**令牌用量**：${data.tokenUsage.used.toLocaleString()} / ${data.tokenUsage.total.toLocaleString()} (${data.tokenUsage.percentage}%)\n\n**预估成本**：\n- 输入：$${data.cost.input}\n- 输出：$${data.cost.output}\n- **总计**：$${data.cost.total}\n\n**模型**：${data.model}`;
           addMessage({ type: 'assistant', content: costMessage, timestamp: Date.now() });
           break;
         }
 
         case 'status': {
-          const statusMessage = `**System Status**\n\n- Version: ${data.version}\n- Uptime: ${data.uptime}\n- Model: ${data.model}\n- Provider: ${data.provider}\n- Node.js: ${data.nodeVersion}\n- Platform: ${data.platform}`;
+          const statusMessage = `**系统状态**\n\n- 版本：${data.version}\n- 运行时长：${data.uptime}\n- 模型：${data.model}\n- 供应商：${data.provider}\n- Node.js：${data.nodeVersion}\n- 平台：${data.platform}`;
           addMessage({ type: 'assistant', content: statusMessage, timestamp: Date.now() });
           break;
         }
@@ -242,13 +252,13 @@ export function useChatComposerState({
           if (data.error) {
             addMessage({
               type: 'assistant',
-              content: `Warning: ${data.message}`,
+              content: `警告：${data.message}`,
               timestamp: Date.now(),
             });
           } else {
             addMessage({
               type: 'assistant',
-              content: `${data.message}\n\nPath: \`${data.path}\``,
+              content: `${data.message}\n\n路径：\`${data.path}\``,
               timestamp: Date.now(),
             });
             if (data.exists && onFileOpen) {
@@ -265,14 +275,14 @@ export function useChatComposerState({
           if (data.error) {
             addMessage({
               type: 'assistant',
-              content: `Warning: ${data.message}`,
+              content: `警告：${data.message}`,
               timestamp: Date.now(),
             });
           } else {
             rewindMessages(data.steps * 2);
             addMessage({
               type: 'assistant',
-              content: `Rewound ${data.steps} step(s). ${data.message}`,
+              content: `已回退 ${data.steps} 步。${data.message}`,
               timestamp: Date.now(),
             });
           }
@@ -293,10 +303,10 @@ export function useChatComposerState({
 
           if (data.needsForce) {
             lines.push(
-              `⚠️ **\`${data.slug}\` is flagged as suspicious by VirusTotal.** clawhub refused to install without explicit consent.`,
+              `⚠️ **\`${data.slug}\` 被 VirusTotal 标记为可疑。** clawhub 需要明确确认后才会安装。`,
             );
             lines.push('');
-            lines.push('Review the skill before retrying. If you trust the source, rerun:');
+            lines.push('请先检查这个技能。如果你信任来源，可以重新运行：');
             lines.push('');
             lines.push('```');
             lines.push(data.retryCommand || `/skill_install ${data.slug} --force`);
@@ -304,15 +314,15 @@ export function useChatComposerState({
           } else if (data.installed) {
             const versionTag = data.skillMeta?.version ? ` v${data.skillMeta.version}` : '';
             const displayName = data.skillMeta?.name || data.slug;
-            lines.push(`✅ **Installed** \`${displayName}\`${versionTag} (${data.scope === 'project' ? 'project' : 'user'} scope)`);
-            lines.push(`Path: \`${data.installPath}\``);
+            lines.push(`✅ **已安装** \`${displayName}\`${versionTag}（${data.scope === 'project' ? '项目' : '用户'}范围）`);
+            lines.push(`路径：\`${data.installPath}\``);
             if (data.skillMeta?.description) {
               lines.push('');
               lines.push(data.skillMeta.description);
             }
           } else {
             lines.push(
-              `⚠️ clawhub finished but \`SKILL.md\` was not found at \`${data.installPath}\`.`,
+              `⚠️ clawhub 已完成，但在 \`${data.installPath}\` 未找到 \`SKILL.md\`。`,
             );
           }
 
@@ -331,11 +341,11 @@ export function useChatComposerState({
           }
           if (data.exitCode && data.exitCode !== 0 && !data.needsForce) {
             lines.push('');
-            lines.push(`Exit code: \`${data.exitCode}\`. ${data.errorMessage || ''}`);
+            lines.push(`退出码：\`${data.exitCode}\`。${data.errorMessage || ''}`);
           }
           if (data.installed) {
             lines.push('');
-            lines.push('_New skill is on disk — open a fresh chat (or `/clear-caches`) to make PilotDeck see it. The UI slash menu picks it up next time you open `/`._');
+            lines.push('_新技能已写入磁盘。打开新会话（或运行 `/clear-caches`）后 OPC Brain 会识别它；下次打开 `/` 时，UI 斜杠菜单也会加载它。_');
           }
           addMessage({
             type: 'assistant',
@@ -367,8 +377,8 @@ export function useChatComposerState({
           addMessage({
             type: 'assistant',
             content: switched
-              ? `Switched to project: \`${targetName}\``
-              : `No project matched \`${targetName}\`. Try the project's directory name (sidebar tooltip).`,
+              ? `已切换到项目：\`${targetName}\``
+              : `没有匹配到项目 \`${targetName}\`。可以试试项目目录名（侧边栏提示中可见）。`,
             timestamp: Date.now(),
           });
           break;
@@ -619,9 +629,18 @@ export function useChatComposerState({
       event.preventDefault();
       const currentInput = inputValueRef.current;
       const hasAttachments = attachedImages.length > 0;
-      if ((!currentInput.trim() && !hasAttachments) || isLoading || !selectedProject) {
+      if ((!currentInput.trim() && !hasAttachments) || isLoading || submitInFlightRef.current || !selectedProject) {
         return;
       }
+      if (!isChatConnected) {
+        addMessage({
+          type: 'error',
+          content: '聊天连接正在重连，请稍后再试。',
+          timestamp: new Date(),
+        }, selectedSession?.id || currentSessionId || null);
+        return;
+      }
+      submitInFlightRef.current = true;
 
       // Intercept slash commands: if input starts with /commandName, execute as command with args.
       // Skip when handleCustomCommand just pushed a passthrough back into the
@@ -636,6 +655,7 @@ export function useChatComposerState({
         const matchedCommand = slashCommands.find((cmd: SlashCommand) => cmd.name === commandName);
         if (matchedCommand) {
           executeCommand(matchedCommand, trimmedInput);
+          submitInFlightRef.current = false;
           setInput('');
           inputValueRef.current = '';
           setAttachedImages([]);
@@ -643,6 +663,9 @@ export function useChatComposerState({
           setImageErrors(new Map());
           resetCommandMenuState();
           setIsTextareaExpanded(false);
+          pendingHomeAutoSubmitRef.current = null;
+          setPendingHomeAutoSubmit(null);
+          homePromptDraftGuardRef.current = null;
           if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
           }
@@ -650,7 +673,7 @@ export function useChatComposerState({
         }
       }
 
-      const userVisibleInput = currentInput.trim() || 'Please review the attached file(s).';
+      const userVisibleInput = currentInput.trim() || '请查看附件。';
       let messageContent = userVisibleInput;
       const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
@@ -701,20 +724,21 @@ export function useChatComposerState({
           });
 
           if (!response.ok) {
-            throw new Error('Failed to upload attachments');
+            throw new Error('上传附件失败');
           }
 
           const result = await response.json();
           uploadedImages = Array.isArray(result.images) ? result.images : [];
           uploadedFiles = Array.isArray(result.files) ? result.files : [];
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
+          const message = error instanceof Error ? error.message : '未知错误';
           console.error('Attachment upload failed:', error);
           addMessage({
             type: 'error',
             content: `Failed to upload attachments: ${message}`,
             timestamp: new Date(),
           }, submitTargetSessionId);
+          submitInFlightRef.current = false;
           return;
         }
       }
@@ -733,10 +757,10 @@ export function useChatComposerState({
       };
 
       addMessage(userMessage, submitTargetSessionId);
-      setIsLoading(true); // Processing banner starts
+      setIsLoading(true); // Start the processing banner.
       setCanAbortSession(true);
       setClaudeStatus({
-        text: 'Processing',
+        text: '处理中',
         tokens: 0,
         can_interrupt: true,
       });
@@ -780,21 +804,40 @@ export function useChatComposerState({
       const toolsSettings = getToolsSettings();
       const sessionSummary = getNotificationSessionSummary(submitSelectedSession, userVisibleInput);
 
-      startSessionCommand({
-        sendMessage,
-        selectedProject,
-        command: messageContent,
-        sessionId: effectiveSessionId,
-        temporarySessionId: sessionToActivate,
-        toolsSettings,
-        permissionMode,
-        model,
-        sessionSummary,
-        images: uploadedImages,
-      });
+      try {
+        startSessionCommand({
+          sendMessage,
+          selectedProject,
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          temporarySessionId: sessionToActivate,
+          toolsSettings,
+          permissionMode,
+          model,
+          sessionSummary,
+          images: uploadedImages,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addMessage({
+          type: 'error',
+          content: errorMessage,
+          timestamp: new Date(),
+        }, submitTargetSessionId);
+        setIsLoading(false);
+        setCanAbortSession(false);
+        setClaudeStatus(null);
+        setPilotDeckStatus(null);
+        onSessionInactive?.(sessionToActivate);
+        submitInFlightRef.current = false;
+        return;
+      }
 
       setInput('');
       inputValueRef.current = '';
+      pendingHomeAutoSubmitRef.current = null;
+      setPendingHomeAutoSubmit(null);
+      homePromptDraftGuardRef.current = null;
       resetCommandMenuState();
       setAttachedImages([]);
       setUploadingImages(new Map());
@@ -807,6 +850,9 @@ export function useChatComposerState({
       }
 
       safeLocalStorage.removeItem(`draft_input_${selectedProject.name}`);
+      window.setTimeout(() => {
+        submitInFlightRef.current = false;
+      }, 0);
     },
     [
       selectedSession,
@@ -814,6 +860,7 @@ export function useChatComposerState({
       model,
       currentSessionId,
       executeCommand,
+      isChatConnected,
       isLoading,
       onSessionActive,
       onSessionActivityBump,
@@ -845,6 +892,17 @@ export function useChatComposerState({
 
   useEffect(() => {
     if (!selectedProject) {
+      return;
+    }
+    const pendingHomePrompt =
+      typeof window !== 'undefined'
+        ? window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY)
+        : null;
+    const guardedHomePrompt = homePromptDraftGuardRef.current;
+    if (
+      pendingHomePrompt ||
+      (guardedHomePrompt && guardedHomePrompt.projectName === selectedProject.name)
+    ) {
       return;
     }
     const savedInput = safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
@@ -902,10 +960,114 @@ export function useChatComposerState({
         return;
       }
 
-      handleCommandInputChange(newValue, cursorPos);
+      handleCommandInputChange();
     },
     [handleCommandInputChange, resetCommandMenuState, setCursorPosition],
   );
+
+  const applyIncomingPrompt = useCallback(
+    (prompt: string, options: { autoSubmit?: boolean } = {}) => {
+      const normalized = prompt.replace(/\s+/g, ' ').trim();
+      if (!normalized) return;
+      setInput(normalized);
+      inputValueRef.current = normalized;
+      homePromptDraftGuardRef.current = {
+        projectName: selectedProject?.name ?? null,
+        prompt: normalized,
+      };
+      resetCommandMenuState();
+      requestAnimationFrame(() => {
+        const node = textareaRef.current;
+        if (!node) return;
+        node.focus();
+        node.setSelectionRange(normalized.length, normalized.length);
+        node.style.height = 'auto';
+        node.style.height = `${node.scrollHeight}px`;
+      });
+      if (options.autoSubmit) {
+        pendingHomeAutoSubmitRef.current = normalized;
+        setPendingHomeAutoSubmit(normalized);
+      }
+    },
+    [resetCommandMenuState, selectedProject?.name],
+  );
+
+  useEffect(() => {
+    if (!selectedProject || typeof window === 'undefined') return undefined;
+
+    const consumeStoredPrompt = () => {
+      const stored = window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY);
+      if (!stored) return;
+      const autoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+      const autoSubmit = autoSubmitPrompt === '1' || autoSubmitPrompt === stored;
+      window.sessionStorage.removeItem(HOME_PROMPT_STORAGE_KEY);
+      applyIncomingPrompt(stored, { autoSubmit });
+    };
+
+    consumeStoredPrompt();
+
+    const handleHomePrompt = (event: Event) => {
+      const detail = (event as CustomEvent<{ prompt?: unknown; autoSubmit?: unknown }>).detail;
+      if (typeof detail?.prompt === 'string') {
+        const stored = window.sessionStorage.getItem(HOME_PROMPT_STORAGE_KEY);
+        if (!stored || stored !== detail.prompt) return;
+        const autoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+        const autoSubmit = detail.autoSubmit === true
+          || autoSubmitPrompt === '1'
+          || autoSubmitPrompt === detail.prompt;
+        window.sessionStorage.removeItem(HOME_PROMPT_STORAGE_KEY);
+        applyIncomingPrompt(detail.prompt, { autoSubmit });
+      }
+    };
+
+    window.addEventListener('pilotdeck-home-prompt', handleHomePrompt);
+    return () => {
+      window.removeEventListener('pilotdeck-home-prompt', handleHomePrompt);
+    };
+  }, [applyIncomingPrompt, selectedProject]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const storedAutoSubmitPrompt = window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+    if (!storedAutoSubmitPrompt || pendingHomeAutoSubmitRef.current || pendingHomeAutoSubmit) {
+      return;
+    }
+    if (input.trim() !== storedAutoSubmitPrompt) {
+      return;
+    }
+    pendingHomeAutoSubmitRef.current = storedAutoSubmitPrompt;
+    setPendingHomeAutoSubmit(storedAutoSubmitPrompt);
+  }, [input, pendingHomeAutoSubmit]);
+
+  useEffect(() => {
+    const storedAutoSubmitPrompt =
+      typeof window !== 'undefined'
+        ? window.sessionStorage.getItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY)
+        : null;
+    const pendingPrompt = pendingHomeAutoSubmit || pendingHomeAutoSubmitRef.current || storedAutoSubmitPrompt;
+    if (
+      !pendingPrompt ||
+      !selectedProject ||
+      isLoading ||
+      submitInFlightRef.current ||
+      !isChatConnected ||
+      !handleSubmitRef.current
+    ) {
+      return;
+    }
+    if (input.trim() !== pendingPrompt || inputValueRef.current.trim() !== pendingPrompt) {
+      return;
+    }
+
+    pendingHomeAutoSubmitRef.current = null;
+    setPendingHomeAutoSubmit(null);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY);
+    }
+    void handleSubmitRef.current(createFakeSubmitEvent());
+  }, [input, isChatConnected, isLoading, pendingHomeAutoSubmit, selectedProject]);
 
   const insertAtCursor = useCallback(
     (char: string) => {
@@ -921,7 +1083,7 @@ export function useChatComposerState({
       setCursorPosition(nextCursor);
 
       if (char === '/') {
-        handleCommandInputChange(nextValue, nextCursor);
+        handleCommandInputChange();
       }
 
       requestAnimationFrame(() => {
@@ -1032,7 +1194,7 @@ export function useChatComposerState({
       candidateSessionIds.find((sessionId) => Boolean(sessionId) && !isTemporarySessionId(sessionId)) || null;
 
     if (!targetSessionId) {
-      console.warn('Abort requested but no concrete session ID is available yet.');
+      console.warn('已请求中止，但还没有可用的具体会话 ID。');
       return;
     }
 
@@ -1045,7 +1207,7 @@ export function useChatComposerState({
     setCanAbortSession(false);
     setIsAborting(true);
     setPilotDeckStatus({
-      text: 'Stopping',
+      text: '正在停止',
       tokens: 0,
       can_interrupt: false,
     });

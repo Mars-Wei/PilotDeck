@@ -280,8 +280,10 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     async refreshConfigBeforeTurn() {
       await configStore.reload("turn-start");
     },
-    afterTurnCompleted: ({ projectKey }) => {
-      registry.scheduleMemoryMaintenance(projectKey ?? projectRoot);
+    afterTurnCompleted: ({ sessionKey, projectKey, forceMemoryFlush }) => {
+      registry.scheduleMemoryMaintenance(projectKey ?? projectRoot, {
+        ...(forceMemoryFlush ? { forceFlushSessionKey: sessionKey } : {}),
+      });
     },
   });
   // Hand the gateway back to the registry so per-session creation can
@@ -347,6 +349,7 @@ type ProjectRuntime = {
   /** Coalesced project-level memory maintenance loop. */
   memoryMaintenanceInFlight?: Promise<void>;
   memoryMaintenanceRequested?: boolean;
+  memoryForceFlushSessionKeys?: Set<string>;
   /**
    * Lazily-started MCP runtime (C1). Built on first session creation by
    * `ensureMcpReady()` because plugin refresh + connect is async.
@@ -607,17 +610,30 @@ class ProjectRuntimeRegistry {
     return runtime;
   }
 
-  scheduleMemoryMaintenance(projectKey?: string): void {
+  scheduleMemoryMaintenance(projectKey?: string, options: { forceFlushSessionKey?: string } = {}): void {
     const runtime = this.resolve(projectKey);
     const service = runtime.memoryService;
     if (!service) return;
+    const requestedSessionKey = options.forceFlushSessionKey;
+    if (requestedSessionKey) {
+      (runtime.memoryForceFlushSessionKeys ??= new Set()).add(requestedSessionKey);
+    }
     runtime.memoryMaintenanceRequested = true;
     if (runtime.memoryMaintenanceInFlight) return;
     runtime.memoryMaintenanceInFlight = (async () => {
       while (runtime.memoryMaintenanceRequested) {
         runtime.memoryMaintenanceRequested = false;
         try {
-          await service.runDueScheduledMaintenance("scheduled");
+          const forceFlushSessionKeys = [...(runtime.memoryForceFlushSessionKeys ?? new Set())];
+          runtime.memoryForceFlushSessionKeys?.clear();
+          if (forceFlushSessionKeys.length > 0) {
+            await service.flush({
+              reason: "manual",
+              sessionKeys: forceFlushSessionKeys,
+            });
+          } else {
+            await service.runDueScheduledMaintenance("scheduled");
+          }
           this.options.telemetry.trackFeatureLoopStage({
             module: "memory",
             ownerModule: "memory",

@@ -1,4 +1,6 @@
 import type { AlwaysOnSubTab, AppTab, Project, ProjectSession } from '../../../types/app';
+import type { HomeDashboardData } from '../../../hooks/useHomeDashboardData';
+import type { DashboardData } from '../../../hooks/useRoutingDashboard';
 
 export type SessionLifecycleHandler = (sessionId?: string | null) => void;
 
@@ -40,7 +42,8 @@ export type MainContentProps = {
   alwaysOnSubTab?: AlwaysOnSubTab;
   onAlwaysOnSubTabChange?: (tab: AlwaysOnSubTab) => void;
   ws: WebSocket | null;
-  sendMessage: (message: unknown) => void;
+  isConnected?: boolean;
+  sendMessage: (message: unknown) => boolean;
   latestMessage: unknown;
   isMobile: boolean;
   onMenuClick: () => void;
@@ -57,6 +60,7 @@ export type MainContentProps = {
     optimisticTitle?: string,
   ) => void;
   processingSessions: Set<string>;
+  unreadSessionIds?: Set<string>;
   onReplaceTemporarySession: SessionLifecycleHandler;
   onNavigateToSession: (targetSessionId: string) => void;
   onStartNewSession: (project: Project) => void;
@@ -65,7 +69,10 @@ export type MainContentProps = {
   // consumers don't need it.
   onSelectSession?: (project: Project, sessionId: string, fallbackSession?: ProjectSession) => void;
   onShowSettings: () => void;
+  onCreateProject?: () => void;
   onSelectProjectByName?: (projectName: string) => void;
+  homeDashboardData?: HomeDashboardData;
+  routingDashboardData?: DashboardData | null;
   externalMessageUpdate: number;
 };
 

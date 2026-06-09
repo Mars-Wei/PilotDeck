@@ -42,7 +42,7 @@ const BUNDLED_SKILL_STUBS = [
   {
     name: '/projects',
     description:
-      'List every PilotDeck project visible to the TUI, gateway, and UI.',
+      'List every OPC Brain project visible to the TUI, gateway, and UI.',
     metadata: { type: 'bundled-skill' },
   },
   {
@@ -275,7 +275,7 @@ const builtInCommands = [
  */
 const builtInHandlers = {
   '/help': async (args, context) => {
-    const helpText = `# PilotDeck Commands
+    const helpText = `# OPC Brain Commands
 
 ## Built-in Commands
 

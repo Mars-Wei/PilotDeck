@@ -28,7 +28,7 @@ export default function StepReview({
     }
 
     if (isSshGitUrl(formState.githubUrl)) {
-      return t('projectWizard.step3.sshKey', { defaultValue: 'SSH Key' });
+      return t('projectWizard.step3.sshKey', { defaultValue: 'SSH 密钥' });
     }
 
     return t('projectWizard.step3.noAuthentication');
@@ -86,7 +86,7 @@ export default function StepReview({
         <div className="rounded-lg border border-border bg-accent/40 p-4">
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">
-              {t('projectWizard.step3.cloningRepository', { defaultValue: 'Cloning repository...' })}
+              {t('projectWizard.step3.cloningRepository', { defaultValue: '正在克隆仓库...' })}
             </p>
             <code className="block whitespace-pre-wrap break-all font-mono text-xs text-muted-foreground">
               {cloneProgress}

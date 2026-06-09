@@ -43,13 +43,13 @@ function ErrorFallback({
               />
             </svg>
           </div>
-          <h3 className="ml-3 text-sm font-medium text-red-800">Something went wrong</h3>
+          <h3 className="ml-3 text-sm font-medium text-red-800">页面出现错误</h3>
         </div>
         <div className="text-sm text-red-700">
-          <p className="mb-2">An error occurred while loading the chat interface.</p>
+          <p className="mb-2">加载聊天界面时发生错误。</p>
           {showDetails && (
             <details className="mt-4">
-              <summary className="cursor-pointer font-mono text-xs">Error Details</summary>
+              <summary className="cursor-pointer font-mono text-xs">错误详情</summary>
               <pre className="mt-2 max-h-40 overflow-auto rounded bg-red-100 p-2 text-xs">
                 {formatError(error)}
                 {componentStack}
@@ -62,7 +62,7 @@ function ErrorFallback({
             onClick={resetErrorBoundary}
             className="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
           >
-            Try Again
+            重试
           </button>
         </div>
       </div>

@@ -107,6 +107,7 @@ export default function CodeEditor({
           showDiff: t('toolbar.showDiff'),
           collapse: t('toolbar.collapse'),
           expand: t('toolbar.expand'),
+          openInModal: t('toolbar.openInModal', { defaultValue: '弹窗打开' }),
         },
       })
     ),
@@ -192,8 +193,11 @@ export default function CodeEditor({
         isFullscreen={isFullscreen}
         onClose={onClose}
         onToggleFullscreen={() => setIsFullscreen((previous) => !previous)}
-        title={t('binaryFile.title', 'Binary File')}
-        message={t('binaryFile.message', 'The file "{{fileName}}" cannot be displayed in the text editor because it is a binary file.', { fileName: file.name })}
+        title={t('binaryFile.title', { defaultValue: '二进制文件' })}
+        message={t('binaryFile.message', {
+          fileName: file.name,
+          defaultValue: `文件 "${file.name}" 无法在文本编辑器中显示，因为它是二进制文件。`,
+        })}
       />
     );
   }
@@ -240,8 +244,8 @@ export default function CodeEditor({
               saved: t('actions.saved'),
               fullscreen: t('actions.fullscreen'),
               exitFullscreen: t('actions.exitFullscreen'),
-              expand: t('actions.expand', { defaultValue: 'Expand to full width' }),
-              collapse: t('actions.collapse', { defaultValue: 'Collapse to split view' }),
+              expand: t('actions.expand', { defaultValue: '展开为全宽' }),
+              collapse: t('actions.collapse', { defaultValue: '收起为分栏视图' }),
               close: t('actions.close'),
             }}
           />

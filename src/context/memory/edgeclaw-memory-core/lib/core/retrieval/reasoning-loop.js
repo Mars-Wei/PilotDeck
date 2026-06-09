@@ -96,9 +96,10 @@ function renderContext(route, userSummary, projectMeta, records) {
     const uniqueRecords = records.filter((record) => !userSummaryPaths.has(record.relativePath));
     const lines = ["## ClawXMemory Recall", `route=${route}`, ""];
     if (route === "user") {
-        if (!hasUserSummary(userSummary))
+        if (!hasUserSummary(userSummary) && uniqueRecords.length === 0)
             return "";
         lines.push(...renderUserSummaryBlock(userSummary));
+        lines.push(...renderSelectedRecordsBlock(uniqueRecords));
     }
     else if (route === "project") {
         if (!projectMeta && uniqueRecords.length === 0)
@@ -256,7 +257,7 @@ function pushStep(trace, kind, title, status, inputSummary, outputSummary, optio
 function fallbackSelection(route, manifest) {
     if (manifest.length === 0)
         return [];
-    const limit = route === "user" ? 1 : 3;
+    const limit = route === "user" ? DEFAULT_SELECTION_LIMIT : 3;
     return manifest.slice(0, limit).map((entry) => entry.relativePath);
 }
 export class ReasoningRetriever {
@@ -472,7 +473,7 @@ export class ReasoningRetriever {
                 recentUserMessages: recentUserMessages(options.recentMessages),
                 ...(projectMeta ? { projectMeta } : {}),
                 manifest,
-                limit: route === "user" ? 1 : DEFAULT_SELECTION_LIMIT,
+                limit: route === "user" ? DEFAULT_SELECTION_LIMIT : DEFAULT_SELECTION_LIMIT,
                 debugTrace: (debug) => {
                     selectionDebug = debug;
                 },

@@ -117,8 +117,8 @@ export default function TerminalShortcutsPanel({
           }}
           disabled={!isConnected}
           className={ICON_BTN}
-          title={t('terminalShortcuts.paste', { defaultValue: 'Paste' })}
-          aria-label={t('terminalShortcuts.paste', { defaultValue: 'Paste' })}
+          title={t('terminalShortcuts.paste', { defaultValue: '粘贴' })}
+          aria-label={t('terminalShortcuts.paste', { defaultValue: '粘贴' })}
         >
           <Clipboard className="h-4 w-4" />
         </button>

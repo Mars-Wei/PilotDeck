@@ -69,8 +69,8 @@ export const OneLineDisplay: React.FC<OneLineDisplayProps> = ({
     <button
       onClick={handleAction}
       className="ml-1 flex-shrink-0 text-gray-400 opacity-0 transition-all hover:text-gray-600 group-hover:opacity-100 dark:hover:text-gray-200"
-      title="Copy to clipboard"
-      aria-label="Copy to clipboard"
+      title="复制到剪贴板"
+      aria-label="复制到剪贴板"
     >
       {copied ? (
         <svg className="h-3 w-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

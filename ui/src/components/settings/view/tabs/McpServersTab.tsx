@@ -90,7 +90,7 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
       const query = projectPath ? `?projectPath=${encodeURIComponent(projectPath)}` : '';
       const response = await authenticatedFetch(`/api/mcp/config${query}`);
       const data = await response.json();
-      if (!response.ok) throw new Error(data.details || data.error || 'Failed to load MCP config');
+      if (!response.ok) throw new Error(data.details || data.error || '加载 MCP 配置失败');
       setConfigs({ global: data.global, project: data.project });
       setDrafts({ global: data.global.raw, project: data.project.raw });
       setServerDrafts({
@@ -98,7 +98,7 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
         project: parseServers(data.project.raw).servers,
       });
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to load MCP config');
+      setError(caught instanceof Error ? caught.message : '加载 MCP 配置失败');
     } finally {
       setLoading(false);
     }
@@ -129,13 +129,13 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
         body: JSON.stringify({ raw, projectPath }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.details || data.error || 'Failed to save MCP config');
+      if (!response.ok) throw new Error(data.details || data.error || '保存 MCP 配置失败');
       setConfigs((current) => current ? { ...current, [scope]: data } : current);
       setDrafts((current) => ({ ...current, [scope]: data.raw }));
       setServerDrafts((current) => ({ ...current, [scope]: parseServers(data.raw).servers }));
       setMessage(t('mcpConfig.saved'));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to save MCP config');
+      setError(caught instanceof Error ? caught.message : '保存 MCP 配置失败');
     } finally {
       setSaving(false);
     }
@@ -352,7 +352,7 @@ function ServerFormCard({
           <input
             value={server.name}
             onChange={(event) => onChange({ name: event.target.value })}
-            placeholder="MCP server name"
+            placeholder="MCP 服务器名称"
             className={INPUT_CLASS}
           />
         </Field>
@@ -599,7 +599,7 @@ function parseServers(raw: string): { servers: McpServerForm[]; error?: string }
       servers: Object.entries(mcpServers).map(([name, value], index) => formFromRaw(name, value, String(index))),
     };
   } catch (error) {
-    return { servers: [], error: error instanceof Error ? error.message : 'Invalid JSON' };
+    return { servers: [], error: error instanceof Error ? error.message : 'JSON 无效' };
   }
 }
 

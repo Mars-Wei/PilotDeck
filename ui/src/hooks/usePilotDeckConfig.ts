@@ -123,11 +123,11 @@ export function usePilotDeckConfig() {
     try {
       const response = await authenticatedFetch('/api/config');
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to load config');
+      if (!response.ok) throw new Error(data.error || '加载配置失败');
       applyResponse(data, 'refresh');
       initialLoadDoneRef.current = true;
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to load config');
+      setError(caught instanceof Error ? caught.message : '加载配置失败');
     } finally {
       setLoading(false);
     }
@@ -168,7 +168,7 @@ export function usePilotDeckConfig() {
 
       if (isDirtyRef.current && source === 'watcher') {
         setExternalChangeNotice(
-          'Config was changed on disk by an external edit. Your unsaved draft is kept — click Refresh to discard and load the new version.',
+          '磁盘上的配置已被外部编辑修改。未保存的草稿已保留，点击“刷新”可放弃草稿并加载新版本。',
         );
         setValidation(payload.validation);
         setReload((payload.reload as ConfigReload | undefined) ?? null);
@@ -189,7 +189,7 @@ export function usePilotDeckConfig() {
         source,
       );
       if (source === 'watcher') {
-        setExternalChangeNotice('Config was updated on disk — the new version is now loaded.');
+        setExternalChangeNotice('磁盘上的配置已更新，新版本已加载。');
       } else {
         setExternalChangeNotice(null);
       }
@@ -208,12 +208,12 @@ export function usePilotDeckConfig() {
         body: JSON.stringify({ raw: draft }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || data.validation?.errors?.join(', ') || 'Failed to save config');
+      if (!response.ok) throw new Error(data.error || data.validation?.errors?.join(', ') || '保存配置失败');
       applyResponse(data, 'ui-save');
-      setMessage('Saved and reloaded');
+      setMessage('已保存并重新加载');
       setExternalChangeNotice(null);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to save config');
+      setError(caught instanceof Error ? caught.message : '保存配置失败');
     } finally {
       setSaving(false);
     }
@@ -226,11 +226,11 @@ export function usePilotDeckConfig() {
     try {
       const response = await authenticatedFetch('/api/config/reload', { method: 'POST' });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to reload config');
+      if (!response.ok) throw new Error(data.error || '重新加载配置失败');
       applyResponse(data, 'ui-reload');
-      setMessage('Reloaded current config');
+      setMessage('已重新加载当前配置');
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to reload config');
+      setError(caught instanceof Error ? caught.message : '重新加载配置失败');
     } finally {
       setSaving(false);
     }
@@ -243,9 +243,9 @@ export function usePilotDeckConfig() {
       const response = await authenticatedFetch('/api/config/open', { method: 'POST' });
       const data = await response.json();
       if (!data.success && data.error) throw new Error(data.error);
-      setMessage(`Config file: ${data.path}`);
+      setMessage(`配置文件：${data.path}`);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Failed to open config file');
+      setError(caught instanceof Error ? caught.message : '打开配置文件失败');
     } finally {
       setOpening(false);
     }

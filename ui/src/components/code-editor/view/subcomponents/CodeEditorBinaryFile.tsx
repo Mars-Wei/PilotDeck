@@ -94,7 +94,7 @@ function FallbackContent({ title, message, onClose }: { title: string; message: 
           onClick={onClose}
           className="mt-2 rounded-md bg-neutral-900 px-4 py-1.5 text-[13px] text-white transition-colors hover:opacity-90 dark:bg-neutral-100 dark:text-neutral-900"
         >
-          Close
+          关闭
         </button>
       </div>
     </div>
@@ -189,7 +189,7 @@ export default function CodeEditorBinaryFile({
             type="button"
             onClick={onToggleFullscreen}
             className={iconBtn}
-            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            title={isFullscreen ? '退出全屏' : '全屏'}
           >
             {isFullscreen ? (
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,7 +212,7 @@ export default function CodeEditorBinaryFile({
             )}
           </button>
         )}
-        <button type="button" onClick={onClose} className={iconBtn} title="Close">
+        <button type="button" onClick={onClose} className={iconBtn} title="关闭">
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"

@@ -16,8 +16,8 @@ type PlanDetailTarget = {
 };
 
 const SUB_TABS: { id: AlwaysOnSubTab; labelKey: string; defaultLabel: string; icon: typeof BarChart3 }[] = [
-  { id: 'dashboard', labelKey: 'tabs.dashboard', defaultLabel: 'Dashboard', icon: BarChart3 },
-  { id: 'plans-cron', labelKey: 'tabs.plansCron', defaultLabel: 'Plans & Cron Jobs', icon: ListChecks },
+  { id: 'dashboard', labelKey: 'tabs.dashboard', defaultLabel: '仪表盘', icon: BarChart3 },
+  { id: 'plans-cron', labelKey: 'tabs.plansCron', defaultLabel: '计划与定时任务', icon: ListChecks },
 ];
 
 type AlwaysOnV2Props = {
@@ -48,7 +48,7 @@ export default function AlwaysOnV2({
   if (!selectedProject) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-[13px] text-neutral-500 dark:bg-neutral-950 dark:text-neutral-400">
-        {t('emptyProject', { defaultValue: 'Pick a project to view Always-On.' })}
+        {t('emptyProject', { defaultValue: '选择一个项目以查看 Always-On。' })}
       </div>
     );
   }
@@ -88,7 +88,7 @@ export default function AlwaysOnV2({
             projectDisplayName={planDetail.projectDisplayName}
             runId={planDetail.sourceRunId}
             projectKey={planDetail.projectKey}
-            backLabel={t('dashboard.runDetail.backToPlans', { defaultValue: 'Back to Plans & Cron Jobs' })}
+            backLabel={t('dashboard.runDetail.backToPlans', { defaultValue: '返回计划列表' })}
             onBack={() => setPlanDetail(null)}
             onOpenExecutionSession={onOpenExecutionSession}
           />

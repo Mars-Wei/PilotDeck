@@ -79,7 +79,7 @@ export default function PluginTabContent({
         // Then import it via a Blob URL so the browser never makes an unauthenticated request.
         const assetUrl = `/api/plugins/${encodeURIComponent(pluginName)}/assets/${encodeURIComponent(entryFile)}`;
         const res = await authenticatedFetch(assetUrl);
-        if (!res.ok) throw new Error(`Failed to fetch plugin (HTTP ${res.status})`);
+        if (!res.ok) throw new Error(`获取插件失败（HTTP ${res.status}）`);
         const jsText = await res.text();
         const blob = new Blob([jsText], { type: 'application/javascript' });
         const blobUrl = URL.createObjectURL(blob);
@@ -106,7 +106,7 @@ export default function PluginTabContent({
                 ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
               },
             );
-            if (!res.ok) throw new Error(`RPC error ${res.status}`);
+            if (!res.ok) throw new Error(`RPC 错误 ${res.status}`);
             return res.json();
           },
         };
@@ -123,7 +123,7 @@ export default function PluginTabContent({
         if (containerRef.current) {
           const errDiv = document.createElement('div');
           errDiv.style.cssText = 'padding:16px;font-size:13px;color:#dc2626';
-          errDiv.textContent = `Plugin failed to load: ${String(err)}`;
+          errDiv.textContent = `插件加载失败：${String(err)}`;
           containerRef.current.replaceChildren(errDiv);
         }
       }

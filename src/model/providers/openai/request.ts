@@ -135,9 +135,11 @@ function toOpenAIMessages(message: CanonicalMessage, messageIndex: number): Open
         : (message.role === "assistant" && thinkingBlocks.length > 0 ? "" : undefined),
       tool_calls: assistantToolCalls.length > 0 ? assistantToolCalls : undefined,
     };
-    // DeepSeek V4 requires reasoning_content to be passed back on assistant
-    // messages in multi-turn conversations; omitting it causes a 400 error.
-    if (message.role === "assistant" && thinkingBlocks.length > 0) {
+    // Some OpenAI-compatible reasoning models (DeepSeek V4, Kimi K2.6)
+    // require reasoning_content to be present on replayed assistant tool-call
+    // messages. When no thinking block was persisted, an empty string is still
+    // accepted and prevents provider-side "missing reasoning_content" errors.
+    if (message.role === "assistant" && (thinkingBlocks.length > 0 || assistantToolCalls.length > 0)) {
       msg.reasoning_content = thinkingBlocks.map((b) => b.text).join("\n");
     }
     messages.push(msg);

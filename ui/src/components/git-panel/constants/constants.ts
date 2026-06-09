@@ -11,10 +11,10 @@ export const FILE_STATUS_GROUPS: GitStatusGroupEntry[] = [
 ];
 
 export const FILE_STATUS_LABELS: Record<FileStatusCode, string> = {
-  M: 'Modified',
-  A: 'Added',
-  D: 'Deleted',
-  U: 'Untracked',
+  M: '已修改',
+  A: '已添加',
+  D: '已删除',
+  U: '未跟踪',
 };
 
 export const FILE_STATUS_BADGE_CLASSES: Record<FileStatusCode, string> = {
@@ -25,25 +25,25 @@ export const FILE_STATUS_BADGE_CLASSES: Record<FileStatusCode, string> = {
 };
 
 export const CONFIRMATION_TITLES: Record<ConfirmActionType, string> = {
-  discard: 'Discard Changes',
-  delete: 'Delete File',
-  commit: 'Confirm Action',
-  pull: 'Confirm Pull',
-  push: 'Confirm Push',
-  publish: 'Publish Branch',
-  revertLocalCommit: 'Revert Local Commit',
-  deleteBranch: 'Delete Branch',
+  discard: '放弃更改',
+  delete: '删除文件',
+  commit: '确认操作',
+  pull: '确认 Pull',
+  push: '确认 Push',
+  publish: '发布分支',
+  revertLocalCommit: '撤销本地提交',
+  deleteBranch: '删除分支',
 };
 
 export const CONFIRMATION_ACTION_LABELS: Record<ConfirmActionType, string> = {
-  discard: 'Discard',
-  delete: 'Delete',
-  commit: 'Confirm',
+  discard: '放弃',
+  delete: '删除',
+  commit: '确认',
   pull: 'Pull',
   push: 'Push',
-  publish: 'Publish',
-  revertLocalCommit: 'Revert Commit',
-  deleteBranch: 'Delete',
+  publish: '发布',
+  revertLocalCommit: '撤销提交',
+  deleteBranch: '删除',
 };
 
 export const CONFIRMATION_BUTTON_CLASSES: Record<ConfirmActionType, string> = {

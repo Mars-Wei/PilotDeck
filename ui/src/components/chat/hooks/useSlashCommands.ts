@@ -114,7 +114,7 @@ export function useSlashCommands({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch commands');
+          throw new Error('获取命令失败');
         }
 
         const data = await response.json();

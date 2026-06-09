@@ -226,14 +226,17 @@ Rules:
 - Assistant text is context only. Never classify something that exists only in assistant wording.
 - A turn can match multiple categories, but at most once per category.
 - Allowed categories:
-  - user: cross-project durable personal identity/background facts about who the user is, such as name, profession, long-term role context, life background, or durable relationship context.
+  - user: cross-project durable personal facts about who the user is, including identity/background, stable personal preferences, stable likes/dislikes, personal habits, food/taste preferences, name, profession, long-term role context, life background, or durable relationship context.
   - project: durable current-project facts such as what the project is, goals, scope, important progress, blockers, risks, key decisions.
-  - feedback: current-project collaboration rules, delivery rules, output structure, title/body template rules, confirmed style guidance, language rules, and file/tool boundaries.
-- Identity test: only use user when the focus turn is describing the user as a person.
+  - feedback: current-project collaboration rules, delivery rules, output structure, title/body template rules, confirmed style guidance, language rules, reply preferences, assistant work preferences, and file/tool boundaries.
+- Identity test: use user when the focus turn is describing the user as a person, including durable personal preferences or habits.
 - Override test: if another project could reasonably override this rule or preference, it is not user; classify it as feedback.
 - Output test: if the turn is constraining how the assistant should reply, write, format, deliver, or touch files/tools, classify it as feedback.
 - Project memory should prefer stable facts. Do not classify short-lived time-flow updates, percentages, or fleeting scheduling notes as project memory unless they carry a durable blocker/risk/fact.
 - If the user explicitly says "请记住", "帮我记住", or "remember this", treat that as a stronger signal for durable memory. This is still inferred from the visible user text only.
+- If the focus turn explicitly asks to remember a first-person personal fact or preference, classify it as user unless it is about how the assistant should reply, format, collaborate, choose tools, touch files, or handle the current project.
+- Examples that are user: "我喜欢吃辣的", "我不吃香菜", "I prefer spicy food", "My birthday is ...".
+- Examples that are feedback, not user: "以后回答用中文", "先给结论", "默认用 pnpm", "不要改我的 .gitignore".
 - If nothing durable should be remembered, return should_store=false and labels=[].
 - Return JSON only.
 
@@ -255,10 +258,10 @@ You create one append-only user memory note from a focus user turn.
 
 Rules:
 - Create at most one user note.
-- The note must capture only durable cross-project personal identity/background information about who the user is.
-- Keep only long-lived identity facts such as name, profession, stable role context, life background, or durable relationship context.
+- The note must capture only durable cross-project personal information about who the user is.
+- Keep only long-lived identity/background facts and personal preferences/habits such as name, profession, stable role context, life background, durable relationship context, food/taste preferences, stable likes/dislikes, or personal habits.
 - Do not include language choices, answer structure, formatting habits, style preferences, file boundaries, tool boundaries, or project-specific collaboration rules.
-- One note should express one durable identity/background fact rather than a full profile rewrite.
+- One note should express one durable personal fact or preference rather than a full profile rewrite.
 - The visible output language must follow the dominant user language in the focus user turn and neighboring user turns.
 - If the surrounding dialogue mixes languages, prefer the focus user turn language first, then the nearest neighboring user language.
 - Apply this language rule consistently to the title/name, description, markdown headings, and markdown body text.
@@ -569,7 +572,7 @@ Rules:
 - Return JSON only.
 - The existing profile markdown is the previous draft. The incoming user notes are the newest evidence.
 - Rewrite the section from scratch. Do not append blindly, and do not keep duplicate or near-duplicate facts just because they already exist.
-- Keep only durable personal identity/background information that should persist across future sessions.
+- Keep only durable personal identity/background information, personal preferences, and personal habits that should persist across future sessions.
 - If old profile content conflicts with newer, clearer incoming evidence, prefer the newer evidence and rewrite the section accordingly.
 - If the incoming evidence only describes reply preferences, formatting habits, style choices, language choices, file/tool boundaries, or project collaboration rules, do not include them in the rewritten section.
 - Do not include project progress, project-specific collaboration rules, deadlines, blockers, or temporary tasks.
@@ -1078,6 +1081,14 @@ function normalizeClassificationLabels(value: unknown): MemoryClassificationLabe
     });
   }
   return labels;
+}
+
+function mergeClassificationLabels(
+  labels: MemoryClassificationLabel[],
+  fallback: MemoryClassificationLabel | null,
+): MemoryClassificationLabel[] {
+  if (!fallback || labels.some((label) => label.type === fallback.type)) return labels;
+  return [...labels, fallback];
 }
 
 function buildCandidateFromCreatePayload(input: {
@@ -1665,7 +1676,10 @@ function pickLongest(left: string, right: string): string {
 }
 
 function stripExplicitRememberLead(text: string): string {
-  return normalizeWhitespace(text);
+  return normalizeWhitespace(text)
+    .replace(/^(?:你|帮我|请你)?(?:记一下|记住|记下来|记录一下|保存(?:到|进)?(?:长期)?记忆|写入(?:长期)?记忆)[：:，,\s]*/i, "")
+    .replace(/^(?:please\s+)?(?:remember|save|record|note)\s+(?:this|that)?[：:,\s]*/i, "")
+    .replace(/^(?:that\s+)?/i, "");
 }
 
 function splitPreferenceHints(text: string): string[] {
@@ -1682,6 +1696,69 @@ function splitPreferenceHints(text: string): string[] {
       .filter(Boolean)
       .filter((line) => line.length >= 4),
   )).slice(0, 10);
+}
+
+function looksLikeExplicitRememberRequest(text: string): boolean {
+  const normalized = normalizeWhitespace(text);
+  if (!normalized) return false;
+  return /(?:你|帮我|请你)?(?:记一下|记住|记下来|记录一下)|(?:保存|写入|加入|添加|记录)(?:到|进)?(?:长期)?记忆|(?:please\s+)?remember\s+(?:this|that|it|me|my|i\b)|\b(?:save|record|note)\s+(?:this|that|it|my)\b/i
+    .test(normalized);
+}
+
+function looksLikePersonalUserFactText(text: string): boolean {
+  const normalized = normalizeWhitespace(stripExplicitRememberLead(text));
+  if (!normalized || looksLikeCollaborationRuleText(normalized)) return false;
+  if (looksLikeConcreteProjectMemoryText(normalized) || looksLikeProjectFollowUpText(normalized)) return false;
+  if (/(?:pnpm|npm|yarn|bun|typescript|javascript|python|react|vue|vite|docker|git|github|api|sdk|mcp|模型|代码|编程|开发|框架|工具|终端|shell)/i.test(normalized)) {
+    return false;
+  }
+  return /(?:我|本人|我的).{0,24}(?:喜欢|不喜欢|爱吃|不吃|讨厌|偏好|习惯|常吃|过敏|生日|家乡|职业|工作|职位)/i
+    .test(normalized)
+    || /\b(?:I|my)\s+(?:prefer|like|dislike|hate|am|work|usually|always|never)\b/i.test(normalized);
+}
+
+function inferLocalMemoryRoute(query: string): MemoryRoute {
+  const normalized = normalizeWhitespace(query);
+  if (!normalized) return "none";
+  if (/(?:我|我的|本人).{0,24}(?:喜欢|不喜欢|爱吃|不吃|讨厌|偏好|习惯|口味|过敏|生日|家乡|职业|工作|职位)|(?:喜欢|偏好|口味|习惯).{0,12}(?:是什么|什么|哪些|吗)|\b(?:what|which).{0,40}\b(?:my|i)\b.{0,40}\b(?:prefer|like|dislike|habit|birthday|job|role|profession)\b/i.test(normalized)) {
+    return "user";
+  }
+  if (/(?:这个项目|当前项目|项目).{0,24}(?:进展|状态|风险|卡点|下一步|目标|范围|决策|记忆)|(?:任务|记忆|插件|数据).{0,12}(?:页面|项目)/i.test(normalized)) {
+    return "project";
+  }
+  return "none";
+}
+
+function buildSyntheticUserMemoryClassificationLabel(text: string): MemoryClassificationLabel | null {
+  if (!looksLikeExplicitRememberRequest(text) || !looksLikePersonalUserFactText(text)) return null;
+  const evidence = truncateForPrompt(stripExplicitRememberLead(text) || text, 220);
+  return {
+    type: "user",
+    reason: "Explicit request to remember a durable first-person personal fact or preference.",
+    evidence,
+  };
+}
+
+function buildSyntheticUserMemoryCandidate(input: {
+  timestamp: string;
+  sessionKey?: string;
+  focusUserTurn: MemoryMessage;
+}): MemoryCandidate | null {
+  const label = buildSyntheticUserMemoryClassificationLabel(input.focusUserTurn.content);
+  if (!label) return null;
+  const fact = truncateForPrompt(label.evidence || stripExplicitRememberLead(input.focusUserTurn.content), 220);
+  if (!fact) return null;
+  return {
+    type: "user",
+    scope: "global",
+    name: "user-profile",
+    description: fact,
+    body: `## 身份背景\n- ${fact}\n`,
+    profile: fact,
+    relationships: [fact],
+    capturedAt: input.timestamp,
+    ...(input.sessionKey ? { sourceSessionKey: input.sessionKey } : {}),
+  };
 }
 
 function splitProfileFacts(text: string): string[] {
@@ -2453,12 +2530,14 @@ export class LlmMemoryExtractor {
         ...(input.debugTrace ? { debugTrace: input.debugTrace } : {}),
         parse: (raw) => JSON.parse(extractFirstJsonObject(raw)) as RawMemoryClassificationPayload,
       });
-      const labels = normalizeClassificationLabels(parsed.labels);
-      const shouldStore = Boolean(parsed.should_store) && labels.length > 0;
+      const fallbackLabel = buildSyntheticUserMemoryClassificationLabel(input.focusUserTurn.content);
+      const labels = mergeClassificationLabels(normalizeClassificationLabels(parsed.labels), fallbackLabel);
+      const shouldStore = labels.length > 0 && (Boolean(parsed.should_store) || Boolean(fallbackLabel));
       return { shouldStore, labels };
     } catch (error) {
       this.logger?.warn?.(`[clawxmemory] memory turn classification fallback: ${String(error)}`);
-      return { shouldStore: false, labels: [] };
+      const fallbackLabel = buildSyntheticUserMemoryClassificationLabel(input.focusUserTurn.content);
+      return fallbackLabel ? { shouldStore: true, labels: [fallbackLabel] } : { shouldStore: false, labels: [] };
     }
   }
 
@@ -2531,13 +2610,17 @@ export class LlmMemoryExtractor {
               payload: parsed,
             },
       });
-      if (parsed.skip === true) return null;
+      if (parsed.skip === true) {
+        return input.kind === "user"
+          ? buildSyntheticUserMemoryCandidate(input)
+          : null;
+      }
       return buildCandidateFromCreatePayload({
         kind: input.kind,
         payload: parsed,
         timestamp: input.timestamp,
         ...(input.sessionKey ? { sessionKey: input.sessionKey } : {}),
-      });
+      }) ?? (input.kind === "user" ? buildSyntheticUserMemoryCandidate(input) : null);
     } catch (error) {
       input.debugTrace?.({
         requestLabel,
@@ -2549,7 +2632,7 @@ export class LlmMemoryExtractor {
         errorMessage: error instanceof Error ? error.message : String(error),
       });
       this.logger?.warn?.(`[clawxmemory] ${requestLabel.toLowerCase()} fallback: ${String(error)}`);
-      return null;
+      return input.kind === "user" ? buildSyntheticUserMemoryCandidate(input) : null;
     }
   }
 
@@ -2801,10 +2884,10 @@ export class LlmMemoryExtractor {
           "Return JSON only with a single field route.",
           "Valid route values: none, user, project, mix.",
           "Use none unless the query clearly needs long-term memory.",
-          "Use user only when the query is asking about stable personal identity/background facts about who the user is, such as name, profession, long-term role context, life background, or durable relationships.",
+          "Use user when the query is asking about stable personal facts about who the user is, including identity/background, personal preferences, stable likes/dislikes, personal habits, food/taste preferences, name, profession, long-term role context, life background, or durable relationships.",
           "Do not use user for reply preferences, language choices, formatting rules, style guidance, file/tool boundaries, or delivery rules; those belong to project.",
           "Use project when the query only needs current project memory, including project facts, collaboration rules, delivery style, file boundaries, or project status.",
-          "Use mix only when the query genuinely needs both current project memory and the user's stable identity/background at the same time.",
+          "Use mix only when the query genuinely needs both current project memory and the user's stable personal facts/preferences at the same time.",
           "Do not use mix just because both could be helpful; choose mix only when both are actually necessary to answer well.",
         ].join("\n"),
         userPrompt: JSON.stringify({
@@ -2823,7 +2906,7 @@ export class LlmMemoryExtractor {
       return normalizeMemoryRoute(parsed.route) || "none";
     } catch (error) {
       this.logger?.warn?.(`[clawxmemory] file memory gate fallback: ${String(error)}`);
-      return "none";
+      return inferLocalMemoryRoute(input.query);
     }
   }
 
@@ -3146,7 +3229,7 @@ export class LlmMemoryExtractor {
           "Use the batch context to interpret ambiguous references in the focus turn, but only emit memories justified by the focus user turn itself.",
           "known_projects contains the durable identity of the current workspace project.",
           "The assistant replies in the batch context are supporting context only. Never create a memory candidate from assistant wording alone.",
-          "For user items only keep stable personal identity/background facts or durable relationships. Never place project state, collaboration rules, reply preferences, language choices, style rules, or file boundaries inside user memory.",
+          "For user items only keep stable personal facts, personal preferences/habits, food/taste preferences, identity/background facts, or durable relationships. Never place project state, collaboration rules, reply preferences, language choices, style rules, or file boundaries inside user memory.",
           "If a first-person statement is really about how the assistant should collaborate, write, format, reply, or operate on files, it is feedback, not user.",
           "Global-seeming reply preferences and personal file boundaries still belong to feedback in this runtime. Examples: '默认使用中文输出', '如果有结论先给结论再给细节', '不要改动我的 .gitignore 文件', '我更关心项目进度、风险和上线阻塞点'.",
           "If the focus turn tells the assistant how to collaborate, deliver, report, format, or structure outputs, that is feedback, not project.",

@@ -4,19 +4,19 @@
  * This file contains the list of supported languages for the application.
  * Each language includes:
  * - value: Language code (e.g., 'en', 'zh-CN')
- * - label: Display name in English
- * - nativeName: Native language name for display
+ * - label: Display name
+ * - nativeName: Display name shown in language selectors
  */
 
 export const languages = [
   {
     value: 'en',
-    label: 'English',
-    nativeName: 'English',
+    label: '英文',
+    nativeName: '英文',
   },
   {
     value: 'zh-CN',
-    label: 'Simplified Chinese',
+    label: '简体中文',
     nativeName: '简体中文',
   },
 ];

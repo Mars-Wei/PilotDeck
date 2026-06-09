@@ -88,7 +88,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
 
     return (
       <div className={`rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/20 dark:text-amber-200 ${className}`}>
-        <div className="font-medium">Question payload could not be rendered.</div>
+        <div className="font-medium">问题内容无法渲染。</div>
         <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words text-[11px] opacity-80">
           {formatInvalidPayload(questions)}
         </pre>
@@ -159,7 +159,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
                         >
                           {lbl}
                           {isCustom && (
-                            <span className="text-[9px] font-normal text-blue-400 dark:text-blue-500">(custom)</span>
+                            <span className="text-[9px] font-normal text-blue-400 dark:text-blue-500">（自定义）</span>
                           )}
                         </span>
                       );
@@ -169,7 +169,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
 
                 {!isExpanded && skipped && hasAnyAnswer && (
                   <span className="mt-1 inline-block text-[10px] italic text-gray-400 dark:text-gray-500">
-                    Skipped
+                    已跳过
                   </span>
                 )}
               </div>
@@ -237,14 +237,14 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100">{lbl}</span>
-                        <span className="ml-1 text-[10px] text-blue-500 dark:text-blue-400">(custom)</span>
+                        <span className="ml-1 text-[10px] text-blue-500 dark:text-blue-400">（自定义）</span>
                       </div>
                     </div>
                   ))}
 
                   {skipped && hasAnyAnswer && (
                     <div className="px-2.5 py-1 text-[11px] italic text-gray-400 dark:text-gray-500">
-                      No answer provided
+                      未提供回答
                     </div>
                   )}
                 </div>
@@ -256,7 +256,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
 
       {!hasAnyAnswer && total === 1 && (
         <div className="text-[11px] italic text-gray-400 dark:text-gray-500">
-          Skipped
+          已跳过
         </div>
       )}
     </div>

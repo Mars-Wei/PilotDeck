@@ -8,7 +8,7 @@ export type AlwaysOnPresencePayload = {
 };
 
 export function sendAlwaysOnPresence(
-  sendMessage: (message: unknown) => void,
+  sendMessage: (message: unknown) => boolean,
   payload: AlwaysOnPresencePayload,
 ): void {
   sendMessage({
@@ -17,6 +17,6 @@ export function sendAlwaysOnPresence(
   });
 }
 
-export function clearAlwaysOnPresence(sendMessage: (message: unknown) => void): void {
+export function clearAlwaysOnPresence(sendMessage: (message: unknown) => boolean): void {
   sendMessage({ type: 'always-on-presence-clear' });
 }

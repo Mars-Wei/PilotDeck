@@ -5,6 +5,7 @@
     "nextChange": "下一个更改",
     "hideDiff": "隐藏差异高亮",
     "showDiff": "显示差异高亮",
+    "openInModal": "弹窗打开",
     "settings": "编辑器设置",
     "collapse": "折叠编辑器",
     "expand": "展开编辑器到全宽"
@@ -27,7 +28,9 @@
     "fullscreen": "全屏",
     "expand": "展开为全宽",
     "collapse": "收起为分栏视图",
-    "close": "关闭"
+    "close": "关闭",
+    "previewMarkdown": "预览 Markdown",
+    "editMarkdown": "编辑 Markdown"
   },
   "footer": {
     "lines": "行数：",

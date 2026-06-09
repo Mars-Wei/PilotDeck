@@ -221,6 +221,10 @@ const SECTION_ICONS: Record<SectionId, LucideIcon> = {
   customEnv: FileCog,
 };
 
+function normalizeSectionId(section?: string): SectionId | null {
+  return SECTIONS.some((item) => item.id === section) ? (section as SectionId) : null;
+}
+
 // ── Config status presentation ──────────────────────────────────────────
 
 type SubsystemKey = 'processEnv' | 'memory' | 'router' | 'gateway';
@@ -526,7 +530,7 @@ function SecretTextInput({
     <TextInput
       type="password"
       value={secretDisplayValue(value)}
-      placeholder={placeholder ?? (masked ? (maskedPlaceholder ?? 'Existing key kept — type to replace') : emptyPlaceholder)}
+      placeholder={placeholder ?? (masked ? (maskedPlaceholder ?? '保留现有密钥 — 输入新值以替换') : emptyPlaceholder)}
       monospace={monospace}
       className={className}
       onChange={onChange}
@@ -601,9 +605,9 @@ function ModelRefInput({
   const selected = value ?? '';
   const hasSelected = !selected || options.some((opt) => opt.value === selected);
   const selectOptions = [
-    { value: '', label: placeholder ?? 'Select a configured model' },
+    { value: '', label: placeholder ?? '选择已配置模型' },
     ...options,
-    ...(!hasSelected ? [{ value: selected, label: `Missing: ${selected}` }] : []),
+    ...(!hasSelected ? [{ value: selected, label: `缺失：${selected}` }] : []),
   ];
   return (
     <Select value={selected} onChange={onChange} options={selectOptions} />
@@ -1161,7 +1165,7 @@ function AgentsSection({ config, onChange }: { config: PilotDeckConfig; onChange
   const subDefault = config.agent?.subagents?.default ?? 'inherit';
 
   const mainOptions = [
-    { value: '', label: '— pick a model —' },
+    { value: '', label: '— 选择模型 —' },
     ...refOptions,
   ];
   const subOptions = [
@@ -1602,8 +1606,8 @@ function AlwaysOnSection({
                     value={trigger.preferChannel}
                     onChange={(value) => onChange(patch(config, ['alwaysOn', 'trigger', 'preferChannel'], value))}
                     options={[
-                      { value: 'web', label: 'Web UI' },
-                      { value: 'tui', label: 'TUI' },
+                      { value: 'web', label: 'Web 界面' },
+                      { value: 'tui', label: '终端界面' },
                     ]}
                   />
                 </FormRow>
@@ -2021,7 +2025,7 @@ function ToolsSection({ config, onChange }: { config: PilotDeckConfig; onChange:
             >
               <TextInput
                 value={custom.name ?? ''}
-                placeholder="My Search"
+                placeholder="我的搜索"
                 onChange={(v) => setCustomField('name', v)}
               />
             </FormRow>
@@ -2269,7 +2273,7 @@ function RouterScenarioEditor({ config, onChange }: { config: PilotDeckConfig; o
           <input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
-            placeholder="scenario name"
+            placeholder="场景名称"
             className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
             onKeyDown={(e) => { if (e.key === 'Enter' && !isImeEnterEvent(e)) addScenario(); }}
           />
@@ -2372,7 +2376,7 @@ function RouterFallbackEditor({ config, onChange }: { config: PilotDeckConfig; o
           <input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
-            placeholder="scenario name (e.g. default)"
+            placeholder="场景名称（例如 default）"
             className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
             onKeyDown={(e) => { if (e.key === 'Enter' && !isImeEnterEvent(e)) addChain(); }}
           />
@@ -2390,17 +2394,17 @@ const ROUTER_TIER_KEYS = ['simple', 'medium', 'complex', 'reasoning'] as const;
 type RouterTierKey = typeof ROUTER_TIER_KEYS[number];
 
 const DEFAULT_TIERS: Record<RouterTierKey, { description: string }> = {
-  simple: { description: 'Simple greetings, confirmations, single-step Q&A, trivial file writes, remembering rules' },
-  medium: { description: 'Single tool call, short text generation, 1-2 file read/write, code generation' },
-  complex: { description: 'Needs sub-agent orchestration: parallel workstreams, delegation to specialized agents' },
-  reasoning: { description: 'Deep single-agent work: multi-file operations, data analysis, multi-step workflows, web research, structured reports from many sources' },
+  simple: { description: '简单问候、确认、单步问答、轻量文件写入、记住规则' },
+  medium: { description: '单次工具调用、短文本生成、1-2 个文件读写、代码生成' },
+  complex: { description: '需要子智能体编排：并行工作流、委派给专门智能体' },
+  reasoning: { description: '深度单智能体任务：多文件操作、数据分析、多步工作流、网页调研、多来源结构化报告' },
 };
 
 const DEFAULT_RULES: string[] = [
-  'complex is ONLY for tasks that need sub-agent orchestration or parallel delegation — do NOT use it for single-agent multi-step work',
-  'Multi-file operations, data analysis, and multi-step workflows without orchestration should be reasoning',
-  'Simple file creation (1-2 files) or single code generation is medium',
-  'Trivial greetings, confirmations, remembering rules, or reading one file and answering a short question is simple',
+  'complex 仅用于需要子智能体编排或并行委派的任务，不要用于单智能体多步任务',
+  '没有编排需求的多文件操作、数据分析和多步工作流应使用 reasoning',
+  '简单文件创建（1-2 个文件）或单次代码生成使用 medium',
+  '简单问候、确认、记住规则，或读取一个文件后回答简短问题使用 simple',
 ];
 
 function TokenSaverTierEditor({ config, onChange }: { config: PilotDeckConfig; onChange: (next: PilotDeckConfig) => void }) {
@@ -2471,7 +2475,7 @@ function TokenSaverTierEditor({ config, onChange }: { config: PilotDeckConfig; o
           <input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
-            placeholder="tier name (e.g. simple, medium, complex)"
+            placeholder="层级名称（例如 simple、medium、complex）"
             className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
             onKeyDown={(e) => { if (e.key === 'Enter' && !isImeEnterEvent(e)) addTier(); }}
           />
@@ -2819,8 +2823,8 @@ function RouterSection({ config, onChange }: { config: PilotDeckConfig; onChange
                         <Select
                           value={ts.subagent?.policy ?? 'judge'}
                           options={[
-                            { value: 'judge', label: 'judge' },
-                            { value: 'skip', label: 'skip' },
+                            { value: 'judge', label: '重新判定' },
+                            { value: 'skip', label: '直接路由' },
                           ]}
                           onChange={(v) => onChange(patch(config, ['router', 'tokenSaver', 'subagent', 'policy'], v))}
                         />
@@ -3024,7 +3028,13 @@ function ConfigSectionHome({ onSelect }: { onSelect: (section: SectionId) => voi
 
 // ── Main tab ───────────────────────────────────────────────────────────
 
-export default function PilotDeckConfigTab({ projects = [] }: { projects?: SettingsProject[] }) {
+export default function PilotDeckConfigTab({
+  projects = [],
+  initialSection,
+}: {
+  projects?: SettingsProject[];
+  initialSection?: string;
+}) {
   const { t } = useTranslation('settings');
   const {
     path,
@@ -3048,8 +3058,15 @@ export default function PilotDeckConfigTab({ projects = [] }: { projects?: Setti
 
 	  // Active form section. Null means the config page is showing its grouped
   // navigation home, matching the outer Settings page interaction model.
-  const [activeSection, setActiveSection] = useState<SectionId | null>(null);
+  const [activeSection, setActiveSection] = useState<SectionId | null>(() => normalizeSectionId(initialSection));
   const [showConfigDetails, setShowConfigDetails] = useState(false);
+
+  useEffect(() => {
+    const nextSection = normalizeSectionId(initialSection);
+    if (nextSection) {
+      setActiveSection(nextSection);
+    }
+  }, [initialSection]);
 
   // Parse `raw` into a typed config for the form. Memoised so we don't
   // reparse on every keystroke unrelated to YAML, but raw IS the source of

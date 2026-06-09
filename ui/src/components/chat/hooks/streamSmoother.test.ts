@@ -153,6 +153,40 @@ describe('SmoothTextStream', () => {
     expect(scheduler.size).toBe(0);
   });
 
+  it('finishes only after queued content drains through frames', () => {
+    let now = 0;
+    const scheduler = createManualFrameScheduler(() => {
+      now += 33;
+    });
+    const emitted: string[] = [];
+    let finalized = 0;
+    const text = 'abcdefghijklmnopqrstuvwxyz '.repeat(5);
+    const stream = new SmoothTextStream({
+      emit: (content) => emitted.push(content),
+      finalize: () => {
+        finalized += 1;
+      },
+      scheduleFrame: (callback) => scheduler.scheduleFrame(callback),
+      cancelFrame: (handle) => scheduler.cancelFrame(handle),
+      now: () => now,
+      frameMs: 33,
+      minCharsPerFrame: 2,
+      maxCharsPerFrame: 12,
+    });
+
+    stream.append(text);
+    stream.finish();
+
+    expect(emitted.at(-1)).not.toBe(text);
+    expect(finalized).toBe(0);
+
+    scheduler.drain();
+
+    expect(emitted.at(-1)).toBe(text);
+    expect(finalized).toBe(1);
+    expect(stream.getSnapshot().targetLength).toBe(0);
+  });
+
   it('falls back when requestAnimationFrame does not run promptly', () => {
     vi.useFakeTimers();
     const requestAnimationFrameSpy = vi.fn(() => 1);

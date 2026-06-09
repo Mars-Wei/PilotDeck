@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { MessageSquare } from 'lucide-react';
 import { IS_PLATFORM } from '../../../constants/config';
+import BrandLogo from '../../brand/BrandLogo';
 
 type AuthScreenLayoutProps = {
   title: string;
@@ -24,9 +24,7 @@ export default function AuthScreenLayout({
           <div className="text-center">
             <div className="mb-4 flex justify-center">
               {logo ?? (
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary shadow-sm">
-                  <MessageSquare className="h-8 w-8 text-primary-foreground" />
-                </div>
+                <BrandLogo showText={false} iconClassName="h-16 w-16 rounded-xl" />
               )}
             </div>
             <h1 className="text-2xl font-bold text-foreground">{title}</h1>
@@ -50,7 +48,7 @@ export default function AuthScreenLayout({
                 rel="noopener noreferrer"
                 className="text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
               >
-                PilotDeck is open source
+                OPC Brain 是开源项目
               </a>
             </div>
           )}

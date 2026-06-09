@@ -263,7 +263,7 @@ export default function PermissionsSettingsTab() {
           allowed: payload.allowedTools.length,
           blocked: payload.disallowedTools.length,
           defaultValue:
-            'Exported {{allowed}} allowed and {{blocked}} blocked tools.',
+            '已导出 {{allowed}} 个允许工具与 {{blocked}} 个禁用工具。',
         }),
       });
     } catch (err) {
@@ -271,7 +271,7 @@ export default function PermissionsSettingsTab() {
       setBanner({
         kind: 'error',
         message: t('permissions.exportError', {
-          defaultValue: 'Failed to export permissions.',
+          defaultValue: '导出权限失败。',
         }),
       });
     }
@@ -295,7 +295,7 @@ export default function PermissionsSettingsTab() {
       setBanner({
         kind: 'error',
         message: t('permissions.importReadError', {
-          defaultValue: 'Could not read the selected file.',
+          defaultValue: '无法读取选中的文件。',
         }),
       });
       return;
@@ -307,7 +307,7 @@ export default function PermissionsSettingsTab() {
         kind: 'error',
         message: t('permissions.importInvalid', {
           defaultValue:
-            'Not a valid permissions export. Expected JSON with allowedTools / disallowedTools.',
+            '文件不是有效的权限导出（需要包含 allowedTools / disallowedTools 的 JSON）。',
         }),
       });
       return;
@@ -321,7 +321,7 @@ export default function PermissionsSettingsTab() {
       allowed: parsed.allowedTools.length,
       blocked: parsed.disallowedTools.length,
       defaultValue:
-        'Merge {{allowed}} allowed and {{blocked}} blocked tools into your existing permissions?',
+        '将导入的 {{allowed}} 个允许工具与 {{blocked}} 个禁用工具合并到现有权限？',
     });
     if (!window.confirm(summary)) {
       setBanner(null);
@@ -352,7 +352,7 @@ export default function PermissionsSettingsTab() {
         addedAllowed,
         addedBlocked,
         defaultValue:
-          'Imported. Added {{addedAllowed}} allowed and {{addedBlocked}} blocked tools.',
+          '导入完成，新增 {{addedAllowed}} 个允许工具与 {{addedBlocked}} 个禁用工具。',
       }),
     });
   };
@@ -360,10 +360,10 @@ export default function PermissionsSettingsTab() {
   return (
     <div className="space-y-8">
       <SettingsSection
-        title={t('permissions.title', { defaultValue: 'Permissions' })}
+        title={t('permissions.title', { defaultValue: '权限设置' })}
         description={t('permissions.description', {
           defaultValue:
-            'Manage which tools the assistant can run without asking. Grants from the chat "Add permission" button land here too.',
+            '管理助手可以无需询问即可运行的工具。从聊天中点击「添加权限」授予的项也会落到这里。',
         })}
       >
         {/* Import / export. Hidden file input lives outside flow so the
@@ -384,7 +384,7 @@ export default function PermissionsSettingsTab() {
             className="h-8 gap-1.5 text-xs"
           >
             <Download className="h-3.5 w-3.5" />
-            {t('permissions.export', { defaultValue: 'Export' })}
+            {t('permissions.export', { defaultValue: '导出' })}
           </Button>
           <Button
             variant="outline"
@@ -393,11 +393,11 @@ export default function PermissionsSettingsTab() {
             className="h-8 gap-1.5 text-xs"
           >
             <Upload className="h-3.5 w-3.5" />
-            {t('permissions.import', { defaultValue: 'Import' })}
+            {t('permissions.import', { defaultValue: '导入' })}
           </Button>
           <span className="text-xs text-muted-foreground">
             {t('permissions.importExportHint', {
-              defaultValue: 'Share or back up your tool permissions as JSON.',
+              defaultValue: '可将权限列表导出为 JSON，便于备份或与他人共享。',
             })}
           </span>
         </div>
@@ -420,17 +420,17 @@ export default function PermissionsSettingsTab() {
             label={
               <span className="inline-flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                {t('permissions.skipPermissions.title', { defaultValue: 'Skip permission prompts' })}
+                {t('permissions.skipPermissions.title', { defaultValue: '跳过权限确认' })}
               </span>
             }
             description={t('permissions.skipPermissions.description', {
               defaultValue:
-                'Run tool calls without asking for confirmation. This maps to bypassPermissions and should only be used in trusted workspaces.',
+                '工具调用不再弹出确认，等同于 bypassPermissions。仅建议在可信工作区中开启。',
             })}
           >
             <SettingsToggle
               checked={skipPermissions}
-              ariaLabel={t('permissions.skipPermissions.title', { defaultValue: 'Skip permission prompts' })}
+              ariaLabel={t('permissions.skipPermissions.title', { defaultValue: '跳过权限确认' })}
               onChange={handleSkipPermissionsChange}
             />
           </SettingsRow>
@@ -438,7 +438,7 @@ export default function PermissionsSettingsTab() {
             <div className="border-t border-border px-4 py-2.5 text-xs leading-relaxed text-amber-700 dark:text-amber-300">
               {t('permissions.skipPermissions.warning', {
                 defaultValue:
-                  'Permission prompts are currently bypassed. Allowed and blocked rules below are still saved, but this global mode lets the agent run without asking.',
+                  '当前已跳过权限确认。下方允许/禁用规则仍会保存，但这个全局模式会让智能体无需询问即可运行工具。',
               })}
             </div>
           ) : null}
@@ -449,11 +449,11 @@ export default function PermissionsSettingsTab() {
         title={
           <span className="inline-flex items-center gap-2">
             <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
-            {t('permissions.allowedTools.title', { defaultValue: 'Allowed tools' })}
+            {t('permissions.allowedTools.title', { defaultValue: '允许的工具' })}
           </span>
         }
         description={t('permissions.allowedTools.description', {
-          defaultValue: 'Tools that auto-run without prompting.',
+          defaultValue: '无需权限提示即可自动使用的工具。',
         })}
       >
         <SettingsCard className="space-y-3 p-3">
@@ -462,7 +462,7 @@ export default function PermissionsSettingsTab() {
               value={newAllowed}
               onChange={(event) => setNewAllowed(event.target.value)}
               placeholder={t('permissions.allowedTools.placeholder', {
-                defaultValue: 'e.g. "bash:git log:*" or "write_file"',
+                defaultValue: '例如："bash:git log:*" 或 "write_file"',
               })}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
@@ -482,13 +482,13 @@ export default function PermissionsSettingsTab() {
               className="h-10 px-4"
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              {t('permissions.actions.add', { defaultValue: 'Add' })}
+              {t('permissions.actions.add', { defaultValue: '添加' })}
             </Button>
           </div>
 
           <div>
             <p className="mb-2 text-xs font-medium text-muted-foreground">
-              {t('permissions.allowedTools.quickAdd', { defaultValue: 'Quick add:' })}
+              {t('permissions.allowedTools.quickAdd', { defaultValue: '快速添加常用工具：' })}
             </p>
             <div className="flex flex-wrap gap-2">
               {QUICK_ADD_TOOLS.map((tool) => (
@@ -510,7 +510,7 @@ export default function PermissionsSettingsTab() {
             {allowedTools.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border py-5 text-center text-xs text-muted-foreground">
                 {t('permissions.allowedTools.empty', {
-                  defaultValue: 'No allowed tools configured yet.',
+                  defaultValue: '未配置允许的工具。',
                 })}
               </div>
             ) : (
@@ -527,7 +527,7 @@ export default function PermissionsSettingsTab() {
                     size="sm"
                     onClick={() => handleRemoveAllowed(tool)}
                     className="h-7 w-7 p-0 text-green-700 hover:text-green-900 dark:text-green-300"
-                    aria-label={t('permissions.actions.remove', { defaultValue: 'Remove' })}
+                    aria-label={t('permissions.actions.remove', { defaultValue: '移除' })}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -542,11 +542,11 @@ export default function PermissionsSettingsTab() {
         title={
           <span className="inline-flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-            {t('permissions.blockedTools.title', { defaultValue: 'Blocked tools' })}
+            {t('permissions.blockedTools.title', { defaultValue: '禁用的工具' })}
           </span>
         }
         description={t('permissions.blockedTools.description', {
-          defaultValue: 'Tools the assistant is never allowed to use.',
+          defaultValue: '助手永远不允许使用的工具。',
         })}
       >
         <SettingsCard className="space-y-3 p-3">
@@ -555,7 +555,7 @@ export default function PermissionsSettingsTab() {
               value={newBlocked}
               onChange={(event) => setNewBlocked(event.target.value)}
               placeholder={t('permissions.blockedTools.placeholder', {
-                defaultValue: 'e.g. "Bash(rm:*)"',
+                defaultValue: '例如："Bash(rm:*)"',
               })}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
@@ -575,13 +575,13 @@ export default function PermissionsSettingsTab() {
               className="h-10 px-4"
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              {t('permissions.actions.add', { defaultValue: 'Add' })}
+              {t('permissions.actions.add', { defaultValue: '添加' })}
             </Button>
           </div>
 
           <div>
             <p className="mb-2 text-xs font-medium text-muted-foreground">
-              {t('permissions.allowedTools.quickAdd', { defaultValue: 'Quick add:' })}
+              {t('permissions.allowedTools.quickAdd', { defaultValue: '快速添加常用工具：' })}
             </p>
             <div className="flex flex-wrap gap-2">
               {QUICK_BLOCK_TOOLS.map((tool) => (
@@ -603,7 +603,7 @@ export default function PermissionsSettingsTab() {
             {disallowedTools.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border py-5 text-center text-xs text-muted-foreground">
                 {t('permissions.blockedTools.empty', {
-                  defaultValue: 'No blocked tools configured.',
+                  defaultValue: '未配置禁用的工具。',
                 })}
               </div>
             ) : (
@@ -618,7 +618,7 @@ export default function PermissionsSettingsTab() {
                     size="sm"
                     onClick={() => handleRemoveBlocked(tool)}
                     className="h-7 w-7 p-0 text-red-700 hover:text-red-900 dark:text-red-300"
-                    aria-label={t('permissions.actions.remove', { defaultValue: 'Remove' })}
+                    aria-label={t('permissions.actions.remove', { defaultValue: '移除' })}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -630,35 +630,35 @@ export default function PermissionsSettingsTab() {
       </SettingsSection>
 
       <SettingsSection
-        title={t('permissions.toolExamples.title', { defaultValue: 'Pattern examples' })}
+        title={t('permissions.toolExamples.title', { defaultValue: '模式示例' })}
       >
         <SettingsCard className="p-4">
           <ul className="space-y-1.5 text-xs text-muted-foreground">
             <li>
               <code className="rounded bg-muted px-1 py-0.5 text-foreground">bash:git log:*</code>{' '}
-              {t('permissions.toolExamples.bashGitLog', { defaultValue: '— allow all git log commands' })}
+              {t('permissions.toolExamples.bashGitLog', { defaultValue: '- 允许所有 git log 命令' })}
             </li>
             <li>
               <code className="rounded bg-muted px-1 py-0.5 text-foreground">bash:git diff:*</code>{' '}
-              {t('permissions.toolExamples.bashGitDiff', { defaultValue: '— allow all git diff commands' })}
+              {t('permissions.toolExamples.bashGitDiff', { defaultValue: '- 允许所有 git diff 命令' })}
             </li>
             <li>
               <code className="rounded bg-muted px-1 py-0.5 text-foreground">write_file</code>{' '}
-              {t('permissions.toolExamples.write', { defaultValue: '— allow all writes' })}
+              {t('permissions.toolExamples.write', { defaultValue: '- 允许所有写入工具' })}
             </li>
             <li>
               <code className="rounded bg-muted px-1 py-0.5 text-foreground">bash:rm:*</code>{' '}
-              {t('permissions.toolExamples.bashRm', { defaultValue: '— block all rm commands (dangerous)' })}
+              {t('permissions.toolExamples.bashRm', { defaultValue: '- 阻止所有 rm 命令（危险）' })}
             </li>
             {IS_WINDOWS ? (
               <>
                 <li>
                   <code className="rounded bg-muted px-1 py-0.5 text-foreground">bash:Remove-Item:*</code>{' '}
-                  {t('permissions.toolExamples.bashRemoveItem', { defaultValue: '— block PowerShell Remove-Item' })}
+                  {t('permissions.toolExamples.bashRemoveItem', { defaultValue: '- 阻止 PowerShell Remove-Item' })}
                 </li>
                 <li>
                   <code className="rounded bg-muted px-1 py-0.5 text-foreground">bash:del /s:*</code>{' '}
-                  {t('permissions.toolExamples.bashDel', { defaultValue: '— block CMD recursive delete' })}
+                  {t('permissions.toolExamples.bashDel', { defaultValue: '- 阻止 CMD 递归删除' })}
                 </li>
               </>
             ) : null}
