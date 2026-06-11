@@ -105,7 +105,7 @@ export async function* streamModel(
 
     try {
       for await (const rawEvent of readServerSentEvents(response.body, options.signal)) {
-        for (const event of normalizeStreamEvent(provider.protocol, rawEvent, state, model)) {
+        for (const event of normalizeStreamEvent(provider.protocol, rawEvent, state)) {
           checkpoint.onEvent(event);
           yield event;
         }

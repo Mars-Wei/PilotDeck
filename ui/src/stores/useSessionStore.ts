@@ -334,12 +334,6 @@ function recomputeMergedIfNeeded(slot: SessionSlot): boolean {
   return true;
 }
 
-function forceRecomputeMerged(slot: SessionSlot): void {
-  slot._lastServerRef = slot.serverMessages;
-  slot._lastRealtimeRef = slot.realtimeMessages;
-  slot.merged = computeMerged(slot.serverMessages, slot.realtimeMessages);
-}
-
 /**
  * Patch a single streaming row in `slot.merged` without recomputing the full list.
  * Returns true when the merged row was updated in place.
@@ -729,15 +723,21 @@ export function useSessionStore() {
     if (idx >= 0) {
       // Subsequent delta — preserve the original turn-start timestamp so
       // computeMerged can tell which server snapshots belong to this turn.
+      // Keep the update immutable: the chat view memoizes by the merged
+      // messages array reference, so mutating the existing row in place makes
+      // streamed text appear only after finalization swaps the array.
       const existing = slot.realtimeMessages[idx];
       if (existing.content === accumulatedText && existing.provider === msgProvider) {
         return;
       }
-      existing.content = accumulatedText;
-      existing.provider = msgProvider;
-      if (!patchMergedStreamingMessage(slot, streamId, accumulatedText, msgProvider)) {
-        forceRecomputeMerged(slot);
-      }
+      const updated = {
+        ...existing,
+        content: accumulatedText,
+        provider: msgProvider,
+      };
+      slot.realtimeMessages = [...slot.realtimeMessages];
+      slot.realtimeMessages[idx] = updated;
+      recomputeMergedIfNeeded(slot);
       notify(sessionId);
       return;
     } else {
@@ -802,11 +802,14 @@ export function useSessionStore() {
       if (existing.content === accumulatedText && existing.provider === msgProvider) {
         return;
       }
-      existing.content = accumulatedText;
-      existing.provider = msgProvider;
-      if (!patchMergedStreamingMessage(slot, streamId, accumulatedText, msgProvider)) {
-        forceRecomputeMerged(slot);
-      }
+      const updated = {
+        ...existing,
+        content: accumulatedText,
+        provider: msgProvider,
+      };
+      slot.realtimeMessages = [...slot.realtimeMessages];
+      slot.realtimeMessages[idx] = updated;
+      recomputeMergedIfNeeded(slot);
       notify(sessionId);
       return;
     } else {

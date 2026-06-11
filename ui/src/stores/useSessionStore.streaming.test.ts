@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 import type { SessionProvider } from '../types/app';
 import {
   createRafNotifyScheduler,
   patchMergedStreamingMessage,
+  useSessionStore,
   type NormalizedMessage,
   type SessionSlot,
 } from './useSessionStore';
@@ -79,7 +81,7 @@ describe('patchMergedStreamingMessage', () => {
 describe('createRafNotifyScheduler', () => {
   it('coalesces multiple schedules for the same session into one frame callback', () => {
     const frames: Array<() => void> = [];
-    let activeSessionId: string | null = 'web:s_1';
+    const activeSessionId: string | null = 'web:s_1';
     let notifyCount = 0;
 
     const scheduler = createRafNotifyScheduler(
@@ -149,5 +151,31 @@ describe('createRafNotifyScheduler', () => {
     expect(cancelled).toEqual([1]);
     frames[0]?.();
     expect(onNotify).not.toHaveBeenCalled();
+  });
+});
+
+describe('useSessionStore streaming updates', () => {
+  it('replaces merged message references as text deltas grow', () => {
+    const sessionId = 'web:s_stream';
+    const { result, unmount } = renderHook(() => useSessionStore());
+
+    act(() => {
+      result.current.setActiveSession(sessionId);
+      result.current.updateStreaming(sessionId, 'hello', PROVIDER);
+    });
+
+    const firstMessages = result.current.getMessages(sessionId);
+    expect(firstMessages[0]?.content).toBe('hello');
+
+    act(() => {
+      result.current.updateStreaming(sessionId, 'hello world', PROVIDER);
+    });
+
+    const secondMessages = result.current.getMessages(sessionId);
+    expect(secondMessages).not.toBe(firstMessages);
+    expect(secondMessages[0]).not.toBe(firstMessages[0]);
+    expect(secondMessages[0]?.content).toBe('hello world');
+
+    unmount();
   });
 });

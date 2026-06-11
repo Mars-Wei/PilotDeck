@@ -114,7 +114,6 @@ function bufferPartialTag(text: string, tag: string): number {
 export function normalizeOpenAIStreamEvent(
   raw: unknown,
   state: OpenAIStreamState = createOpenAIStreamState(),
-  options: { reasoningAsThinking?: boolean } = {},
 ): CanonicalModelEvent[] {
   const chunk = asRecord(raw);
   const events: CanonicalModelEvent[] = [];
@@ -151,7 +150,7 @@ export function normalizeOpenAIStreamEvent(
       }
       if (emit.length > 0) {
         events.push({
-          type: options.reasoningAsThinking === false ? "text_delta" : "thinking_delta",
+          type: "thinking_delta",
           text: emit,
           raw,
         });
