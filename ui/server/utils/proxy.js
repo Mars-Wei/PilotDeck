@@ -1,7 +1,7 @@
 /**
  * Pure-JS port of `src/cli/proxy.ts` — installs a global undici
  * proxy agent so Node native `fetch()` and `WebSocket` honor
- * `PILOTDECK_PROXY` / `HTTPS_PROXY` / `HTTP_PROXY`. Node's native
+ * `OPCBRAIN_PROXY` / `HTTPS_PROXY` / `HTTP_PROXY`. Node's native
  * fetch does NOT respect those env vars by default; this closes the
  * gap.
  *
@@ -17,7 +17,7 @@ import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 
 function getProxyUrl(env = process.env) {
     return (
-        env.PILOTDECK_PROXY ||
+        env.OPCBRAIN_PROXY ||
         env.https_proxy ||
         env.HTTPS_PROXY ||
         env.http_proxy ||

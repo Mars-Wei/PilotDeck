@@ -18,8 +18,8 @@ export async function detectTaskMasterMCPServer() {
     try {
         const homeDir = os.homedir();
         const configPaths = [
-            path.join(homeDir, '.pilotdeck.json'),
-            path.join(homeDir, '.pilotdeck', 'settings.json')
+            path.join(homeDir, '.opcbrain.json'),
+            path.join(homeDir, '.opcbrain', 'settings.json')
         ];
         
         let configData = null;
@@ -151,8 +151,8 @@ export async function getAllMCPServers() {
     try {
         const homeDir = os.homedir();
         const configPaths = [
-            path.join(homeDir, '.pilotdeck.json'),
-            path.join(homeDir, '.pilotdeck', 'settings.json')
+            path.join(homeDir, '.opcbrain.json'),
+            path.join(homeDir, '.opcbrain', 'settings.json')
         ];
         
         let configData = null;

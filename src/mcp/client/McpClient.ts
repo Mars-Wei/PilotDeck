@@ -42,7 +42,7 @@ import type {
 } from "../protocol/types.js";
 
 const DEFAULT_CALL_TIMEOUT_MS = parseInt(
-  process.env.PILOTDECK_MCP_TOOL_TIMEOUT_MS ?? "60000",
+  process.env.OPCBRAIN_MCP_TOOL_TIMEOUT_MS ?? "60000",
   10,
 );
 const LIST_TOOLS_CACHE_TTL_MS = 5 * 60 * 1000;

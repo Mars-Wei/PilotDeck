@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Load environment variables before other imports execute
 import { assertRequiredPilotDeckEnv } from './load-env.js';
-// Install global fetch proxy (PILOTDECK_PROXY / HTTPS_PROXY) before any network calls
+// Install global fetch proxy (OPCBRAIN_PROXY / HTTPS_PROXY) before any network calls
 import { installGlobalProxy } from './utils/proxy.js';
 installGlobalProxy();
 
@@ -110,13 +110,13 @@ import { contentDispositionAttachment } from './utils/downloadHeaders.js';
 const VALID_PROVIDERS = ['pilotdeck'];
 
 // File-system watchers for the chat transcript root maintained by
-// OPC Brain. Provider-specific watchers (.pilotdeck) were dropped along with the four provider adapters.
+// OPC Brain. Provider-specific watchers (.opcbrain) were dropped along with the four provider adapters.
 // .gemini) were dropped along with the four provider adapters.
 const PROVIDER_WATCH_PATHS = [
     {
         provider: 'pilotdeck',
         rootPath: path.join(
-            process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck'),
+            process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain'),
             'projects',
         ),
     },
@@ -155,7 +155,7 @@ function broadcastProgress(progress) {
     });
 }
 
-// Broadcasts ~/.pilotdeck/pilotdeck.yaml reload events (from UI saves or external file edits)
+// Broadcasts ~/.opcbrain/opcbrain.yaml reload events (from UI saves or external file edits)
 // to every connected WebSocket client so open Settings tabs refresh instantly.
 function broadcastConfigReloaded(payload) {
     const message = JSON.stringify({ type: 'config:reloaded', ...payload });
@@ -439,8 +439,8 @@ app.use('/api/home', authenticateToken, homeRoutes);
 app.use('/api/commands', authenticateToken, commandsRoutes);
 
 // Skills API Routes (protected) — list/edit/install skills surfaced in the
-// top-right Skills tab. Backed by ~/.pilotdeck/skills/ and project-level
-// .pilotdeck/skills/ via OPC Brain plugin runtime.
+// top-right Skills tab. Backed by ~/.opcbrain/skills/ and project-level
+// .opcbrain/skills/ via OPC Brain plugin runtime.
 app.use('/api/skills', authenticateToken, skillsRoutes);
 
 // Settings API Routes (protected)
@@ -681,7 +681,7 @@ app.post('/api/ccr/stats/reset', authenticateToken, (_req, res) => {
 app.put('/api/ccr/config', authenticateToken, (_req, res) => {
     res.status(501).json({
         error: 'not_implemented',
-        message: 'Routing configuration is owned by OPC Brain config (~/.pilotdeck/pilotdeck.yaml). Edit it directly via /api/config.',
+        message: 'Routing configuration is owned by OPC Brain config (~/.opcbrain/opcbrain.yaml). Edit it directly via /api/config.',
     });
 });
 
@@ -2729,7 +2729,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
 
         const encodedPath = projectPath.replace(/[^a-zA-Z0-9-]/g, '-');
-        const projectDir = path.join(homeDir, '.pilotdeck', 'projects', encodedPath);
+        const projectDir = path.join(homeDir, '.opcbrain', 'projects', encodedPath);
 
         const jsonlPath = path.join(projectDir, `${safeSessionId}.jsonl`);
 
@@ -2964,7 +2964,7 @@ async function ensureLocalUserWhenAuthDisabled() {
     }
     const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
     userDb.createUser('local', passwordHash);
-    console.log(`${c.info('[INFO]')} Web UI login is disabled (default). Using built-in user. Set PILOTDECK_DISABLE_LOCAL_AUTH=0 to require username/password.`);
+    console.log(`${c.info('[INFO]')} Web UI login is disabled (default). Using built-in user. Set OPCBRAIN_DISABLE_LOCAL_AUTH=0 to require username/password.`);
 }
 
 // Initialize database and start server
@@ -3015,10 +3015,10 @@ async function startServer() {
                     console.log('');
 
                     // Desktop shell loads the UI inside Electron; CLI/dev can opt in to
-                    // auto-open. PILOTDECK_DESKTOP=1 is set by apps/desktop server-manager.
+                    // auto-open. OPCBRAIN_DESKTOP=1 is set by apps/desktop server-manager.
                     const skipAutoOpen =
-                        process.env.PILOTDECK_DESKTOP === '1'
-                        || process.env.PILOTDECK_SKIP_BROWSER_OPEN === '1';
+                        process.env.OPCBRAIN_DESKTOP === '1'
+                        || process.env.OPCBRAIN_SKIP_BROWSER_OPEN === '1';
                     if (!skipAutoOpen) {
                         const serverUrl = `http://${DISPLAY_HOST === '0.0.0.0' ? 'localhost' : DISPLAY_HOST}:${boundPort}`;
                         const openCmd = process.platform === 'darwin' ? 'open'
@@ -3038,7 +3038,7 @@ async function startServer() {
                         console.error('[Plugins] Error during startup:', err.message);
                     });
 
-                    // Hot-reload watcher: external edits to ~/.pilotdeck/pilotdeck.yaml
+                    // Hot-reload watcher: external edits to ~/.opcbrain/opcbrain.yaml
                     // (vim, Cursor, another process) trigger a validate+reload and push
                     // a "config:reloaded" event to every connected WebSocket client.
                     await startPilotDeckConfigWatcher({

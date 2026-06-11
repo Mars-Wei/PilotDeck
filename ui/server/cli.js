@@ -39,7 +39,7 @@ const c = {
 };
 
 function defaultDatabasePath() {
-  return path.join(process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck'), 'auth.db');
+  return path.join(process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain'), 'auth.db');
 }
 
 function getInstallDir() {
@@ -80,7 +80,7 @@ function applyOptions(options) {
   else if (!process.env.SERVER_PORT && process.env.PORT) process.env.SERVER_PORT = process.env.PORT;
 
   if (options.databasePath) process.env.DATABASE_PATH = options.databasePath;
-  if (options.configPath) process.env.PILOTDECK_CONFIG_PATH = options.configPath;
+  if (options.configPath) process.env.OPCBRAIN_CONFIG_PATH = options.configPath;
   if (!process.env.DATABASE_PATH) process.env.DATABASE_PATH = defaultDatabasePath();
 }
 
@@ -100,7 +100,7 @@ Commands:
 Options:
   -p, --port <port>             Set server port (default: 3001)
   --database-path <path>        Set database location
-  --config <path>               Set pilotdeck.yaml location
+  --config <path>               Set opcbrain.yaml location
   -h, --help                    Show this help information
   -v, --version                 Show version information
 
@@ -110,7 +110,7 @@ Examples:
   pilotdeck status
 
 Configuration:
-  OPC Brain reads ~/.pilotdeck/pilotdeck.yaml by default.
+  OPC Brain reads ~/.opcbrain/opcbrain.yaml by default.
   First run opens the onboarding UI if no usable config exists.
 `);
 }

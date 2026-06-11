@@ -9,7 +9,7 @@ import { ImElicitationHelper } from "../protocol/ImElicitationHelper.js";
 import { WeixinSessionMapper } from "./WeixinSessionMapper.js";
 import { renderWeixinEvent } from "./weixin-render.js";
 
-const CREDENTIALS_PATH = join(homedir(), ".pilotdeck", "weixin-credentials.json");
+const CREDENTIALS_PATH = join(homedir(), ".opcbrain", "weixin-credentials.json");
 
 export type WeixinChannelOptions = {
   credentialsPath?: string;
@@ -272,7 +272,7 @@ export class WeixinChannel implements ChannelAdapter {
 
   private saveCredentials(creds: SavedCredentials): void {
     try {
-      const dir = join(homedir(), ".pilotdeck");
+      const dir = join(homedir(), ".opcbrain");
       mkdirSync(dir, { recursive: true });
       writeFileSync(this.credentialsPath, JSON.stringify(creds, null, 2), "utf-8");
     } catch (e) {

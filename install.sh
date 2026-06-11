@@ -5,12 +5,12 @@ set -euo pipefail
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/OpenBMB/PilotDeck/main/install.sh | bash
 
-REPO_URL="${PILOTDECK_REPO_URL:-https://github.com/OpenBMB/PilotDeck.git}"
-BRANCH="${PILOTDECK_BRANCH:-main}"
-INSTALL_DIR="${PILOTDECK_INSTALL_DIR:-$HOME/.pilotdeck/app}"
-CONFIG_FILE="${PILOTDECK_CONFIG_PATH:-$HOME/.pilotdeck/pilotdeck.yaml}"
-BIN_LINK="${PILOTDECK_BIN_LINK:-/usr/local/bin/pilotdeck}"
-MAX_PORT_TRIES="${PILOTDECK_MAX_PORT_TRIES:-20}"
+REPO_URL="${OPCBRAIN_REPO_URL:-https://github.com/OpenBMB/PilotDeck.git}"
+BRANCH="${OPCBRAIN_BRANCH:-main}"
+INSTALL_DIR="${OPCBRAIN_INSTALL_DIR:-$HOME/.opcbrain/app}"
+CONFIG_FILE="${OPCBRAIN_CONFIG_PATH:-$HOME/.opcbrain/opcbrain.yaml}"
+BIN_LINK="${OPCBRAIN_BIN_LINK:-/usr/local/bin/pilotdeck}"
+MAX_PORT_TRIES="${OPCBRAIN_MAX_PORT_TRIES:-20}"
 APT_UPDATED=0
 
 GREEN='\033[0;32m'
@@ -183,21 +183,21 @@ find_free_port() {
 
 resolve_runtime_ports() {
   local server_base="${SERVER_PORT:-3001}"
-  local gateway_base="${PILOTDECK_GATEWAY_PORT:-18789}"
+  local gateway_base="${OPCBRAIN_GATEWAY_PORT:-18789}"
 
   SERVER_PORT="$(find_free_port "$server_base")" || \
     fail "Could not find a free UI port within ${MAX_PORT_TRIES} ports from ${server_base}."
-  PILOTDECK_GATEWAY_PORT="$(find_free_port "$gateway_base")" || \
+  OPCBRAIN_GATEWAY_PORT="$(find_free_port "$gateway_base")" || \
     fail "Could not find a free gateway port within ${MAX_PORT_TRIES} ports from ${gateway_base}."
-  PILOTDECK_GATEWAY_URL="ws://127.0.0.1:${PILOTDECK_GATEWAY_PORT}/ws"
+  OPCBRAIN_GATEWAY_URL="ws://127.0.0.1:${OPCBRAIN_GATEWAY_PORT}/ws"
 
-  export SERVER_PORT PILOTDECK_GATEWAY_PORT PILOTDECK_GATEWAY_URL
+  export SERVER_PORT OPCBRAIN_GATEWAY_PORT OPCBRAIN_GATEWAY_URL
 
   if [[ "$SERVER_PORT" != "$server_base" ]]; then
     warn "UI port ${server_base} is busy; using ${SERVER_PORT} instead."
   fi
-  if [[ "$PILOTDECK_GATEWAY_PORT" != "$gateway_base" ]]; then
-    warn "Gateway port ${gateway_base} is busy; using ${PILOTDECK_GATEWAY_PORT} instead."
+  if [[ "$OPCBRAIN_GATEWAY_PORT" != "$gateway_base" ]]; then
+    warn "Gateway port ${gateway_base} is busy; using ${OPCBRAIN_GATEWAY_PORT} instead."
   fi
 }
 
@@ -242,7 +242,7 @@ normalize_github_remote() {
 }
 
 clone_without_lfs_smudge() {
-  if [[ "${PILOTDECK_INSTALL_LFS:-0}" == "1" ]]; then
+  if [[ "${OPCBRAIN_INSTALL_LFS:-0}" == "1" ]]; then
     "$@"
   else
     GIT_LFS_SKIP_SMUDGE=1 "$@"
@@ -333,8 +333,8 @@ install_or_update_repo() {
 }
 
 ensure_lfs_assets() {
-  if [[ "${PILOTDECK_INSTALL_LFS:-0}" != "1" ]]; then
-    warn "Skipping Git LFS media download. Set PILOTDECK_INSTALL_LFS=1 to fetch demo images/videos."
+  if [[ "${OPCBRAIN_INSTALL_LFS:-0}" != "1" ]]; then
+    warn "Skipping Git LFS media download. Set OPCBRAIN_INSTALL_LFS=1 to fetch demo images/videos."
     return
   fi
 
@@ -436,7 +436,7 @@ fi
 ok "git found"
 echo ""
 
-if [[ "${PILOTDECK_INSTALL_LFS:-0}" == "1" ]]; then
+if [[ "${OPCBRAIN_INSTALL_LFS:-0}" == "1" ]]; then
   echo "Checking Git LFS..."
   if [[ "${GIT_LFS_SKIP_SMUDGE:-}" == "1" ]]; then
     warn "GIT_LFS_SKIP_SMUDGE=1 is set; large media assets will be skipped."
@@ -495,11 +495,11 @@ echo ""
 
 echo "Checking Playwright browser for browser-use plugin..."
 cd "$INSTALL_DIR"
-BROWSER_INSTALL_TIMEOUT="${PILOTDECK_BROWSER_INSTALL_TIMEOUT:-300}"
+BROWSER_INSTALL_TIMEOUT="${OPCBRAIN_BROWSER_INSTALL_TIMEOUT:-300}"
 if has_playwright_chrome_for_testing; then
   ok "Chrome for Testing already installed"
-elif [[ "${PILOTDECK_SKIP_BROWSER_INSTALL:-0}" == "1" ]]; then
-  warn "Skipping Chrome for Testing install because PILOTDECK_SKIP_BROWSER_INSTALL=1"
+elif [[ "${OPCBRAIN_SKIP_BROWSER_INSTALL:-0}" == "1" ]]; then
+  warn "Skipping Chrome for Testing install because OPCBRAIN_SKIP_BROWSER_INSTALL=1"
 else
   echo "  Downloading and extracting Chrome for Testing (timeout: ${BROWSER_INSTALL_TIMEOUT}s)..."
   echo "  This may take a few minutes — the extraction step can appear to stall."
@@ -514,7 +514,7 @@ else
     fi
     warn "OPC Brain core features are still available."
     warn "To enable browser-use later, run: cd \"$INSTALL_DIR\" && npm run install:browser"
-    warn "To increase timeout, set PILOTDECK_BROWSER_INSTALL_TIMEOUT=600 and re-run."
+    warn "To increase timeout, set OPCBRAIN_BROWSER_INSTALL_TIMEOUT=600 and re-run."
   fi
 fi
 echo ""
@@ -548,8 +548,8 @@ while [[ -L "$SOURCE" ]]; do
   fi
 done
 INSTALL_DIR="$(cd "$(dirname "$SOURCE")/.." && pwd)"
-CONFIG_FILE="${PILOTDECK_CONFIG_PATH:-$HOME/.pilotdeck/pilotdeck.yaml}"
-MAX_PORT_TRIES="${PILOTDECK_MAX_PORT_TRIES:-20}"
+CONFIG_FILE="${OPCBRAIN_CONFIG_PATH:-$HOME/.opcbrain/opcbrain.yaml}"
+MAX_PORT_TRIES="${OPCBRAIN_MAX_PORT_TRIES:-20}"
 
 fail() { printf "opcbrain: %s\n" "$1" >&2; exit 1; }
 warn() { printf "opcbrain: %s\n" "$1" >&2; }
@@ -651,25 +651,25 @@ if [[ "$COMMAND" == "status" ]]; then
 fi
 
 SERVER_BASE="${SERVER_PORT:-3001}"
-GATEWAY_BASE="${PILOTDECK_GATEWAY_PORT:-18789}"
+GATEWAY_BASE="${OPCBRAIN_GATEWAY_PORT:-18789}"
 SERVER_PORT="$(find_free_port "$SERVER_BASE")" || fail "could not find a free UI port from ${SERVER_BASE}"
-PILOTDECK_GATEWAY_PORT="$(find_free_port "$GATEWAY_BASE")" || fail "could not find a free gateway port from ${GATEWAY_BASE}"
-PILOTDECK_GATEWAY_URL="ws://127.0.0.1:${PILOTDECK_GATEWAY_PORT}/ws"
+OPCBRAIN_GATEWAY_PORT="$(find_free_port "$GATEWAY_BASE")" || fail "could not find a free gateway port from ${GATEWAY_BASE}"
+OPCBRAIN_GATEWAY_URL="ws://127.0.0.1:${OPCBRAIN_GATEWAY_PORT}/ws"
 
-export PILOTDECK_CONFIG_PATH="$CONFIG_FILE"
-export SERVER_PORT PILOTDECK_GATEWAY_PORT PILOTDECK_GATEWAY_URL
+export OPCBRAIN_CONFIG_PATH="$CONFIG_FILE"
+export SERVER_PORT OPCBRAIN_GATEWAY_PORT OPCBRAIN_GATEWAY_URL
 
 if [[ "$SERVER_PORT" != "$SERVER_BASE" ]]; then
   warn "UI port ${SERVER_BASE} is busy; using ${SERVER_PORT} instead."
 fi
-if [[ "$PILOTDECK_GATEWAY_PORT" != "$GATEWAY_BASE" ]]; then
-  warn "Gateway port ${GATEWAY_BASE} is busy; using ${PILOTDECK_GATEWAY_PORT} instead."
+if [[ "$OPCBRAIN_GATEWAY_PORT" != "$GATEWAY_BASE" ]]; then
+  warn "Gateway port ${GATEWAY_BASE} is busy; using ${OPCBRAIN_GATEWAY_PORT} instead."
 fi
 
 node "$INSTALL_DIR/scripts/bootstrap-pilotdeck-config.mjs"
 
 printf "opcbrain: starting at http://localhost:%s\n" "$SERVER_PORT"
-export PILOTDECK_SKIP_DEFAULT_PROJECT=1
+export OPCBRAIN_SKIP_DEFAULT_PROJECT=1
 cd "$INSTALL_DIR/ui"
 exec npm run start:built
 EOF
@@ -745,12 +745,12 @@ echo ""
 
 echo "Starting OPC Brain..."
 echo ""
-export PILOTDECK_CONFIG_PATH="$CONFIG_FILE"
+export OPCBRAIN_CONFIG_PATH="$CONFIG_FILE"
 resolve_runtime_ports
 node "$INSTALL_DIR/scripts/bootstrap-pilotdeck-config.mjs"
 echo -e "  UI:             ${DIM}http://localhost:${SERVER_PORT}${RESET}"
-echo -e "  Gateway:        ${DIM}${PILOTDECK_GATEWAY_URL}${RESET}"
+echo -e "  Gateway:        ${DIM}${OPCBRAIN_GATEWAY_URL}${RESET}"
 echo ""
-export PILOTDECK_SKIP_DEFAULT_PROJECT=1
+export OPCBRAIN_SKIP_DEFAULT_PROJECT=1
 cd "$INSTALL_DIR/ui"
 exec npm run start:built

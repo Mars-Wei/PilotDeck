@@ -6,7 +6,7 @@
  *      (`pilotdeck server`, default ws://127.0.0.1:18789/ws) as a
  *      WebSocket client. We never instantiate an in-process gateway
  *      here — that would create a second, divergent agent runtime that
- *      doesn't share `~/.pilotdeck/projects/<id>/chats/*.jsonl` writes
+ *      doesn't share `~/.opcbrain/projects/<id>/chats/*.jsonl` writes
  *      and permission state with the CLI/TUI surfaces. One process, one
  *      gateway.
  *   2. Maps each old "sessionId" → OPC Brain "sessionKey" (1:1, generated
@@ -63,9 +63,9 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const GENERAL_HOME = resolvePilotHome(process.env);
 
 const GATEWAY_URL =
-    process.env.PILOTDECK_GATEWAY_URL || 'ws://127.0.0.1:18789/ws';
+    process.env.OPCBRAIN_GATEWAY_URL || 'ws://127.0.0.1:18789/ws';
 const GATEWAY_TOKEN_PATH =
-    process.env.PILOTDECK_GATEWAY_TOKEN_PATH ||
+    process.env.OPCBRAIN_GATEWAY_TOKEN_PATH ||
     path.join(GENERAL_HOME, 'server-token');
 // The two processes (gateway + bridge) are typically started in
 // parallel by `concurrently`. We allow up to 30 s for the gateway to
@@ -107,10 +107,10 @@ function normalizeToolErrorCode(errorCode, resultPreview) {
  * + tool semantics — read-only tools allow, side-effecting tools either
  * surface an interactive `permission_request` (resolved via the banner)
  * or short-circuit on an allow rule the user accumulated this session.
- * Override with `PILOTDECK_WEB_PERMISSION_MODE`.
+ * Override with `OPCBRAIN_WEB_PERMISSION_MODE`.
  */
 const WEB_DEFAULT_PERMISSION_MODE =
-    process.env.PILOTDECK_WEB_PERMISSION_MODE || 'default';
+    process.env.OPCBRAIN_WEB_PERMISSION_MODE || 'default';
 
 
 // Resolves to the Gateway returned by `createRemoteGateway`. We express
@@ -888,8 +888,8 @@ export function getActiveSessionIdsViaGateway() {
 }
 
 /**
- * Read persisted router stats from `~/.pilotdeck/router/stats.json`.
- * Falls back to the legacy `~/.pilotdeck/router-stats.json` path.
+ * Read persisted router stats from `~/.opcbrain/router/stats.json`.
+ * Falls back to the legacy `~/.opcbrain/router-stats.json` path.
  *
  * Both the gateway server and this bridge run in different processes;
  * we no longer have an in-memory accessor (`getLocalGatewayRouterStats`
@@ -901,7 +901,7 @@ export function getActiveSessionIdsViaGateway() {
  */
 /**
  * Build a sessionId->projectPath lookup from the filesystem.
- * Scans project chat directories under ~/.pilotdeck/projects/ and maps
+ * Scans project chat directories under ~/.opcbrain/projects/ and maps
  * each session filename back to the actual project path (resolved via
  * the .cwd marker or well-known directory names).
  *

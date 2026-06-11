@@ -1,20 +1,20 @@
 /**
- * PILOTDECK.md instruction file discovery — multi-scope instruction hierarchy.
+ * OPCBRAIN.md instruction file discovery — multi-scope instruction hierarchy.
  *
  * Files are loaded in the following order (later = higher priority, model pays
  * more attention to content that appears later in the system prompt):
  *
- *   1. Managed     — $PILOTDECK_MANAGED_CONFIG/PILOTDECK.md
- *   2. User        — ~/.pilotdeck/PILOTDECK.md
- *   3. User rules  — ~/.pilotdeck/rules/*.md
+ *   1. Managed     — $OPCBRAIN_MANAGED_CONFIG/OPCBRAIN.md
+ *   2. User        — ~/.opcbrain/OPCBRAIN.md
+ *   3. User rules  — ~/.opcbrain/rules/*.md
  *   4. Project     — per directory from projectRoot toward cwd:
- *                      <dir>/PILOTDECK.md
- *                      <dir>/.pilotdeck/PILOTDECK.md
- *                      <dir>/.pilotdeck/rules/*.md
- *   5. Local       — <dir>/PILOTDECK.local.md  (private, not committed)
+ *                      <dir>/OPCBRAIN.md
+ *                      <dir>/.opcbrain/OPCBRAIN.md
+ *                      <dir>/.opcbrain/rules/*.md
+ *   5. Local       — <dir>/OPCBRAIN.local.md  (private, not committed)
  *
  * Design mirrors the legacy upstream instruction-file discovery, adapted to
- * OPC Brain path conventions (~/.pilotdeck/, .pilotdeck/).
+ * OPC Brain path conventions (~/.opcbrain/, .opcbrain/).
  */
 
 import { readFile, readdir } from "node:fs/promises";
@@ -45,22 +45,22 @@ export class InstructionDiscovery {
     const seen = new Set<string>();
 
     // 1. Managed (administrator-level, e.g. /etc/pilotdeck/)
-    const managedDir = process.env.PILOTDECK_MANAGED_CONFIG;
+    const managedDir = process.env.OPCBRAIN_MANAGED_CONFIG;
     if (managedDir) {
-      await this.tryAdd(layers, seen, "managed", join(managedDir, "PILOTDECK.md"));
+      await this.tryAdd(layers, seen, "managed", join(managedDir, "OPCBRAIN.md"));
     }
 
     // 2. User-level
-    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "PILOTDECK.md"));
+    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "OPCBRAIN.md"));
     await this.tryAddRulesDir(layers, seen, "user", join(this.pilotHome, "rules"));
 
     // 3–5. Project + Local — from root toward cwd (root first = lower priority)
     const dirs = this.collectDirectoryChain();
     for (const dir of dirs) {
-      await this.tryAdd(layers, seen, "project", join(dir, "PILOTDECK.md"));
-      await this.tryAdd(layers, seen, "project", join(dir, ".pilotdeck", "PILOTDECK.md"));
-      await this.tryAddRulesDir(layers, seen, "project-rules", join(dir, ".pilotdeck", "rules"));
-      await this.tryAdd(layers, seen, "local", join(dir, "PILOTDECK.local.md"));
+      await this.tryAdd(layers, seen, "project", join(dir, "OPCBRAIN.md"));
+      await this.tryAdd(layers, seen, "project", join(dir, ".opcbrain", "OPCBRAIN.md"));
+      await this.tryAddRulesDir(layers, seen, "project-rules", join(dir, ".opcbrain", "rules"));
+      await this.tryAdd(layers, seen, "local", join(dir, "OPCBRAIN.local.md"));
     }
 
     return layers;

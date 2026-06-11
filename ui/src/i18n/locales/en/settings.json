@@ -500,7 +500,7 @@
   },
   "mcpConfig": {
     "title": "MCP Servers",
-    "description": "Edit OPC Brain MCP config. Global config lives in ~/.pilotdeck/mcp.json; project config lives in .pilotdeck/mcp.json and overrides global servers with the same name.",
+    "description": "Edit OPC Brain MCP config. Global config lives in ~/.opcbrain/mcp.json; project config lives in .opcbrain/mcp.json and overrides global servers with the same name.",
     "project": "Project for project-scoped config",
     "scopes": {
       "global": "Global",
@@ -670,8 +670,8 @@
           "apiTimeout": { "label": "API timeout (ms)", "description": "Per-request upstream timeout." },
           "databasePath": { "label": "Database path", "description": "SQLite auth/projects database (~ expands to home)." },
           "workspacesRoot": { "label": "Workspaces root", "description": "Directory under which projects are scanned." },
-          "proxyUrl": { "label": "HTTPS proxy", "description": "Outbound HTTPS proxy URL. Applies to both Gateway and UI Server (proxy.url in pilotdeck.yaml)." },
-          "proxyNoProxy": { "label": "No-proxy list", "description": "Comma-separated hostnames/IPs that bypass the proxy (proxy.noProxy in pilotdeck.yaml). 127.0.0.1 and localhost are always excluded." }
+          "proxyUrl": { "label": "HTTPS proxy", "description": "Outbound HTTPS proxy URL. Applies to both Gateway and UI Server (proxy.url in opcbrain.yaml)." },
+          "proxyNoProxy": { "label": "No-proxy list", "description": "Comma-separated hostnames/IPs that bypass the proxy (proxy.noProxy in opcbrain.yaml). 127.0.0.1 and localhost are always excluded." }
         }
       },
       "models": {
@@ -977,7 +977,7 @@
   },
   "pluginSettings": {
     "title": "Plugins",
-    "description": "Extend the interface with custom plugins. Install from git or drop a folder in ~/.pilotdeck/plugins/",
+    "description": "Extend the interface with custom plugins. Install from git or drop a folder in ~/.opcbrain/plugins/",
     "installPlaceholder": "https://github.com/user/my-plugin",
     "installButton": "Install",
     "installing": "Installing…",

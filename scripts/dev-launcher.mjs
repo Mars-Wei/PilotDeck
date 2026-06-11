@@ -12,10 +12,10 @@
  * Port resolution priority (highest wins):
  *   SERVER_PORT / VITE_PORT (env hard-pin, skips probing)
  *   > SERVER_PORT_BASE / VITE_PORT_BASE (env base override)
- *   > webui.runtime.serverPort / vitePort (from ~/.pilotdeck/pilotdeck.yaml)
+ *   > webui.runtime.serverPort / vitePort (from ~/.opcbrain/opcbrain.yaml)
  *   > 3001 / 5173 (hardcoded defaults)
  *
- * Hard-pinned ports still win — if SERVER_PORT / PILOTDECK_GATEWAY_PORT /
+ * Hard-pinned ports still win — if SERVER_PORT / OPCBRAIN_GATEWAY_PORT /
  * VITE_PORT are already exported the launcher trusts them and skips probing
  * (so prod-style setups don't accidentally slide).
  */
@@ -31,8 +31,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
 function readYamlPortConfig() {
-  const home = process.env.PILOT_HOME || join(homedir(), '.pilotdeck');
-  const configPath = process.env.PILOTDECK_CONFIG_PATH || join(home, 'pilotdeck.yaml');
+  const home = process.env.OPCBRAIN_HOME || join(homedir(), '.opcbrain');
+  const configPath = process.env.OPCBRAIN_CONFIG_PATH || join(home, 'opcbrain.yaml');
   try {
     const raw = readFileSync(configPath, 'utf8');
     const config = parseYaml(raw);
@@ -44,7 +44,7 @@ function readYamlPortConfig() {
 
 const yamlRuntime = readYamlPortConfig();
 const SERVER_PORT_BASE = parsePort(process.env.SERVER_PORT_BASE, yamlRuntime.serverPort ?? 3001);
-const GATEWAY_PORT_BASE = parsePort(process.env.PILOTDECK_GATEWAY_PORT_BASE, 18789);
+const GATEWAY_PORT_BASE = parsePort(process.env.OPCBRAIN_GATEWAY_PORT_BASE, 18789);
 const VITE_PORT_BASE = parsePort(process.env.VITE_PORT_BASE, yamlRuntime.vitePort ?? 5173);
 
 const MAX_PORT_TRIES = 20;
@@ -95,7 +95,7 @@ function envPortOverride(name) {
 
 async function main() {
   const server = await findFreePort('server', SERVER_PORT_BASE, envPortOverride('SERVER_PORT'));
-  const gateway = await findFreePort('gateway', GATEWAY_PORT_BASE, envPortOverride('PILOTDECK_GATEWAY_PORT'));
+  const gateway = await findFreePort('gateway', GATEWAY_PORT_BASE, envPortOverride('OPCBRAIN_GATEWAY_PORT'));
   const vite = await findFreePort('vite', VITE_PORT_BASE, envPortOverride('VITE_PORT'));
 
   const map = [
@@ -112,11 +112,11 @@ async function main() {
   const env = {
     ...process.env,
     SERVER_PORT: String(server.port),
-    PILOTDECK_GATEWAY_PORT: String(gateway.port),
-    PILOTDECK_GATEWAY_URL:
-      process.env.PILOTDECK_GATEWAY_URL ?? `ws://127.0.0.1:${gateway.port}/ws`,
+    OPCBRAIN_GATEWAY_PORT: String(gateway.port),
+    OPCBRAIN_GATEWAY_URL:
+      process.env.OPCBRAIN_GATEWAY_URL ?? `ws://127.0.0.1:${gateway.port}/ws`,
     VITE_PORT: String(vite.port),
-    PILOTDECK_SKIP_DEFAULT_PROJECT: '1',
+    OPCBRAIN_SKIP_DEFAULT_PROJECT: '1',
   };
 
   const child = spawn(

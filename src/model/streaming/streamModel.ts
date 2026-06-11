@@ -66,7 +66,7 @@ export async function* streamModel(
   for (let attempt = 0; attempt <= MAX_STREAM_RETRIES; attempt++) {
     throwIfAborted(options.signal);
     const body = buildModelRequest(currentRequest, config);
-    if (process.env.PILOTDECK_DUMP_REQUEST === "1") {
+    if (process.env.OPCBRAIN_DUMP_REQUEST === "1") {
       const fs = await import("node:fs");
       const dumpPath = `/tmp/pilotdeck_request_${Date.now()}.json`;
       fs.writeFileSync(dumpPath, JSON.stringify(body, null, 2));

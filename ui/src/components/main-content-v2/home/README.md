@@ -633,7 +633,7 @@ Phase 1 和 Phase 2 的主体已经落地；同时因为首页首屏慢，已经
 - 首页数据聚合 hook：`useHomeDashboardData`
 - 路由成本接入：复用 `useRoutingDashboard`
 - 未读消息、活跃会话、Always-On 事件前端聚合
-- 快捷输入框：创建会话并通过 `pilotdeck-home-pending-prompt` / `pilotdeck-home-prompt` 送入会话
+- 快捷输入框：创建会话并通过 `opcbrain-home-pending-prompt` / `opcbrain-home-prompt` 送入会话
 - 暗色模式、响应式、hover 动画已覆盖
 - 首屏性能优化：非首页重组件 lazy load，首页不再挂载隐藏 Chat
 

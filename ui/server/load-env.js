@@ -16,7 +16,7 @@ const REPO_ROOT = path.resolve(__dirname, '../..');
 // EDGECLAW_API_BASE_URL / EDGECLAW_API_KEY / EDGECLAW_MODEL used to be
 // required here, but no code in ui/ actually consumes those variables —
 // chat execution goes through the OPC Brain bridge → src/gateway, which
-// reads ~/.pilotdeck/pilotdeck.yaml directly. The sanity check has been
+// reads ~/.opcbrain/opcbrain.yaml directly. The sanity check has been
 // retired; ui/server boots even when the config file is missing.
 
 function applyDerivedRuntimeEnv() {
@@ -48,7 +48,7 @@ export function loadRootPilotDeckEnv() {
   applyDerivedRuntimeEnv();
 
   if (!process.env.DATABASE_PATH) {
-    process.env.DATABASE_PATH = path.join(process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck'), 'auth.db');
+    process.env.DATABASE_PATH = path.join(process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain'), 'auth.db');
   }
 
   return hasPilotDeckConfigFile();

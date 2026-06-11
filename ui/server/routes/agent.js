@@ -416,7 +416,7 @@ async function cloneGitHubRepo(githubUrl, githubToken = null, projectPath) {
 async function cleanupProject(projectPath, sessionId = null) {
   try {
     // Only clean up projects in the external-projects directory
-    if (!projectPath.includes('.pilotdeck/external-projects')) {
+    if (!projectPath.includes('.opcbrain/external-projects')) {
       console.warn('⚠️ Refusing to clean up non-external project:', projectPath);
       return;
     }
@@ -427,7 +427,7 @@ async function cleanupProject(projectPath, sessionId = null) {
 
     if (sessionId) {
       try {
-        const sessionPath = path.join(os.homedir(), '.pilotdeck', 'sessions', sessionId);
+        const sessionPath = path.join(os.homedir(), '.opcbrain', 'sessions', sessionId);
         console.log('🧹 Cleaning up session directory:', sessionPath);
         await fs.rm(sessionPath, { recursive: true, force: true });
         console.log('✅ Session directory cleaned up');
@@ -870,7 +870,7 @@ router.post('/', validateExternalApiKey, async (req, res) => {
       } else {
         // Generate a unique path for cloning
         const repoHash = crypto.createHash('md5').update(githubUrl + Date.now()).digest('hex');
-        targetPath = path.join(os.homedir(), '.pilotdeck', 'external-projects', repoHash);
+        targetPath = path.join(os.homedir(), '.opcbrain', 'external-projects', repoHash);
       }
 
       finalProjectPath = await cloneGitHubRepo(githubUrl.trim(), tokenToUse, targetPath);

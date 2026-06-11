@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../../../shared/view/ui';
 import { isImeEnterEvent } from '../../../../utils/ime';
 import {
-  PILOTDECK_SETTINGS_KEY,
+  OPCBRAIN_SETTINGS_KEY,
   fetchPilotDeckPermissionSettings,
   getPilotDeckSettings,
   safeLocalStorage,
@@ -65,7 +65,7 @@ function persist(updates: Partial<PilotDeckSettings>) {
     ...updates,
     lastUpdated: new Date().toISOString(),
   };
-  safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify(next));
+  safeLocalStorage.setItem(OPCBRAIN_SETTINGS_KEY, JSON.stringify(next));
   // Tell other tabs / mounted components (notably the chat permission
   // suggestion in MessageComponent) to re-read from localStorage.
   window.dispatchEvent(new Event('pilotdeck-settings-changed'));
@@ -189,7 +189,7 @@ export default function PermissionsSettingsTab() {
     reload();
     fetchPilotDeckPermissionSettings()
       .then((settings) => {
-        safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify(settings));
+        safeLocalStorage.setItem(OPCBRAIN_SETTINGS_KEY, JSON.stringify(settings));
         setAllowedTools(settings.allowedTools);
         setDisallowedTools(settings.disallowedTools);
         setSkipPermissions(settings.skipPermissions);
@@ -200,7 +200,7 @@ export default function PermissionsSettingsTab() {
     // so users can flip back and forth between the chat and this dialog
     // without seeing stale state.
     const onStorage = (event: StorageEvent) => {
-      if (event.key === PILOTDECK_SETTINGS_KEY) reload();
+      if (event.key === OPCBRAIN_SETTINGS_KEY) reload();
     };
     const onCustom = () => reload();
     window.addEventListener('storage', onStorage);

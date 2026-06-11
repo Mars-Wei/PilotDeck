@@ -210,7 +210,7 @@ const webOnlyBuiltInCommands = [
   },
   {
     name: '/memory',
-    description: 'Open PILOTDECK.md memory file for editing',
+    description: 'Open OPCBRAIN.md memory file for editing',
     namespace: 'builtin',
     metadata: { type: 'builtin' }
   },
@@ -241,7 +241,7 @@ const webOnlyBuiltInCommands = [
   {
     name: '/skill_install',
     description:
-      'Install a skill from clawhub.com. Auto-targets ~/.pilotdeck/skills/<slug> in general chat and <project>/.pilotdeck/skills/<slug> when a project is active. Use --global / --project to override.',
+      'Install a skill from clawhub.com. Auto-targets ~/.opcbrain/skills/<slug> in general chat and <project>/.opcbrain/skills/<slug> when a project is active. Use --global / --project to override.',
     namespace: 'builtin',
     metadata: {
       type: 'builtin',
@@ -286,8 +286,8 @@ ${cmd.description}
 ## Custom Commands
 
 Custom commands can be created in:
-- Project: \`.pilotdeck/commands/\` (project-specific)
-- User: \`~/.pilotdeck/commands/\` (available in all projects)
+- Project: \`.opcbrain/commands/\` (project-specific)
+- User: \`~/.opcbrain/commands/\` (available in all projects)
 
 ### Command Syntax
 
@@ -479,14 +479,14 @@ Custom commands can be created in:
         action: 'memory',
         data: {
           error: 'No project selected',
-          message: 'Please select a project to access its PILOTDECK.md file'
+          message: 'Please select a project to access its OPCBRAIN.md file'
         }
       };
     }
 
-    const pilotDeckMdPath = path.join(projectPath, 'PILOTDECK.md');
+    const pilotDeckMdPath = path.join(projectPath, 'OPCBRAIN.md');
 
-    // Check if PILOTDECK.md exists
+    // Check if OPCBRAIN.md exists
     let exists = false;
     try {
       await fs.access(pilotDeckMdPath);
@@ -502,8 +502,8 @@ Custom commands can be created in:
         path: pilotDeckMdPath,
         exists,
         message: exists
-          ? `Opening PILOTDECK.md at ${pilotDeckMdPath}`
-          : `PILOTDECK.md not found at ${pilotDeckMdPath}. Create it to store project-specific instructions.`
+          ? `Opening OPCBRAIN.md at ${pilotDeckMdPath}`
+          : `OPCBRAIN.md not found at ${pilotDeckMdPath}. Create it to store project-specific instructions.`
       }
     };
   },
@@ -692,7 +692,7 @@ Custom commands can be created in:
 
     const projectPath = context?.projectPath || null;
 
-    // OPC Brain's virtual "general" workspace roots at ~/.pilotdeck. It looks
+    // OPC Brain's virtual "general" workspace roots at ~/.opcbrain. It looks
     // like a real projectPath but the user's mental model is general chat →
     // user/global scope. Force user scope with --global when needed.
     const GENERAL_CWD_PATHS = [path.resolve(resolvePilotHome(process.env))];
@@ -718,9 +718,9 @@ Custom commands can be created in:
         };
       }
       workdir = effectiveProjectPath;
-      dir = path.join('.pilotdeck', 'skills');
+      dir = path.join('.opcbrain', 'skills');
     } else {
-      workdir = path.join(os.homedir(), '.pilotdeck');
+      workdir = path.join(os.homedir(), '.opcbrain');
       dir = 'skills';
     }
     const installPath = path.join(workdir, dir, slug);
@@ -834,7 +834,7 @@ Custom commands can be created in:
  *   - Built-in commands: hardcoded in this file (handled by builtInHandlers).
  *   - Bundled skills: hardcoded stubs (BUNDLED_SKILL_STUBS) — actual handlers
  *     live in the CLI binary; we only surface them so the UI menu shows them.
- *   - On-disk commands: `.pilotdeck/commands/**\/*.md` (project + user).
+ *   - On-disk commands: `.opcbrain/commands/**\/*.md` (project + user).
  *
  * Dedup: when the same `/<name>` exists in multiple places, project wins over
  * user, and `commands/` wins over `skills/` (first-seen preference).
@@ -851,8 +851,8 @@ router.post('/list', async (req, res) => {
     const customCommandSources = [];
 
     if (projectPath) {
-      const projectCommandsDir = path.join(projectPath, '.pilotdeck', 'commands');
-      const projectSkillsDir = path.join(projectPath, '.pilotdeck', 'skills');
+      const projectCommandsDir = path.join(projectPath, '.opcbrain', 'commands');
+      const projectSkillsDir = path.join(projectPath, '.opcbrain', 'skills');
       const [projectCommands, projectSkills] = await Promise.all([
         scanCommandsDirectory(projectCommandsDir, projectCommandsDir, 'project'),
         scanSkillsDirectory(projectSkillsDir, 'project'),
@@ -860,8 +860,8 @@ router.post('/list', async (req, res) => {
       customCommandSources.push(...projectCommands, ...projectSkills);
     }
 
-    const userCommandsDir = path.join(homeDir, '.pilotdeck', 'commands');
-    const userSkillsDir = path.join(homeDir, '.pilotdeck', 'skills');
+    const userCommandsDir = path.join(homeDir, '.opcbrain', 'commands');
+    const userSkillsDir = path.join(homeDir, '.opcbrain', 'skills');
     const [userCommands, userSkills] = await Promise.all([
       scanCommandsDirectory(userCommandsDir, userCommandsDir, 'user'),
       scanSkillsDirectory(userSkillsDir, 'user'),
@@ -938,11 +938,11 @@ router.post('/load', async (req, res) => {
     // Security: Prevent path traversal. Allow paths under any
     const resolvedPath = path.resolve(commandPath);
     const inHome = resolvedPath.startsWith(path.resolve(os.homedir()));
-    const inPilotdeckSubdir = /\.pilotdeck\/(commands|skills)\//.test(resolvedPath);
+    const inPilotdeckSubdir = /\.opcbrain\/(commands|skills)\//.test(resolvedPath);
     if (!inHome && !inPilotdeckSubdir) {
       return res.status(403).json({
         error: 'Access denied',
-        message: 'Command must be in a .pilotdeck/commands or .pilotdeck/skills directory'
+        message: 'Command must be in a .opcbrain/commands or .opcbrain/skills directory'
       });
     }
 
@@ -1032,7 +1032,7 @@ router.post('/execute', async (req, res) => {
     // server-side and submitted as raw user input — that would dump the whole
     // SKILL.md body into chat. Instead, passthrough the slash text so the
     // proxy's slash parser invokes SkillTool with the procedural body.
-    if (commandPath && /\/\.pilotdeck\/skills\/[^/]+\/SKILL\.md$/i.test(commandPath)) {
+    if (commandPath && /\/\.opcbrain\/skills\/[^/]+\/SKILL\.md$/i.test(commandPath)) {
       const argsString = args.join(' ').trim();
       const passthroughContent = argsString
         ? `${commandName} ${argsString}`
@@ -1058,13 +1058,13 @@ router.post('/execute', async (req, res) => {
     {
       const resolvedPath = path.resolve(commandPath);
       const allowedBases = [
-        path.resolve(path.join(os.homedir(), '.pilotdeck', 'commands')),
-        path.resolve(path.join(os.homedir(), '.pilotdeck', 'skills')),
+        path.resolve(path.join(os.homedir(), '.opcbrain', 'commands')),
+        path.resolve(path.join(os.homedir(), '.opcbrain', 'skills')),
       ];
       if (context?.projectPath) {
         allowedBases.push(
-          path.resolve(path.join(context.projectPath, '.pilotdeck', 'commands')),
-          path.resolve(path.join(context.projectPath, '.pilotdeck', 'skills')),
+          path.resolve(path.join(context.projectPath, '.opcbrain', 'commands')),
+          path.resolve(path.join(context.projectPath, '.opcbrain', 'skills')),
         );
       }
       const isUnder = (base) => {
@@ -1074,7 +1074,7 @@ router.post('/execute', async (req, res) => {
       if (!allowedBases.some(isUnder)) {
         return res.status(403).json({
           error: 'Access denied',
-          message: 'Command must be in a .pilotdeck/commands or .pilotdeck/skills directory'
+          message: 'Command must be in a .opcbrain/commands or .opcbrain/skills directory'
         });
       }
     }

@@ -29,8 +29,8 @@ export default defineConfig(({ mode }) => {
     path.resolve(process.cwd(), 'node_modules', ...segments)
 
   const disableLocalAuth =
-    env.PILOTDECK_DISABLE_LOCAL_AUTH !== '0' &&
-    env.PILOTDECK_DISABLE_LOCAL_AUTH !== 'false'
+    env.OPCBRAIN_DISABLE_LOCAL_AUTH !== '0' &&
+    env.OPCBRAIN_DISABLE_LOCAL_AUTH !== 'false'
   const defaultAllowedHosts = [
     'opcbrain.cn',
     'www.opcbrain.cn',

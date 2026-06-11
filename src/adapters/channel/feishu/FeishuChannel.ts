@@ -111,7 +111,7 @@ export class FeishuChannel implements ChannelAdapter {
     if (!this.explicitSend && (!this.appId || !this.appSecret)) {
       this.logger?.warn?.(
         "feishu: appId/appSecret not configured; outbound replies will not be sent. " +
-          "Configure adapters.feishu.appId/appSecret in pilotdeck.yaml.",
+          "Configure adapters.feishu.appId/appSecret in opcbrain.yaml.",
       );
       return { stop: async () => undefined };
     }
@@ -121,7 +121,7 @@ export class FeishuChannel implements ChannelAdapter {
       if (!ok) {
         this.logger?.warn?.(
           "feishu: stream mode failed to start; falling back to webhook-only " +
-            "(set adapters.feishu.connectionMode: webhook in pilotdeck.yaml to silence this).",
+            "(set adapters.feishu.connectionMode: webhook in opcbrain.yaml to silence this).",
         );
       }
     } else {

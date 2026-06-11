@@ -342,7 +342,7 @@ export interface Gateway {
    */
   describeProject(input: WebDescribeProjectInput): Promise<WebProjectSummary>;
   /**
-   * Trigger a config reload from `~/.pilotdeck/pilotdeck.yaml` and
+   * Trigger a config reload from `~/.opcbrain/opcbrain.yaml` and
    * invalidate cached runtimes. Returns the list of changed config paths
    * so callers can decide whether further action is needed.
    *
@@ -361,7 +361,7 @@ export interface Gateway {
 
   /**
    * Skill-management RPCs. The gateway is the authoritative owner of
-   * `~/.pilotdeck/skills/` (user scope) and `<project>/.pilotdeck/skills/`
+   * `~/.opcbrain/skills/` (user scope) and `<project>/.opcbrain/skills/`
    * (project scope). The Web UI's REST endpoints under `/api/skills/*`
    * are now thin shims that forward here, so a skill the agent loads
    * and a skill the UI shows always come from the same place.

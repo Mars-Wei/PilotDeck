@@ -7,7 +7,7 @@
  *   - `getProjects()` lists projects via `gateway.listProjects()`.
  *   - `getSessions()` lists session transcripts via
  *     `gateway.listSessions()` (OPC Brain transcripts under
- *     ~/.pilotdeck/projects/<id>/chats/<sessionKey>.jsonl).
+ *     ~/.opcbrain/projects/<id>/chats/<sessionKey>.jsonl).
  *   - All sessions are returned in the single `sessions` array.
  *
  * Exports preserved for external callers under ui/server/:
@@ -106,7 +106,7 @@ function toLegacySession(session, projectName) {
 }
 
 async function readMarkedProjectPaths() {
-    // Scan ~/.pilotdeck/projects/<id>/.cwd to recover real workspace paths
+    // Scan ~/.opcbrain/projects/<id>/.cwd to recover real workspace paths
     // for projects whose encoded id is ambiguous (see addProjectManually).
     // Returns a Map<id, absoluteCwd>; missing/unreadable markers are skipped.
     const pilotHome = resolvePilotHome(process.env);
@@ -230,7 +230,7 @@ async function getProjects(progressCallback = null) {
     }
 
     // Virtual "general" workspace — a non-project chat space rooted at
-    // ~/.pilotdeck. SidebarV2 looks for a project whose `name` or
+    // ~/.opcbrain. SidebarV2 looks for a project whose `name` or
     // `displayName` equals 'general' to populate the dedicated "General"
     // toggle section. OPC Brain's gateway.listProjects() only returns
     // real project directories, so we synthesize one here. New chats
@@ -246,7 +246,7 @@ async function getProjects(progressCallback = null) {
         // workspace gets the real session count instead of the page size.
         // Without this, sessionMeta.hasMore was hardcoded `false` and the
         // sidebar would silently truncate to the first 5 sessions even
-        // when dozens existed under ~/.pilotdeck/projects/<encoded>/chats/.
+        // when dozens existed under ~/.opcbrain/projects/<encoded>/chats/.
         const [generalSessionsResult, generalSummary] = await Promise.all([
             generalGateway
                 .listSessions({ projectKey: generalHome, limit: 5 })

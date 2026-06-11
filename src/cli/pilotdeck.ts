@@ -32,7 +32,7 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
     });
 
     // Apply proxy from config (env-based proxy from top-level installGlobalProxy
-    // takes precedence; this fills in when only pilotdeck.yaml has a proxy).
+    // takes precedence; this fills in when only opcbrain.yaml has a proxy).
     if (snapshot.config.proxy?.url) {
       await installGlobalProxy(snapshot.config.proxy.url);
     }
@@ -94,7 +94,7 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
       projectRoot,
       pilotHome,
       env,
-      skipDefaultProject: !!env.PILOTDECK_SKIP_DEFAULT_PROJECT,
+      skipDefaultProject: !!env.OPCBRAIN_SKIP_DEFAULT_PROJECT,
       extraTools: [...(alwaysOn?.getTools() ?? []), ...(cron?.getTools() ?? [])],
       sessionOverrides: alwaysOn?.getSessionOverrides(),
       cron,
@@ -214,7 +214,7 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
 
     // --- Server startup ---
 
-    const envPort = Number.parseInt(env.PILOTDECK_GATEWAY_PORT ?? "", 10);
+    const envPort = Number.parseInt(env.OPCBRAIN_GATEWAY_PORT ?? "", 10);
     const extraChannels = await loadEnabledChannels(snapshot.config.adapters);
     const feishuCfg = snapshot.config.adapters?.feishu;
     const feishuChannel = feishuCfg?.enabled === true

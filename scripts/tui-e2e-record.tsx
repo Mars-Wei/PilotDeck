@@ -17,9 +17,9 @@ import {
 import type { AgentRuntimeConfig } from "../src/agent/index.js";
 import { createAgentSession } from "../src/agent/index.js";
 
-const PROVIDER = process.env.PILOTDECK_E2E_PROVIDER ?? "edgeclaw";
-const MODEL = process.env.PILOTDECK_E2E_MODEL ?? "moonshotai/kimi-k2.6";
-const PROMPT = process.env.PILOTDECK_E2E_PROMPT ?? "Use add_numbers to compute 17 + 25, then tell me the result.";
+const PROVIDER = process.env.OPCBRAIN_E2E_PROVIDER ?? "edgeclaw";
+const MODEL = process.env.OPCBRAIN_E2E_MODEL ?? "moonshotai/kimi-k2.6";
+const PROMPT = process.env.OPCBRAIN_E2E_PROMPT ?? "Use add_numbers to compute 17 + 25, then tell me the result.";
 
 const addNumbersTool: PilotDeckToolDefinition = {
   name: "add_numbers",
@@ -100,7 +100,7 @@ async function main(): Promise<void> {
     serverInfo: { mode: "in_process", projectKey: cwd },
   });
 
-  const gateway = process.env.PILOTDECK_E2E_TRACE === "1" ? wrapWithTrace(baseGateway) : baseGateway;
+  const gateway = process.env.OPCBRAIN_E2E_TRACE === "1" ? wrapWithTrace(baseGateway) : baseGateway;
 
   const tree = (
     <TuiApp

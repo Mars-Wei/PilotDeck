@@ -5,12 +5,12 @@ import os from 'os';
 import path from 'path';
 
 export const CRON_DAEMON_OWNER_KIND = 'pilotdeck-server';
-export const CRON_DAEMON_OWNER_KIND_ENV = 'PILOTDECK_CRON_DAEMON_OWNER_KIND';
-export const CRON_DAEMON_OWNER_TOKEN_ENV = 'PILOTDECK_CRON_DAEMON_OWNER_TOKEN';
-export const CRON_DAEMON_OWNER_PROCESS_PID_ENV = 'PILOTDECK_CRON_DAEMON_OWNER_PROCESS_PID';
+export const CRON_DAEMON_OWNER_KIND_ENV = 'OPCBRAIN_CRON_DAEMON_OWNER_KIND';
+export const CRON_DAEMON_OWNER_TOKEN_ENV = 'OPCBRAIN_CRON_DAEMON_OWNER_TOKEN';
+export const CRON_DAEMON_OWNER_PROCESS_PID_ENV = 'OPCBRAIN_CRON_DAEMON_OWNER_PROCESS_PID';
 
 function getPilotDeckConfigHomeDir() {
-  return process.env.PILOTDECK_CONFIG_DIR || process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck');
+  return process.env.OPCBRAIN_CONFIG_DIR || process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain');
 }
 
 function getCronDaemonOwnerPath() {

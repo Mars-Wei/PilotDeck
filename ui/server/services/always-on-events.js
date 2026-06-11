@@ -7,7 +7,7 @@ import { getPilotDeckGateway } from '../pilotdeck-bridge.js';
  * Read phase events from a single project's events.jsonl.
  *
  * @param {string} projectDir Absolute path to the project's always-on dir
- *   (e.g. `~/.pilotdeck/always-on/projects/<id>`)
+ *   (e.g. `~/.opcbrain/always-on/projects/<id>`)
  * @returns {Array<object>}
  */
 async function readProjectEvents(projectDir) {

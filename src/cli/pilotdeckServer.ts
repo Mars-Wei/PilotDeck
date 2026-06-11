@@ -20,7 +20,7 @@ export type StartPilotDeckServerOptions = {
    */
   channels?: ChannelAdapter[];
   /**
-   * Loaded pilotdeck.yaml config — passed into channel.start() so adapters can
+   * Loaded opcbrain.yaml config — passed into channel.start() so adapters can
    * read their own section (e.g. `adapters.feishu.appId/appSecret`).
    */
   config?: PilotConfig;

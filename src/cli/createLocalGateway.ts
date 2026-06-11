@@ -144,7 +144,7 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
   const baseEnv = options.env ?? process.env;
   const projectRoot = resolve(options.projectRoot ?? process.cwd());
   const pilotHome = options.pilotHome ?? resolvePilotHome(baseEnv);
-  const env = options.pilotHome ? { ...baseEnv, PILOT_HOME: pilotHome } : baseEnv;
+  const env = options.pilotHome ? { ...baseEnv, OPCBRAIN_HOME: pilotHome } : baseEnv;
   const now = () => new Date();
   const telemetry = options.telemetry ?? createTelemetryCollector({ env, pilotHome });
   const ownsTelemetry = !options.telemetry;
@@ -771,7 +771,7 @@ class ProjectRuntimeRegistry {
         if (spec.transport === "stdio" && spec.id === "browser-use") {
           const outDir = joinPath(
             runtime.projectRoot,
-            ".pilotdeck",
+            ".opcbrain",
             "browser_screenshots",
             sanitizeSessionIdForPath(context.sessionKey),
           );

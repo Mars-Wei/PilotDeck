@@ -30,7 +30,7 @@ type CreateTelemetryCollectorInput = {
   enabled?: boolean;
 };
 
-const DEFAULT_BASE_URL = "http://tele.pilotdeck.cn";
+const DEFAULT_BASE_URL = "http://tele.opcbrain.cn";
 
 const PATH_LIKE_KEY = /path|cwd|root|dir|file/i;
 const ABSOLUTE_PATH_VALUE = /^([A-Za-z]:)?[/\\]/;

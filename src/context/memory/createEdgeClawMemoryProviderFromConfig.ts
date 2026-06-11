@@ -12,7 +12,7 @@
  *     we anchor it under the project root so memory data lives next to the
  *     code it was captured from (matches legacy default).
  *   - `apiKey` for the LLM extractor is **lazily forwarded** — the user is
- *     expected to set it through env or pilotdeck.yaml; we never default
+ *     expected to set it through env or opcbrain.yaml; we never default
  *     credentials to anything other than what the user supplied.
  */
 

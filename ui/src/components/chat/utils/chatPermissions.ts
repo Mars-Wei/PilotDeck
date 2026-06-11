@@ -1,7 +1,7 @@
 import { safeJsonParse } from '../../../lib/utils.js';
 import type { ChatMessage, PilotDeckPermissionSuggestion, PermissionGrantResult } from '../types/types.js';
 import {
-  PILOTDECK_SETTINGS_KEY,
+  OPCBRAIN_SETTINGS_KEY,
   getPilotDeckSettings,
   safeLocalStorage,
   savePilotDeckPermissionSettings,
@@ -94,7 +94,7 @@ export function grantPilotDeckToolPermission(entry: string | null): PermissionGr
     lastUpdated: new Date().toISOString(),
   };
 
-  safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify(updatedSettings));
+  safeLocalStorage.setItem(OPCBRAIN_SETTINGS_KEY, JSON.stringify(updatedSettings));
   savePilotDeckPermissionSettings({
     allowedTools: nextAllowed,
     disallowedTools: nextDisallowed,

@@ -323,7 +323,7 @@ cd ..
 
 **2. Configure a model provider**
 
-OPC Brain reads `~/.pilotdeck/pilotdeck.yaml`. You can create it manually, let the bootstrap script generate one, **or just open the Web UI and configure providers visually in the settings panel.**
+OPC Brain reads `~/.opcbrain/opcbrain.yaml`. You can create it manually, let the bootstrap script generate one, **or just open the Web UI and configure providers visually in the settings panel.**
 Supported protocols include OpenAI, Anthropic, DeepSeek, Qwen, Kimi, MiniMax and other OpenAI-compatible endpoints.
 
 ```yaml
@@ -352,7 +352,7 @@ If Docker is installed, you can start OPC Brain with one command:
 
 ```bash
 ./scripts/docker-up.sh
-# first run creates .env; edit PILOTDECK_API_KEY, then run it again
+# first run creates .env; edit OPCBRAIN_API_KEY, then run it again
 ```
 
 Then open `http://localhost:3001`. See [README_DOCKER.md](README_DOCKER.md) for persistent data, workspace mounts, and reverse proxy notes.

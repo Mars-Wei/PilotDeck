@@ -5,7 +5,7 @@ import type { PilotDeckHookEvent } from "../protocol/events.js";
 import type { PilotDeckHookInput } from "../protocol/input.js";
 import type { PilotDeckHookOutput, PilotDeckHookSyncOutput } from "../protocol/output.js";
 import type { PilotDeckHookCommand, PilotDeckHooksSettings } from "../protocol/settings.js";
-import { CommandHookExecutor, PILOTDECK_SESSION_END_HOOK_TIMEOUT_MS } from "./CommandHookExecutor.js";
+import { CommandHookExecutor, OPCBRAIN_SESSION_END_HOOK_TIMEOUT_MS } from "./CommandHookExecutor.js";
 import { PromptHookExecutor } from "./PromptHookExecutor.js";
 import { HttpHookExecutor } from "./HttpHookExecutor.js";
 import { AgentHookExecutor } from "./AgentHookExecutor.js";
@@ -153,7 +153,7 @@ export class HookRuntime {
           cwd: pluginRoot ?? input.cwd,
           env: input.env,
           signal: input.signal,
-          timeoutMs: input.event === "SessionEnd" ? PILOTDECK_SESSION_END_HOOK_TIMEOUT_MS : undefined,
+          timeoutMs: input.event === "SessionEnd" ? OPCBRAIN_SESSION_END_HOOK_TIMEOUT_MS : undefined,
         });
       case "prompt":
         return this.promptExecutor.execute({ hook, hookInput: input.hookInput, signal: input.signal });

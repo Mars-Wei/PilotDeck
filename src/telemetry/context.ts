@@ -58,7 +58,7 @@ function resolveInstanceId(
   env: Record<string, string | undefined>,
   deploymentMode: TelemetryDeploymentMode,
 ): string {
-  const resolvedPilotHome = pilotHome ?? env.PILOT_HOME ?? "unknown-pilot-home";
+  const resolvedPilotHome = pilotHome ?? env.OPCBRAIN_HOME ?? "unknown-pilot-home";
   const executablePath = process.execPath || "unknown-exec";
   const entrypoint = process.argv[1] ?? "unknown-entry";
   const seed = `${resolve(resolvedPilotHome)}|${resolve(executablePath)}|${resolve(entrypoint)}|${deploymentMode}`;
@@ -120,7 +120,7 @@ function looksLikeNpmBinary(env: Record<string, string | undefined>): boolean {
 }
 
 function resolveAppVersion(env: Record<string, string | undefined>): string {
-  const fromEnv = env.PILOTDECK_VERSION ?? env.npm_package_version;
+  const fromEnv = env.OPCBRAIN_VERSION ?? env.npm_package_version;
   if (fromEnv) return fromEnv;
   try {
     const file = resolve(dirname(fileURLToPath(import.meta.url)), "../../../package.json");
@@ -135,7 +135,7 @@ function resolveAppVersion(env: Record<string, string | undefined>): string {
 }
 
 function resolveAppCommitHash(env: Record<string, string | undefined>): string {
-  const fromEnv = env.COMMIT_HASH ?? env.GIT_COMMIT ?? env.PILOTDECK_GIT_SHA ?? env.GIT_SHA;
+  const fromEnv = env.COMMIT_HASH ?? env.GIT_COMMIT ?? env.OPCBRAIN_GIT_SHA ?? env.GIT_SHA;
   if (fromEnv) {
     return fromEnv;
   }
@@ -166,9 +166,9 @@ function buildRuntimeContextCacheKey(
   env: Record<string, string | undefined>,
 ): string {
   return [
-    pilotHome ?? env.PILOT_HOME ?? "default",
-    env.COMMIT_HASH ?? env.GIT_COMMIT ?? env.PILOTDECK_GIT_SHA ?? env.GIT_SHA ?? "",
-    env.PILOTDECK_VERSION ?? env.npm_package_version ?? "",
+    pilotHome ?? env.OPCBRAIN_HOME ?? "default",
+    env.COMMIT_HASH ?? env.GIT_COMMIT ?? env.OPCBRAIN_GIT_SHA ?? env.GIT_SHA ?? "",
+    env.OPCBRAIN_VERSION ?? env.npm_package_version ?? "",
     process.execPath,
     process.argv[1] ?? "",
   ].join("|");

@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 if [ ! -f .env ]; then
   cp .env.example .env
   echo "[opcbrain-docker] Created .env from .env.example."
-  echo "[opcbrain-docker] Optional: edit .env and set PILOTDECK_API_KEY now."
+  echo "[opcbrain-docker] Optional: edit .env and set OPCBRAIN_API_KEY now."
   echo "[opcbrain-docker] If you keep the placeholder, finish model setup in the Web UI."
   echo "[opcbrain-docker] Rerun this script to start."
   exit 0
@@ -24,11 +24,11 @@ read_env_value() {
   printf '%s' "$value"
 }
 
-WORKSPACE_DIR="$(read_env_value PILOTDECK_WORKSPACE)"
+WORKSPACE_DIR="$(read_env_value OPCBRAIN_WORKSPACE)"
 WORKSPACE_DIR="${WORKSPACE_DIR:-./workspace}"
 mkdir -p "$WORKSPACE_DIR"
 
-WEB_PORT="$(read_env_value PILOTDECK_WEB_PORT)"
+WEB_PORT="$(read_env_value OPCBRAIN_WEB_PORT)"
 WEB_PORT="${WEB_PORT:-3001}"
 
 docker compose up -d --build

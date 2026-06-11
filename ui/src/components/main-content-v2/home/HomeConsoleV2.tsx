@@ -93,14 +93,14 @@ export default function HomeConsoleV2({
       onSelectProjectByName?.(project.name);
       setActiveTab('chat');
       if (prompt) {
-        window.sessionStorage.setItem('pilotdeck-home-pending-prompt', prompt);
+        window.sessionStorage.setItem('opcbrain-home-pending-prompt', prompt);
         if (options.autoSubmit) {
-          window.sessionStorage.setItem('pilotdeck-home-pending-prompt-autosubmit', prompt);
+          window.sessionStorage.setItem('opcbrain-home-pending-prompt-autosubmit', prompt);
         } else {
-          window.sessionStorage.removeItem('pilotdeck-home-pending-prompt-autosubmit');
+          window.sessionStorage.removeItem('opcbrain-home-pending-prompt-autosubmit');
         }
         window.setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('pilotdeck-home-prompt', {
+          window.dispatchEvent(new CustomEvent('opcbrain-home-prompt', {
             detail: {
               prompt,
               autoSubmit: Boolean(options.autoSubmit),

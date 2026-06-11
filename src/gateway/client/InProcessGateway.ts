@@ -100,7 +100,7 @@ export type InProcessGatewayOptions = {
   reloadConfig?: () => Promise<ReloadConfigResult>;
   /**
    * Pluggable extension/MCP reload handler wired by `createLocalGateway`.
-   * Unlike `reloadConfig`, this does not depend on `pilotdeck.yaml` changing.
+   * Unlike `reloadConfig`, this does not depend on `opcbrain.yaml` changing.
    */
   reloadExtensions?: (input?: import("../protocol/types.js").ReloadExtensionsInput) => Promise<import("../protocol/types.js").ReloadExtensionsResult>;
   /**
@@ -121,7 +121,7 @@ export type InProcessGatewayOptions = {
    */
   refreshConfigBeforeTurn?: () => Promise<void>;
   /**
-   * Authoritative skill CRUD manager backed by `~/.pilotdeck/skills/`.
+   * Authoritative skill CRUD manager backed by `~/.opcbrain/skills/`.
    * Wired by `createLocalGateway` so every host (CLI, TUI, Web UI bridge,
    * SDK) reads and writes the same skill directory the agent loads from.
    */

@@ -29,4 +29,4 @@ export type {
   WsRequestFrame,
   WsResponseFrame,
 } from "./frames.js";
-export { PILOTDECK_GATEWAY_PROTOCOL_VERSION } from "./version.js";
+export { OPCBRAIN_GATEWAY_PROTOCOL_VERSION } from "./version.js";

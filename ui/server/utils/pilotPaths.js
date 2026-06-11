@@ -1,14 +1,14 @@
 /**
  * Pure-JS port of the path helpers from `src/pilot/paths.ts`.
  *
- * Lets `ui/server/` resolve `~/.pilotdeck` and encode project IDs the
+ * Lets `ui/server/` resolve `~/.opcbrain` and encode project IDs the
  * same way the gateway server does, WITHOUT pulling `dist/src/pilot/`
  * into the express bridge. Keeping the math here means the UI server
  * can run from source without needing the TypeScript output to exist
  * on disk first.
  *
  * Keep this in sync with `src/pilot/paths.ts` — both must round-trip
- * identically or `~/.pilotdeck/projects/<id>/.cwd` markers written by
+ * identically or `~/.opcbrain/projects/<id>/.cwd` markers written by
  * the bridge will not be found by `gateway.listProjects()` and vice
  * versa.
  */
@@ -16,7 +16,7 @@ import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
-export const DEFAULT_PILOT_HOME = '~/.pilotdeck';
+export const DEFAULT_OPCBRAIN_HOME = '~/.opcbrain';
 
 function normalizeHomePath(p) {
     if (p === '~') return homedir();
@@ -25,20 +25,20 @@ function normalizeHomePath(p) {
 }
 
 /**
- * Resolve the active OPC Brain home directory. Honors `PILOT_HOME` so
+ * Resolve the active OPC Brain home directory. Honors `OPCBRAIN_HOME` so
  * tests / multi-instance setups can isolate state. Defaults to
- * `~/.pilotdeck`.
+ * `~/.opcbrain`.
  *
  * @param {Record<string, string | undefined>} [env] Environment to read.
  * @returns {string} Absolute path.
  */
 export function resolvePilotHome(env = process.env) {
-    return normalizeHomePath(env.PILOT_HOME ?? DEFAULT_PILOT_HOME);
+    return normalizeHomePath(env.OPCBRAIN_HOME ?? DEFAULT_OPCBRAIN_HOME);
 }
 
 /**
  * Encode an absolute project path into the on-disk project ID used under
- * `~/.pilotdeck/projects/<id>/`.
+ * `~/.opcbrain/projects/<id>/`.
  *
  * This is the legacy lossy encoding. New UI-created projects use
  * `createCollisionResistantProjectId()` only when this id is already claimed

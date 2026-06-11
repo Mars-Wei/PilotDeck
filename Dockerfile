@@ -73,11 +73,11 @@ COPY --from=builder /build/ui/vite.config.js ui/vite.config.js
 # Create OPC Brain state/workspace directories used by the gateway, UI server,
 # permissions, skills/plugins, memory, auth, and router stats.
 RUN mkdir -p \
-    /root/.pilotdeck/projects \
-    /root/.pilotdeck/router \
-    /root/.pilotdeck/skills \
-    /root/.pilotdeck/plugins \
-    /root/.pilotdeck/memory \
+    /root/.opcbrain/projects \
+    /root/.opcbrain/router \
+    /root/.opcbrain/skills \
+    /root/.opcbrain/plugins \
+    /root/.opcbrain/memory \
     /workspace
 
 # Entrypoint
@@ -85,10 +85,10 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENV NODE_ENV=production
-ENV PILOT_HOME=/root/.pilotdeck
+ENV OPCBRAIN_HOME=/root/.opcbrain
 ENV HOST=0.0.0.0
 ENV SERVER_PORT=3001
-ENV PILOTDECK_GATEWAY_PORT=18789
+ENV OPCBRAIN_GATEWAY_PORT=18789
 
 EXPOSE 3001
 

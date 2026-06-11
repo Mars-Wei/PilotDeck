@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 /**
- * Bootstrap ~/.pilotdeck/pilotdeck.yaml when it doesn't exist yet, so the
+ * Bootstrap ~/.opcbrain/opcbrain.yaml when it doesn't exist yet, so the
  * gateway can boot and the Web UI can run the onboarding flow that fills in
  * real provider details. On every startup, also sync repo-provided skills
- * into ~/.pilotdeck/skills without overwriting existing targets.
+ * into ~/.opcbrain/skills without overwriting existing targets.
  *
  * Behaviour:
  *   1. Every run: discover repo skills and copy missing slugs into
- *      $PILOT_HOME/skills, skipping existing targets.
- *   2. Every run: if pilotdeck.yaml exists but is missing known sections
+ *      $OPCBRAIN_HOME/skills, skipping existing targets.
+ *   2. Every run: if opcbrain.yaml exists but is missing known sections
  *      (e.g. adapters), append the default snippet so new features are
  *      discoverable without requiring users to recreate the config.
- *   3. If $PILOT_HOME/pilotdeck.yaml does not exist, write a minimal V2 yaml that:
+ *   3. If $OPCBRAIN_HOME/opcbrain.yaml does not exist, write a minimal V2 yaml that:
  *        - has a valid agent.model that resolves to a catalog provider/model,
  *          so the engine's parseModelConfig won't crash on startup
  *        - uses a sentinel apiKey ("PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE")
  *          that hasUsablePilotDeckConfig() recognises as "not ready" so the
  *          UI redirects to onboarding instead of pretending it's configured.
  *
- * Override the target via $PILOT_HOME (same env var the engine reads).
- * Skip the whole step via $PILOTDECK_SKIP_BOOTSTRAP=1.
+ * Override the target via $OPCBRAIN_HOME (same env var the engine reads).
+ * Skip the whole step via $OPCBRAIN_SKIP_BOOTSTRAP=1.
  */
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -109,8 +109,8 @@ cron:
 `;
 
 function resolvePilotHome() {
-  if (process.env.PILOT_HOME) return process.env.PILOT_HOME;
-  return join(homedir(), '.pilotdeck');
+  if (process.env.OPCBRAIN_HOME) return process.env.OPCBRAIN_HOME;
+  return join(homedir(), '.opcbrain');
 }
 
 function discoverRepoSkillDirs(skillsRoot) {
@@ -238,12 +238,12 @@ function patchMissingSections(configPath) {
 }
 
 function main() {
-  if (process.env.PILOTDECK_SKIP_BOOTSTRAP === '1') {
+  if (process.env.OPCBRAIN_SKIP_BOOTSTRAP === '1') {
     return;
   }
 
   const pilotHome = resolvePilotHome();
-  const configPath = join(pilotHome, 'pilotdeck.yaml');
+  const configPath = join(pilotHome, 'opcbrain.yaml');
   const skillSync = syncRepoSkillsToPilotHome(pilotHome);
   if (skillSync.created > 0 || skillSync.skippedExisting > 0 || skillSync.skippedDuplicateSlug > 0) {
     console.log(

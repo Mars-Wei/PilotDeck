@@ -107,8 +107,8 @@ const createFakeSubmitEvent = () => {
 
 const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024;
 const MAX_ATTACHMENTS = 10;
-const HOME_PROMPT_STORAGE_KEY = 'pilotdeck-home-pending-prompt';
-const HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY = 'pilotdeck-home-pending-prompt-autosubmit';
+const HOME_PROMPT_STORAGE_KEY = 'opcbrain-home-pending-prompt';
+const HOME_PROMPT_AUTOSUBMIT_STORAGE_KEY = 'opcbrain-home-pending-prompt-autosubmit';
 
 type UploadedAttachmentFile = {
   name: string;
@@ -1020,9 +1020,9 @@ export function useChatComposerState({
       }
     };
 
-    window.addEventListener('pilotdeck-home-prompt', handleHomePrompt);
+    window.addEventListener('opcbrain-home-prompt', handleHomePrompt);
     return () => {
-      window.removeEventListener('pilotdeck-home-prompt', handleHomePrompt);
+      window.removeEventListener('opcbrain-home-prompt', handleHomePrompt);
     };
   }, [applyIncomingPrompt, selectedProject]);
 

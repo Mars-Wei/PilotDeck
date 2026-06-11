@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
-// Source of truth: ~/.pilotdeck/pilotdeck.yaml. The disk format and the
+// Source of truth: ~/.opcbrain/opcbrain.yaml. The disk format and the
 // "internal" config object are the same V2 schema — no more adapter layer.
 //
 // Top-level shape:
@@ -23,8 +23,8 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 // schemas. UI server just round-trips them.
 
 const CONFIG_VERSION = 1;
-const PILOT_HOME_DIR = process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck');
-const DEFAULT_CONFIG_PATH = path.join(PILOT_HOME_DIR, 'pilotdeck.yaml');
+const OPCBRAIN_HOME_DIR = process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain');
+const DEFAULT_CONFIG_PATH = path.join(OPCBRAIN_HOME_DIR, 'opcbrain.yaml');
 const MASK = '********';
 
 const SECRET_KEY_RE = /(api[_-]?key|token|secret|password|auth[_-]?token|access[_-]?token|bot[_-]?token|app[_-]?token|encoding[_-]?aes[_-]?key)$/i;
@@ -86,7 +86,7 @@ export function buildDefaultPilotDeckConfig() {
         serverPort: 3001,
         vitePort: 5173,
         apiTimeoutMs: 120000,
-        databasePath: path.join(PILOT_HOME_DIR, 'auth.db'),
+        databasePath: path.join(OPCBRAIN_HOME_DIR, 'auth.db'),
         workspacesRoot: os.homedir(),
       },
     },
@@ -313,7 +313,7 @@ export function buildRuntimeEnv(config) {
     VITE_PORT: process.env.VITE_PORT || String(runtime.vitePort ?? 5173),
     HOST: process.env.HOST || String(runtime.host ?? '0.0.0.0'),
     API_TIMEOUT_MS: String(runtime.apiTimeoutMs ?? 120000),
-    PILOTDECK_MEMORY_ENABLED: normalized.memory?.enabled ? '1' : '0',
+    OPCBRAIN_MEMORY_ENABLED: normalized.memory?.enabled ? '1' : '0',
   };
 
   if (runtime.databasePath) env.DATABASE_PATH = expandTilde(runtime.databasePath);
@@ -327,9 +327,9 @@ export function buildRuntimeEnv(config) {
   }
 
   if (main) {
-    env.PILOTDECK_API_BASE_URL = main.provider.url || '';
-    env.PILOTDECK_API_KEY = main.provider.apiKey || '';
-    env.PILOTDECK_MODEL = main.model;
+    env.OPCBRAIN_API_BASE_URL = main.provider.url || '';
+    env.OPCBRAIN_API_KEY = main.provider.apiKey || '';
+    env.OPCBRAIN_MODEL = main.model;
     env.OPENAI_BASE_URL = main.provider.url || '';
     env.OPENAI_API_KEY = main.provider.apiKey || '';
     env.OPENAI_MODEL = main.model;
@@ -350,9 +350,9 @@ export function buildRuntimeEnv(config) {
     10,
   );
   if (Number.isFinite(requestedMaxOutput) && requestedMaxOutput > 0) {
-    env.PILOTDECK_MAX_OUTPUT_TOKENS = String(requestedMaxOutput);
-  } else if (process.env.PILOTDECK_MAX_OUTPUT_TOKENS) {
-    env.PILOTDECK_MAX_OUTPUT_TOKENS = process.env.PILOTDECK_MAX_OUTPUT_TOKENS;
+    env.OPCBRAIN_MAX_OUTPUT_TOKENS = String(requestedMaxOutput);
+  } else if (process.env.OPCBRAIN_MAX_OUTPUT_TOKENS) {
+    env.OPCBRAIN_MAX_OUTPUT_TOKENS = process.env.OPCBRAIN_MAX_OUTPUT_TOKENS;
   }
 
   const tavilyKey = mainParams.tavilyApiKey ?? mainParams.tavily_api_key ?? process.env.TAVILY_API_KEY;
@@ -362,11 +362,11 @@ export function buildRuntimeEnv(config) {
   const memoryRef = normalizeString(normalized.memory?.model) || normalized.agent.model;
   const memory = resolveModel(normalized, memoryRef, { allowMissing: true });
   if (memory) {
-    env.PILOTDECK_MEMORY_MODEL = memory.model;
-    env.PILOTDECK_MEMORY_PROVIDER = memory.providerId;
-    env.PILOTDECK_MEMORY_BASE_URL = memory.provider.url || '';
-    env.PILOTDECK_MEMORY_API_KEY = memory.provider.apiKey || '';
-    env.PILOTDECK_MEMORY_API_TYPE = normalizeString(normalized.memory?.apiType)
+    env.OPCBRAIN_MEMORY_MODEL = memory.model;
+    env.OPCBRAIN_MEMORY_PROVIDER = memory.providerId;
+    env.OPCBRAIN_MEMORY_BASE_URL = memory.provider.url || '';
+    env.OPCBRAIN_MEMORY_API_KEY = memory.provider.apiKey || '';
+    env.OPCBRAIN_MEMORY_API_TYPE = normalizeString(normalized.memory?.apiType)
       || providerProtocolToMemoryApi(memory.provider.protocol);
   }
 
@@ -421,8 +421,8 @@ export function buildMemoryDefaults(config) {
 // ─── File I/O ────────────────────────────────────────────────────────────────
 
 export function getPilotDeckConfigPath() {
-  if (process.env.PILOTDECK_CONFIG_PATH?.trim()) {
-    return process.env.PILOTDECK_CONFIG_PATH.trim();
+  if (process.env.OPCBRAIN_CONFIG_PATH?.trim()) {
+    return process.env.OPCBRAIN_CONFIG_PATH.trim();
   }
   return DEFAULT_CONFIG_PATH;
 }

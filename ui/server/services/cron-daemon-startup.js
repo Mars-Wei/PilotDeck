@@ -6,7 +6,7 @@ import { spawn } from 'child_process';
 import { sendCronDaemonRequest } from './cron-daemon-owner.js';
 
 // Cron daemon entry point. The launcher script is discoverable on PATH
-// or supplied via PILOTDECK_CRON_DAEMON_BIN. Returning `null` falls back
+// or supplied via OPCBRAIN_CRON_DAEMON_BIN. Returning `null` falls back
 // to the in-tree fallback path that handles missing binaries gracefully.
 function resolvePilotDeckMainRoot() {
     return null;
@@ -17,7 +17,7 @@ const DEFAULT_RETRY_DELAY_MS = 250;
 const START_LOCK_STALE_MS = 30000;
 
 function getPilotDeckConfigHomeDir() {
-  return process.env.PILOTDECK_CONFIG_DIR || process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck');
+  return process.env.OPCBRAIN_CONFIG_DIR || process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain');
 }
 
 function getCronDaemonStartLockPath() {
@@ -30,17 +30,17 @@ function getCronDaemonStartLockPath() {
  * Prior to this, the daemon spawned with `stdio: 'ignore'` so all of its
  * lifecycle output, errors, and discovery-scheduler trace was silently
  * discarded — making post-mortem debugging on the OPC Brain Desktop install
- * basically impossible (`~/.pilotdeck/desktop.server.log` only captured the
+ * basically impossible (`~/.opcbrain/desktop.server.log` only captured the
  * UI server's own output, not its detached children).
  *
- * We honour an explicit override via `PILOTDECK_CRON_DAEMON_LOG`; otherwise we
- * default to `~/.pilotdeck/cron-daemon.log` (parallel to `desktop.server.log`).
+ * We honour an explicit override via `OPCBRAIN_CRON_DAEMON_LOG`; otherwise we
+ * default to `~/.opcbrain/cron-daemon.log` (parallel to `desktop.server.log`).
  * The directory is created on demand so this works pre-onboarding too.
  */
 function resolveCronDaemonLogPath() {
-  const override = process.env.PILOTDECK_CRON_DAEMON_LOG?.trim();
+  const override = process.env.OPCBRAIN_CRON_DAEMON_LOG?.trim();
   if (override) return override;
-  return path.join(process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck'), 'cron-daemon.log');
+  return path.join(process.env.OPCBRAIN_HOME || path.join(os.homedir(), '.opcbrain'), 'cron-daemon.log');
 }
 
 function openCronDaemonLogFd() {
@@ -76,7 +76,7 @@ export function buildCronDaemonEnv(baseEnv = process.env) {
 
 export function buildCronDaemonSpawnCommand({
   resolvePilotDeckMainRootFn = resolvePilotDeckMainRoot,
-  cliPath = process.env.PILOTDECK_CLI_PATH
+  cliPath = process.env.OPCBRAIN_CLI_PATH
 } = {}) {
   const localMainRoot = resolvePilotDeckMainRootFn();
   if (localMainRoot) {
@@ -143,7 +143,7 @@ export function startCronDaemonDetached({
   const { command, args } = buildCronDaemonSpawnCommandFn();
   const { fd, logPath } = openLogFdFn();
   // Detach so multiple ui servers (e.g. dev + OPC Brain Desktop side-by-side)
-  // can share state through ~/.pilotdeck/cron-daemon.sock, but pipe stdout/stderr
+  // can share state through ~/.opcbrain/cron-daemon.sock, but pipe stdout/stderr
   // into a real log file instead of /dev/null so the daemon is debuggable
   // post-mortem. Stdin stays 'ignore' (the daemon never reads input).
   const stdio = fd === null ? 'ignore' : ['ignore', fd, fd];

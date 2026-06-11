@@ -11,7 +11,7 @@ import {
 } from './pilotdeckConfig.js';
 import { reloadPilotDeckConfig } from './pilotdeckConfigReloader.js';
 
-// Watches ~/.pilotdeck/pilotdeck.yaml for external edits (vim, Cursor, other IDEs)
+// Watches ~/.opcbrain/opcbrain.yaml for external edits (vim, Cursor, other IDEs)
 // and triggers the same reload path the UI uses on save, so *any* edit takes
 // effect live. When the UI itself writes the file it calls
 // suppressNextWatchEvent() first to avoid a redundant second reload.

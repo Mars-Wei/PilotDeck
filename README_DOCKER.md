@@ -15,7 +15,7 @@
 ./scripts/docker-up.sh
 ```
 
-第一次运行会自动创建 `.env` 并停止。你可以先填写 `PILOTDECK_API_KEY`，也可以保留占位符，启动后在 Web UI 里完成模型配置。
+第一次运行会自动创建 `.env` 并停止。你可以先填写 `OPCBRAIN_API_KEY`，也可以保留占位符，启动后在 Web UI 里完成模型配置。
 
 手动方式：
 
@@ -26,7 +26,7 @@ cp .env.example .env
 编辑 `.env`，推荐先填写：
 
 ```env
-PILOTDECK_API_KEY=你的 API Key
+OPCBRAIN_API_KEY=你的 API Key
 ```
 
 如果暂时不填，保持 `PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE` 即可，首次打开页面会进入配置流程。
@@ -35,19 +35,19 @@ PILOTDECK_API_KEY=你的 API Key
 
 ```env
 # OpenRouter
-PILOTDECK_MODEL=openrouter/deepseek/deepseek-v4-flash
-PILOTDECK_LIGHT_MODEL=openrouter/qwen/qwen3-8b
-PILOTDECK_API_URL=https://openrouter.ai/api/v1
+OPCBRAIN_MODEL=openrouter/deepseek/deepseek-v4-flash
+OPCBRAIN_LIGHT_MODEL=openrouter/qwen/qwen3-8b
+OPCBRAIN_API_URL=https://openrouter.ai/api/v1
 
 # DeepSeek
-PILOTDECK_MODEL=deepseek/deepseek-v4-flash
-PILOTDECK_LIGHT_MODEL=deepseek/deepseek-v4-flash
-PILOTDECK_API_URL=https://api.deepseek.com/v1
+OPCBRAIN_MODEL=deepseek/deepseek-v4-flash
+OPCBRAIN_LIGHT_MODEL=deepseek/deepseek-v4-flash
+OPCBRAIN_API_URL=https://api.deepseek.com/v1
 
 # Kimi / Moonshot
-PILOTDECK_MODEL=moonshot/kimi-k2.6
-PILOTDECK_LIGHT_MODEL=moonshot/kimi-k2.6
-PILOTDECK_API_URL=https://api.moonshot.cn/v1
+OPCBRAIN_MODEL=moonshot/kimi-k2.6
+OPCBRAIN_LIGHT_MODEL=moonshot/kimi-k2.6
+OPCBRAIN_API_URL=https://api.moonshot.cn/v1
 ```
 
 ## 2. 一键启动
@@ -82,12 +82,12 @@ http://localhost:3001
 Compose 会创建并挂载 Docker volume：
 
 ```text
-pilotdeck-home -> /root/.pilotdeck
+opcbrain-home -> /root/.opcbrain
 ```
 
 这里会保存：
 
-- `pilotdeck.yaml` 模型配置
+- `opcbrain.yaml` 模型配置
 - 登录/本地用户数据库
 - 会话、项目、附件
 - 记忆数据
@@ -106,7 +106,7 @@ docker compose down -v
 `.env` 里的：
 
 ```env
-PILOTDECK_WORKSPACE=./workspace
+OPCBRAIN_WORKSPACE=./workspace
 ```
 
 会挂载到容器内：
@@ -118,7 +118,7 @@ PILOTDECK_WORKSPACE=./workspace
 生产环境建议改成绝对路径：
 
 ```env
-PILOTDECK_WORKSPACE=/data/opcbrain-workspace
+OPCBRAIN_WORKSPACE=/data/opcbrain-workspace
 ```
 
 智能体只能直接访问容器内的文件。如果希望它操作某个宿主机项目，需要把该项目或上级目录挂载进容器。
@@ -128,13 +128,13 @@ PILOTDECK_WORKSPACE=/data/opcbrain-workspace
 如果你已经有宿主机上的配置：
 
 ```text
-~/.pilotdeck/pilotdeck.yaml
+~/.opcbrain/opcbrain.yaml
 ```
 
 可以在 `docker-compose.yml` 里打开这行：
 
 ```yaml
-- ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
+- ${OPCBRAIN_CONFIG:-${HOME}/.opcbrain/opcbrain.yaml}:/root/.opcbrain/opcbrain.yaml:ro
 ```
 
 注意：宿主机文件必须先存在，否则 Docker 可能会创建同名目录，导致启动失败。

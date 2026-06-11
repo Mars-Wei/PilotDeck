@@ -2,11 +2,11 @@ type EnvLike = Record<string, string | undefined>;
 
 /**
  * Read the active proxy URL from environment variables.
- * Priority: PILOTDECK_PROXY > https_proxy > HTTPS_PROXY > http_proxy > HTTP_PROXY
+ * Priority: OPCBRAIN_PROXY > https_proxy > HTTPS_PROXY > http_proxy > HTTP_PROXY
  */
 export function getProxyUrl(env: EnvLike = process.env): string | undefined {
   return (
-    env.PILOTDECK_PROXY ||
+    env.OPCBRAIN_PROXY ||
     env.https_proxy ||
     env.HTTPS_PROXY ||
     env.http_proxy ||

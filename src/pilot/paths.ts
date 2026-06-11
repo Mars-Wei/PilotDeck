@@ -6,9 +6,9 @@ import { findCanonicalProjectRoot } from "../session/worktree/findCanonicalProje
 
 export type PilotPathEnv = Record<string, string | undefined>;
 
-export const DEFAULT_PILOT_HOME = "~/.pilotdeck";
-export const PILOT_CONFIG_FILE_NAME = "pilotdeck.yaml";
-export const PILOT_PROJECT_DIR_NAME = ".pilotdeck";
+export const DEFAULT_OPCBRAIN_HOME = "~/.opcbrain";
+export const PILOT_CONFIG_FILE_NAME = "opcbrain.yaml";
+export const PILOT_PROJECT_DIR_NAME = ".opcbrain";
 
 export type PilotExtensionPaths = {
   globalPluginsDir: string;
@@ -18,7 +18,7 @@ export type PilotExtensionPaths = {
 };
 
 export function resolvePilotHome(env: PilotPathEnv = process.env): string {
-  return normalizeHomePath(env.PILOT_HOME ?? DEFAULT_PILOT_HOME);
+  return normalizeHomePath(env.OPCBRAIN_HOME ?? DEFAULT_OPCBRAIN_HOME);
 }
 
 export function getPilotConfigFilePath(pilotHome: string): string {

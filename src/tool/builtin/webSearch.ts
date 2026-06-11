@@ -89,7 +89,7 @@ export function createWebSearchTool(
 - Use this tool for current events, recent documentation, and information beyond the model's knowledge cutoff
 
 Usage notes:
-  - Configure \`tools.webSearch.provider\` as \`glm\`, \`tavily\`, or \`custom\` in \`pilotdeck.yaml\`
+  - Configure \`tools.webSearch.provider\` as \`glm\`, \`tavily\`, or \`custom\` in \`opcbrain.yaml\`
   - Requires \`tools.webSearch.apiKey\`, \`GLM_WEB_SEARCH_API_KEY\`/\`ZAI_API_KEY\`, \`TAVILY_API_KEY\`, or \`CUSTOM_WEB_SEARCH_API_KEY\` unless custom auth is \`none\`
   - The optional \`gl\` parameter is forwarded only by providers that support localization
   - This tool is read-only and does not modify files`,

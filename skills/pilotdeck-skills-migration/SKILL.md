@@ -5,13 +5,13 @@ description: >-
   OPC Brain's global skills directory. Use when the user asks to migrate,
   import, copy, or consolidate skills into OPC Brain, or mentions
   ~/.claude/skills, ~/.openclaw, ~/.hermes, ~/.agents/skills, or
-  ~/.pilotdeck/skills.
+  ~/.opcbrain/skills.
 ---
 
 # OPC Brain Skills Migration
 
 Use this skill to migrate Agent Skill folders into OPC Brain's global skill
-store, `~/.pilotdeck/skills`.
+store, `~/.opcbrain/skills`.
 
 ## Workflow
 
@@ -22,7 +22,7 @@ npm run skills:migrate
 ```
 
 `npm run dev` runs `predev`, which syncs this repo skill into
-`$PILOT_HOME/skills` (`~/.pilotdeck/skills` by default). The migration command
+`$OPCBRAIN_HOME/skills` (`~/.opcbrain/skills` by default). The migration command
 itself stays available as `npm run skills:migrate` without requiring a global
 `pilotdeck` command on `PATH`.
 
@@ -114,5 +114,5 @@ from:
 - Do not delete source skills.
 - Prefer `--rename` over `--overwrite` unless the user explicitly wants to
   replace existing OPC Brain skills.
-- The repo bootstrap syncs this skill into `$PILOT_HOME/skills` from
+- The repo bootstrap syncs this skill into `$OPCBRAIN_HOME/skills` from
   `skills/pilotdeck-skills-migration/SKILL.md`; it skips existing targets.

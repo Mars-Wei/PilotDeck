@@ -1,7 +1,7 @@
 import type { PilotDeckSettings } from '../types/types';
 import { authenticatedFetch } from '../../../utils/api.js';
 
-export const PILOTDECK_SETTINGS_KEY = 'pilotdeck-settings';
+export const OPCBRAIN_SETTINGS_KEY = 'pilotdeck-settings';
 
 export const safeLocalStorage = {
   setItem: (key: string, value: string) => {
@@ -46,12 +46,12 @@ export const safeLocalStorage = {
 
 // When localStorage has no cached permission settings, fall back to the
 // conservative default (false). The authoritative value lives on disk
-// (~/.pilotdeck/permissions.json) and is synced to localStorage when the
+// (~/.opcbrain/permissions.json) and is synced to localStorage when the
 // Settings page loads or after a save round-trip. This avoids the old
 // problem where a browser cache clear silently re-enabled bypass mode.
 
 export function getPilotDeckSettings(): PilotDeckSettings {
-  const raw = safeLocalStorage.getItem(PILOTDECK_SETTINGS_KEY);
+  const raw = safeLocalStorage.getItem(OPCBRAIN_SETTINGS_KEY);
   if (!raw) {
     return {
       allowedTools: [],
@@ -104,7 +104,7 @@ export async function savePilotDeckPermissionSettings(
   }
   const data = await response.json();
   const next = mergePermissionSettings(data.permissions);
-  safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify({
+  safeLocalStorage.setItem(OPCBRAIN_SETTINGS_KEY, JSON.stringify({
     ...getPilotDeckSettings(),
     ...next,
   }));

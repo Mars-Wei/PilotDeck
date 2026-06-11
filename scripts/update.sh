@@ -91,8 +91,8 @@ log "Latest commit: $COMMIT_MSG"
 
 if [[ "$DO_RESTART" -eq 1 ]]; then
   log "Restarting OPC Brain..."
-  if [[ -n "${PILOTDECK_PID:-}" ]] && kill -0 "$PILOTDECK_PID" 2>/dev/null; then
-    kill -SIGUSR2 "$PILOTDECK_PID" 2>/dev/null || true
+  if [[ -n "${OPCBRAIN_PID:-}" ]] && kill -0 "$OPCBRAIN_PID" 2>/dev/null; then
+    kill -SIGUSR2 "$OPCBRAIN_PID" 2>/dev/null || true
   fi
 fi
 

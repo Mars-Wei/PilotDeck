@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PILOT_HOME="${PILOT_HOME:-/root/.pilotdeck}"
-CONFIG_FILE="$PILOT_HOME/pilotdeck.yaml"
+OPCBRAIN_HOME="${OPCBRAIN_HOME:-/root/.opcbrain}"
+CONFIG_FILE="$OPCBRAIN_HOME/opcbrain.yaml"
 SERVER_PORT="${SERVER_PORT:-3001}"
-PILOTDECK_GATEWAY_PORT="${PILOTDECK_GATEWAY_PORT:-18789}"
-PILOTDECK_GATEWAY_URL="${PILOTDECK_GATEWAY_URL:-ws://127.0.0.1:${PILOTDECK_GATEWAY_PORT}/ws}"
-PILOTDECK_WORKSPACE_ROOT="${PILOTDECK_WORKSPACE_ROOT:-/workspace}"
+OPCBRAIN_GATEWAY_PORT="${OPCBRAIN_GATEWAY_PORT:-18789}"
+OPCBRAIN_GATEWAY_URL="${OPCBRAIN_GATEWAY_URL:-ws://127.0.0.1:${OPCBRAIN_GATEWAY_PORT}/ws}"
+OPCBRAIN_WORKSPACE_ROOT="${OPCBRAIN_WORKSPACE_ROOT:-/workspace}"
 
-export PILOT_HOME SERVER_PORT PILOTDECK_GATEWAY_PORT PILOTDECK_GATEWAY_URL PILOTDECK_WORKSPACE_ROOT
+export OPCBRAIN_HOME SERVER_PORT OPCBRAIN_GATEWAY_PORT OPCBRAIN_GATEWAY_URL OPCBRAIN_WORKSPACE_ROOT
 
 mkdir -p \
-  "$PILOT_HOME/projects" \
-  "$PILOT_HOME/router" \
-  "$PILOT_HOME/skills" \
-  "$PILOT_HOME/plugins" \
-  "$PILOT_HOME/memory" \
-  "$PILOTDECK_WORKSPACE_ROOT"
+  "$OPCBRAIN_HOME/projects" \
+  "$OPCBRAIN_HOME/router" \
+  "$OPCBRAIN_HOME/skills" \
+  "$OPCBRAIN_HOME/plugins" \
+  "$OPCBRAIN_HOME/memory" \
+  "$OPCBRAIN_WORKSPACE_ROOT"
 
 if [ -d "$CONFIG_FILE" ]; then
   echo "[opcbrain-docker] ERROR: $CONFIG_FILE is a directory, not a config file." >&2
-  echo "[opcbrain-docker] If you intended to mount a YAML config, create the host file first or remove the bind mount and use PILOTDECK_* env vars." >&2
+  echo "[opcbrain-docker] If you intended to mount a YAML config, create the host file first or remove the bind mount and use OPCBRAIN_* env vars." >&2
   exit 1
 fi
 
 # ── Generate config from env vars if no config file is mounted ────────
 if [ ! -f "$CONFIG_FILE" ]; then
-  MODEL="${PILOTDECK_MODEL:-openrouter/deepseek/deepseek-v4-flash}"
-  LIGHT_MODEL="${PILOTDECK_LIGHT_MODEL:-openrouter/qwen/qwen3-8b}"
-  API_KEY="${PILOTDECK_API_KEY:-PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE}"
-  API_URL="${PILOTDECK_API_URL:-https://openrouter.ai/api/v1}"
+  MODEL="${OPCBRAIN_MODEL:-openrouter/deepseek/deepseek-v4-flash}"
+  LIGHT_MODEL="${OPCBRAIN_LIGHT_MODEL:-openrouter/qwen/qwen3-8b}"
+  API_KEY="${OPCBRAIN_API_KEY:-PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE}"
+  API_URL="${OPCBRAIN_API_URL:-https://openrouter.ai/api/v1}"
 
   # Derive provider name from model string (e.g. "openrouter/deepseek/deepseek-v4-flash" -> "openrouter")
   PROVIDER="${MODEL%%/*}"
@@ -121,8 +121,8 @@ ${ROUTER_SECTION}
 YAML
   else
     # Different providers — declare both
-    LIGHT_API_URL="${PILOTDECK_LIGHT_API_URL:-${API_URL}}"
-    LIGHT_API_KEY="${PILOTDECK_LIGHT_API_KEY:-${API_KEY}}"
+    LIGHT_API_URL="${OPCBRAIN_LIGHT_API_URL:-${API_URL}}"
+    LIGHT_API_KEY="${OPCBRAIN_LIGHT_API_KEY:-${API_KEY}}"
     cat > "$CONFIG_FILE" <<YAML
 schemaVersion: 1
 agent:
@@ -156,24 +156,24 @@ YAML
 fi
 
 # ── Forward proxy env vars ────────────────────────────────────────────
-if [ -n "${PILOTDECK_PROXY:-}" ]; then
-  export http_proxy="$PILOTDECK_PROXY"
-  export https_proxy="$PILOTDECK_PROXY"
-  export HTTP_PROXY="$PILOTDECK_PROXY"
-  export HTTPS_PROXY="$PILOTDECK_PROXY"
-  echo "[opcbrain-docker] Proxy set to $PILOTDECK_PROXY"
+if [ -n "${OPCBRAIN_PROXY:-}" ]; then
+  export http_proxy="$OPCBRAIN_PROXY"
+  export https_proxy="$OPCBRAIN_PROXY"
+  export HTTP_PROXY="$OPCBRAIN_PROXY"
+  export HTTPS_PROXY="$OPCBRAIN_PROXY"
+  echo "[opcbrain-docker] Proxy set to $OPCBRAIN_PROXY"
 fi
 
 echo "[opcbrain-docker] Starting OPC Brain (gateway + UI server)..."
 echo "[opcbrain-docker] Config: $CONFIG_FILE"
-echo "[opcbrain-docker] Pilot home: $PILOT_HOME"
-echo "[opcbrain-docker] Workspace root: $PILOTDECK_WORKSPACE_ROOT"
-echo "[opcbrain-docker] Gateway URL: $PILOTDECK_GATEWAY_URL"
+echo "[opcbrain-docker] Pilot home: $OPCBRAIN_HOME"
+echo "[opcbrain-docker] Workspace root: $OPCBRAIN_WORKSPACE_ROOT"
+echo "[opcbrain-docker] Gateway URL: $OPCBRAIN_GATEWAY_URL"
 echo "[opcbrain-docker] UI will be available inside container at http://0.0.0.0:$SERVER_PORT"
 
 # ── Start gateway + UI server via concurrently ────────────────────────
 cd /app
 
 exec concurrently --kill-others --names gateway,server \
-  "node dist/src/cli/pilotdeck.js server --port ${PILOTDECK_GATEWAY_PORT}" \
+  "node dist/src/cli/pilotdeck.js server --port ${OPCBRAIN_GATEWAY_PORT}" \
   "node --import tsx ui/server/index.js"

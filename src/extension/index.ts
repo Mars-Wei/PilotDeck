@@ -1,6 +1,6 @@
 export {
-  PILOTDECK_HOOK_EVENTS,
-  PILOTDECK_NOT_APPLICABLE_LEGACY_HOOK_EVENTS,
+  OPCBRAIN_HOOK_EVENTS,
+  OPCBRAIN_NOT_APPLICABLE_LEGACY_HOOK_EVENTS,
   isPilotDeckHookEvent,
   type PilotDeckHookEvent,
   type PilotDeckNotApplicableLegacyHookEvent,
@@ -21,8 +21,8 @@ export { matchHookCondition } from "./hooks/config/matchHookCondition.js";
 export { parseHookOutput } from "./hooks/execution/parseHookOutput.js";
 export {
   CommandHookExecutor,
-  PILOTDECK_HOOK_TIMEOUT_MS,
-  PILOTDECK_SESSION_END_HOOK_TIMEOUT_MS,
+  OPCBRAIN_HOOK_TIMEOUT_MS,
+  OPCBRAIN_SESSION_END_HOOK_TIMEOUT_MS,
   type CommandHookExecutionOptions,
   type CommandHookExecutionResult,
 } from "./hooks/execution/CommandHookExecutor.js";

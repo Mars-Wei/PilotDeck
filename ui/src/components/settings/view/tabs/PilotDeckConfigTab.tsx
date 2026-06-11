@@ -53,7 +53,7 @@ import {
 import type { SettingsProject } from '../../types/types';
 
 // ── V2 schema types ────────────────────────────────────────────────────
-// Schema mirrors ~/.pilotdeck/pilotdeck.yaml exactly. No more
+// Schema mirrors ~/.opcbrain/opcbrain.yaml exactly. No more
 // pre-/post-translation in the backend — disk shape === UI shape.
 
 type V2Provider = {
@@ -671,7 +671,7 @@ function ServiceSection({ config, onChange }: { config: PilotDeckConfig; onChang
               <NumberInput value={r.apiTimeoutMs} placeholder="120000" onChange={(v) => set('apiTimeoutMs', v)} />
             </FormRow>
             <FormRow label={t('pilotDeckConfig.panels.runtime.fields.databasePath.label')} description={t('pilotDeckConfig.panels.runtime.fields.databasePath.description')}>
-              <TextInput value={r.databasePath} placeholder="~/.pilotdeck/auth.db" monospace onChange={(v) => set('databasePath', v)} />
+              <TextInput value={r.databasePath} placeholder="~/.opcbrain/auth.db" monospace onChange={(v) => set('databasePath', v)} />
             </FormRow>
             <FormRow label={t('pilotDeckConfig.panels.runtime.fields.proxyUrl.label')} description={t('pilotDeckConfig.panels.runtime.fields.proxyUrl.description')}>
               <TextInput value={config.proxy?.url} placeholder="http://127.0.0.1:7890" monospace onChange={(v) => onChange(patch(config, ['proxy', 'url'], v))} />
@@ -1640,7 +1640,7 @@ function AlwaysOnSection({
                 <FormRow label={t('pilotDeckConfig.panels.alwaysOn.dormancy.ignoreGlobs.label')} description={t('pilotDeckConfig.panels.alwaysOn.dormancy.ignoreGlobs.description')}>
                   <textarea
                     value={(dormancy.ignoreGlobs ?? []).join('\n')}
-                    placeholder={"**/.git/**\n**/node_modules/**\n**/.pilotdeck/**\n**/dist/**\n**/.DS_Store"}
+                    placeholder={"**/.git/**\n**/node_modules/**\n**/.opcbrain/**\n**/dist/**\n**/.DS_Store"}
                     onChange={(e) => {
                       const globs = e.target.value.split('\n').filter((s) => s.trim().length > 0);
                       onChange(patch(config, ['alwaysOn', 'dormancy', 'ignoreGlobs'], globs));
@@ -2937,7 +2937,7 @@ function GatewaySection({ config, onChange }: { config: PilotDeckConfig; onChang
         </SettingsRow>
         {g.enabled && (
           <FormRow label={t('pilotDeckConfig.panels.gateway.home.label')} description={t('pilotDeckConfig.panels.gateway.home.description')}>
-            <TextInput value={g.home} placeholder="~/.pilotdeck/gateway" monospace onChange={(v) => onChange(patch(config, ['gateway', 'home'], v))} />
+            <TextInput value={g.home} placeholder="~/.opcbrain/gateway" monospace onChange={(v) => onChange(patch(config, ['gateway', 'home'], v))} />
           </FormRow>
         )}
       </SettingsCard>

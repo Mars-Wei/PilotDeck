@@ -4,34 +4,34 @@ services:
     image: opcbrain:latest
     container_name: opc-brain
     ports:
-      - "${PILOTDECK_WEB_PORT:-3001}:3001"
+      - "${OPCBRAIN_WEB_PORT:-3001}:3001"
     volumes:
       # Persist all OPC Brain state: generated config, auth DB, permissions,
       # sessions/projects, memory, skills/plugins, and router stats.
-      - pilotdeck-home:/root/.pilotdeck
+      - opcbrain-home:/root/.opcbrain
       # Optional: mount an existing config file instead of generating one from env vars.
       # Create the host file first, then uncomment this line.
-      # - ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
+      # - ${OPCBRAIN_CONFIG:-${HOME}/.opcbrain/opcbrain.yaml}:/root/.opcbrain/opcbrain.yaml:ro
       # Expose a host workspace to agents running inside the container.
-      - ${PILOTDECK_WORKSPACE:-./workspace}:/workspace
+      - ${OPCBRAIN_WORKSPACE:-./workspace}:/workspace
     environment:
       NODE_ENV: production
-      PILOT_HOME: /root/.pilotdeck
-      DATABASE_PATH: /root/.pilotdeck/auth.db
+      OPCBRAIN_HOME: /root/.opcbrain
+      DATABASE_PATH: /root/.opcbrain/auth.db
       HOST: 0.0.0.0
       SERVER_PORT: "3001"
-      PILOTDECK_GATEWAY_PORT: "18789"
-      PILOTDECK_GATEWAY_URL: ws://127.0.0.1:18789/ws
-      PILOTDECK_SKIP_BROWSER_OPEN: "1"
-      PILOTDECK_WORKSPACE_ROOT: /workspace
-      PILOTDECK_DISABLE_LOCAL_AUTH: ${PILOTDECK_DISABLE_LOCAL_AUTH:-true}
-      PILOTDECK_MODEL: ${PILOTDECK_MODEL:-openrouter/deepseek/deepseek-v4-flash}
-      PILOTDECK_LIGHT_MODEL: ${PILOTDECK_LIGHT_MODEL:-openrouter/qwen/qwen3-8b}
-      PILOTDECK_API_KEY: ${PILOTDECK_API_KEY:-PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE}
-      PILOTDECK_API_URL: ${PILOTDECK_API_URL:-https://openrouter.ai/api/v1}
-      PILOTDECK_LIGHT_API_KEY: ${PILOTDECK_LIGHT_API_KEY:-}
-      PILOTDECK_LIGHT_API_URL: ${PILOTDECK_LIGHT_API_URL:-}
-      PILOTDECK_PROXY: ${PILOTDECK_PROXY:-}
+      OPCBRAIN_GATEWAY_PORT: "18789"
+      OPCBRAIN_GATEWAY_URL: ws://127.0.0.1:18789/ws
+      OPCBRAIN_SKIP_BROWSER_OPEN: "1"
+      OPCBRAIN_WORKSPACE_ROOT: /workspace
+      OPCBRAIN_DISABLE_LOCAL_AUTH: ${OPCBRAIN_DISABLE_LOCAL_AUTH:-true}
+      OPCBRAIN_MODEL: ${OPCBRAIN_MODEL:-openrouter/deepseek/deepseek-v4-flash}
+      OPCBRAIN_LIGHT_MODEL: ${OPCBRAIN_LIGHT_MODEL:-openrouter/qwen/qwen3-8b}
+      OPCBRAIN_API_KEY: ${OPCBRAIN_API_KEY:-PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE}
+      OPCBRAIN_API_URL: ${OPCBRAIN_API_URL:-https://openrouter.ai/api/v1}
+      OPCBRAIN_LIGHT_API_KEY: ${OPCBRAIN_LIGHT_API_KEY:-}
+      OPCBRAIN_LIGHT_API_URL: ${OPCBRAIN_LIGHT_API_URL:-}
+      OPCBRAIN_PROXY: ${OPCBRAIN_PROXY:-}
       http_proxy: ${http_proxy:-}
       https_proxy: ${https_proxy:-}
     healthcheck:
@@ -43,4 +43,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pilotdeck-home:
+  opcbrain-home:
