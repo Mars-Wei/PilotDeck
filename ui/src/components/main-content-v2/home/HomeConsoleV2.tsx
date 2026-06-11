@@ -66,7 +66,7 @@ export default function HomeConsoleV2({
 
   const openTab = useCallback(
     (tab: AppTab) => {
-      if (tab === 'home' || tab === 'sessions') {
+      if (tab === 'home' || tab === 'sessions' || tab === 'projects') {
         setActiveTab(tab);
         return;
       }
@@ -126,10 +126,7 @@ export default function HomeConsoleV2({
         <WelcomeSection
           projects={projects}
           onNewSession={() => startNewSession()}
-          onOpenProject={() => {
-            if (defaultProject) selectProject(defaultProject.name);
-            else onCreateProject?.();
-          }}
+          onOpenProject={() => openTab('projects')}
           onNewTask={() => openTab('always-on')}
           onImportDoc={() => openTab('files')}
           onQuickSubmit={(text) => startNewSession(text, { autoSubmit: true })}

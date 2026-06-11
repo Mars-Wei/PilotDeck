@@ -118,7 +118,7 @@ export async function startPilotDeckConfigWatcher({ onEvent } = {}) {
   try {
     await fsPromises.mkdir(configDir, { recursive: true });
   } catch (error) {
-    console.warn('[pilotdeck-config-watcher] failed to ensure config dir:', error?.message || error);
+    console.warn('[opcbrain-config-watcher] failed to ensure config dir:', error?.message || error);
     return;
   }
 
@@ -134,11 +134,11 @@ export async function startPilotDeckConfigWatcher({ onEvent } = {}) {
       }, 250);
     });
     watcher.on('error', (error) => {
-      console.warn('[pilotdeck-config-watcher] watch error:', error?.message || error);
+      console.warn('[opcbrain-config-watcher] watch error:', error?.message || error);
     });
-    console.log(`[pilotdeck-config-watcher] watching ${configPath}`);
+    console.log(`[opcbrain-config-watcher] watching ${configPath}`);
   } catch (error) {
-    console.warn('[pilotdeck-config-watcher] failed to start:', error?.message || error);
+    console.warn('[opcbrain-config-watcher] failed to start:', error?.message || error);
   }
 }
 

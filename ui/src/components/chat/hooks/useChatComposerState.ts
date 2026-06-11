@@ -780,7 +780,7 @@ export function useChatComposerState({
         onSessionProcessing?.(effectiveSessionId);
       }
 
-      // PilotDeck-only: a single localStorage entry (`pilotdeck-settings`)
+      // OPC Brain-only: a single localStorage entry (`pilotdeck-settings`)
       // tracks tool consent + skip-permissions for every chat. The legacy
       // per-provider keys (`cursor-tools-settings`, `codex-settings`,
       // `gemini-settings`) are no longer read or written.
@@ -1221,7 +1221,7 @@ export function useChatComposerState({
       // adapter. After the PolitDeck-only migration every provider
       // routes through the same gateway PermissionContext, so we let
       // every provider persist its grants to localStorage and have the
-      // pilotdeck server pick them up via the gateway PermissionRuntime
+      // `pilotdeck server` picks them up via the gateway PermissionRuntime
       // on the next turn.
       return grantPilotDeckToolPermission(suggestion.entry);
     },

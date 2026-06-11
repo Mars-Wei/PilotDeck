@@ -3,26 +3,26 @@ import { Box, Text, useStdout } from "ink";
 import { pilotDeckDarkBlueTheme } from "./theme.js";
 
 const ANSI_SHADOW_LOGO = [
-  "██████╗ ██╗██╗      ██████╗ ████████╗██████╗ ███████╗ ██████╗██╗  ██╗",
-  "██╔══██╗██║██║     ██╔═══██╗╚══██╔══╝██╔══██╗██╔════╝██╔════╝██║ ██╔╝",
-  "██████╔╝██║██║     ██║   ██║   ██║   ██║  ██║█████╗  ██║     █████╔╝ ",
-  "██╔═══╝ ██║██║     ██║   ██║   ██║   ██║  ██║██╔══╝  ██║     ██╔═██╗ ",
-  "██║     ██║███████╗╚██████╔╝   ██║   ██████╔╝███████╗╚██████╗██║  ██╗",
-  "╚═╝     ╚═╝╚══════╝ ╚═════╝    ╚═╝   ╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝",
+  " ██████╗ ██████╗  ██████╗    ██████╗ ██████╗  █████╗ ██╗███╗   ██╗",
+  "██╔═══██╗██╔══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║",
+  "██║   ██║██████╔╝██║         ██████╔╝██████╔╝███████║██║██╔██╗ ██║",
+  "██║   ██║██╔═══╝ ██║         ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║",
+  "╚██████╔╝██║     ╚██████╗    ██████╔╝██║  ██║██║  ██║██║██║ ╚████║",
+  " ╚═════╝ ╚═╝      ╚═════╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝",
 ];
 
-// "Pilot" 占 ANSI Shadow logo 前 37 列；"Deck" 占其后。
-const ANSI_SHADOW_PILOT_WIDTH = 37;
-const ANSI_SHADOW_VISIBLE_COLS = 69;
+// "OPC" occupies the first block; "Brain" occupies the second.
+const ANSI_SHADOW_PILOT_WIDTH = 29;
+const ANSI_SHADOW_VISIBLE_COLS = 68;
 // border (2) + paddingX (4) + marginX (2) on the WelcomeCard wrapper.
 const ANSI_SHADOW_MIN_TERMINAL_COLS = ANSI_SHADOW_VISIBLE_COLS + 8;
 
 const STANDARD_LOGO = [
-  "  ____  _ _       _   ____            _    ",
-  " |  _ \\(_) | ___ | |_|  _ \\  ___  ___| | __",
-  " | |_) | | |/ _ \\| __| | | |/ _ \\/ __| |/ /",
-  " |  __/| | | (_) | |_| |_| |  __/ (__|   < ",
-  " |_|   |_|_|\\___/ \\__|____/ \\___|\\___|_|\\_\\",
+  "   ___  ____   ____   ____            _       ",
+  "  / _ \\|  _ \\ / ___| | __ ) _ __ __ _(_)_ __  ",
+  " | | | | |_) | |     |  _ \\| '__/ _` | | '_ \\ ",
+  " | |_| |  __/| |___  | |_) | | | (_| | | | | |",
+  "  \\___/|_|    \\____| |____/|_|  \\__,_|_|_| |_|",
 ];
 
 export function PilotDeckLogo({ tagline }: { tagline?: string } = {}): React.ReactNode {
@@ -68,10 +68,10 @@ export function CondensedLogo(): React.ReactNode {
   return (
     <Text>
       <Text color={pilotDeckDarkBlueTheme.brand} bold>
-        Pilot
+        OPC
       </Text>
       <Text color={pilotDeckDarkBlueTheme.brandAccent} bold>
-        Deck
+        Brain
       </Text>
       <Text color={pilotDeckDarkBlueTheme.brandAccent}> ↗</Text>
     </Text>

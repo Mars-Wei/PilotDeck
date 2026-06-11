@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# PilotDeck one-line installer for macOS and Linux.
+# OPC Brain one-line installer for macOS and Linux.
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/OpenBMB/PilotDeck/main/install.sh | bash
 
@@ -126,7 +126,7 @@ install_git_lfs() {
   elif [[ "$PLATFORM" == "linux" ]]; then
     install_linux_packages git-lfs
   else
-    fail "git-lfs is required for PilotDeck assets. On macOS, install Homebrew and run: brew install git-lfs"
+    fail "git-lfs is required for OPC Brain assets. On macOS, install Homebrew and run: brew install git-lfs"
   fi
 }
 
@@ -373,7 +373,7 @@ has_playwright_chrome_for_testing() {
 }
 
 echo ""
-echo -e "${BOLD}PilotDeck Installer${RESET}"
+echo -e "${BOLD}OPC Brain Installer${RESET}"
 echo "====================="
 echo ""
 
@@ -472,7 +472,7 @@ echo "Checking native build tools..."
 ensure_native_build_tools
 echo ""
 
-echo -e "Installing PilotDeck to ${DIM}${INSTALL_DIR}${RESET} ..."
+echo -e "Installing OPC Brain to ${DIM}${INSTALL_DIR}${RESET} ..."
 install_or_update_repo
 ensure_lfs_assets
 echo ""
@@ -512,7 +512,7 @@ else
     else
       warn "Chrome for Testing install failed (exit code $exit_code)."
     fi
-    warn "PilotDeck core features are still available."
+    warn "OPC Brain core features are still available."
     warn "To enable browser-use later, run: cd \"$INSTALL_DIR\" && npm run install:browser"
     warn "To increase timeout, set PILOTDECK_BROWSER_INSTALL_TIMEOUT=600 and re-run."
   fi
@@ -551,8 +551,8 @@ INSTALL_DIR="$(cd "$(dirname "$SOURCE")/.." && pwd)"
 CONFIG_FILE="${PILOTDECK_CONFIG_PATH:-$HOME/.pilotdeck/pilotdeck.yaml}"
 MAX_PORT_TRIES="${PILOTDECK_MAX_PORT_TRIES:-20}"
 
-fail() { printf "pilotdeck: %s\n" "$1" >&2; exit 1; }
-warn() { printf "pilotdeck: %s\n" "$1" >&2; }
+fail() { printf "opcbrain: %s\n" "$1" >&2; exit 1; }
+warn() { printf "opcbrain: %s\n" "$1" >&2; }
 
 is_port_free() {
   local port="$1"
@@ -627,7 +627,7 @@ done
 
 if [[ "$COMMAND" == "help" ]]; then
   cat <<HELP
-pilotdeck - start the PilotDeck web UI
+pilotdeck - start the OPC Brain web UI
 
 Usage:
   pilotdeck [start] [--port <port>] [--config <path>]
@@ -668,7 +668,7 @@ fi
 
 node "$INSTALL_DIR/scripts/bootstrap-pilotdeck-config.mjs"
 
-printf "pilotdeck: starting at http://localhost:%s\n" "$SERVER_PORT"
+printf "opcbrain: starting at http://localhost:%s\n" "$SERVER_PORT"
 export PILOTDECK_SKIP_DEFAULT_PROJECT=1
 cd "$INSTALL_DIR/ui"
 exec npm run start:built
@@ -696,16 +696,16 @@ fi
 
 if [[ "$TARGET_BIN" == "$BIN_LINK" && -d "$TARGET_BIN_DIR" && -w "$TARGET_BIN_DIR" ]]; then
   ln -sf "$CLI_TARGET" "$TARGET_BIN"
-  ok "pilotdeck command linked to ${DIM}${TARGET_BIN}${RESET}"
+  ok "OPC Brain command linked to ${DIM}${TARGET_BIN}${RESET}"
 elif sudo -n true 2>/dev/null; then
   sudo mkdir -p "$TARGET_BIN_DIR"
   sudo ln -sf "$CLI_TARGET" "$TARGET_BIN"
-  ok "pilotdeck command linked to ${DIM}${TARGET_BIN}${RESET}"
+  ok "OPC Brain command linked to ${DIM}${TARGET_BIN}${RESET}"
 else
   LOCAL_BIN="$HOME/.local/bin"
   mkdir -p "$LOCAL_BIN"
   ln -sf "$CLI_TARGET" "$LOCAL_BIN/pilotdeck"
-  ok "pilotdeck command linked to ${DIM}${LOCAL_BIN}/pilotdeck${RESET}"
+  ok "OPC Brain command linked to ${DIM}${LOCAL_BIN}/pilotdeck${RESET}"
   if [[ ":$PATH:" != *":$LOCAL_BIN:"* ]]; then
     PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
     SHELL_RC=""
@@ -724,7 +724,7 @@ else
 
     if [[ -n "$SHELL_RC" ]]; then
       if [[ ! -f "$SHELL_RC" ]] || ! grep -qF '.local/bin' "$SHELL_RC" 2>/dev/null; then
-        printf '\n# Added by PilotDeck installer\n%s\n' "$PATH_LINE" >> "$SHELL_RC"
+        printf '\n# Added by OPC Brain installer\n%s\n' "$PATH_LINE" >> "$SHELL_RC"
         ok "PATH updated in ${DIM}${SHELL_RC}${RESET}"
         warn "Run ${BOLD}source ${SHELL_RC}${RESET} or open a new terminal to use the ${BOLD}pilotdeck${RESET} command"
       else
@@ -743,7 +743,7 @@ echo -e "  Config file:    ${DIM}${CONFIG_FILE}${RESET}"
 echo -e "  CLI command:    ${DIM}${TARGET_BIN}${RESET}"
 echo ""
 
-echo "Starting PilotDeck..."
+echo "Starting OPC Brain..."
 echo ""
 export PILOTDECK_CONFIG_PATH="$CONFIG_FILE"
 resolve_runtime_ports

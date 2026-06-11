@@ -86,13 +86,13 @@ function applyOptions(options) {
 
 function showHelp() {
   console.log(`
-${c.bright('pilotdeck - Command Line Tool')}
+${c.bright('OPC Brain - Command Line Tool')}
 
 Usage:
   pilotdeck [command] [options]
 
 Commands:
-  start          Start the PilotDeck web UI (default)
+  start          Start the OPC Brain web UI (default)
   status         Show configuration and data locations
   help           Show this help information
   version        Show version information
@@ -110,7 +110,7 @@ Examples:
   pilotdeck status
 
 Configuration:
-  PilotDeck reads ~/.pilotdeck/pilotdeck.yaml by default.
+  OPC Brain reads ~/.pilotdeck/pilotdeck.yaml by default.
   First run opens the onboarding UI if no usable config exists.
 `);
 }
@@ -133,7 +133,7 @@ function showStatus() {
   const record = readPilotDeckConfigFile();
   const dbPath = process.env.DATABASE_PATH || defaultDatabasePath();
 
-  console.log(`\n${c.bright('pilotdeck - Status')}\n`);
+  console.log(`\n${c.bright('OPC Brain - Status')}\n`);
   console.log(c.dim('═'.repeat(60)));
   console.log(`\n${c.info('[INFO]')} Version: ${c.bright(packageJson.version)}`);
   console.log(`${c.info('[INFO]')} Installation Directory: ${c.dim(getInstallDir())}`);
@@ -193,7 +193,7 @@ async function startServer() {
   await assertPortAvailable(port, host);
   ensureFrontendBuild();
 
-  console.log(`\n${c.bright('pilotdeck')} starting...\n`);
+  console.log(`\n${c.bright('OPC Brain')} starting...\n`);
   console.log(`${c.info('[INFO]')} Config: ${c.dim(getPilotDeckConfigPath())}`);
   console.log(`${c.info('[INFO]')} Database: ${c.dim(process.env.DATABASE_PATH || defaultDatabasePath())}`);
   console.log(`${c.info('[INFO]')} Server: http://localhost:${port}\n`);

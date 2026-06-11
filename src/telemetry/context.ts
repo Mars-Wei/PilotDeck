@@ -96,6 +96,7 @@ function looksLikeSourceCheckout(): boolean {
     const result = execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
       cwd: process.cwd(),
       encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
       timeout: 1500,
     }).trim();
     return result === "true";
@@ -142,6 +143,7 @@ function resolveAppCommitHash(env: Record<string, string | undefined>): string {
     const sha = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
       cwd: process.cwd(),
       encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
       timeout: 1500,
     }).trim();
     return sha || "unknown";

@@ -21,7 +21,7 @@
  *   Cache is invalidated on reconnect.
  *
  * Errors raised by `callTool` / `listTools` always carry one of the
- * PilotDeck-style `mcp_*` error codes via the `code` field on the thrown
+ * OPC Brain-style `mcp_*` error codes via the `code` field on the thrown
  * error, so the caller can map them back to `PilotDeckToolErrorCode`.
  */
 
@@ -115,7 +115,7 @@ export class McpClient {
     this.status = "connecting";
     const transport = this.buildTransport();
     const client = new Client(
-      { name: "pilotdeck", version: "0.1.0" },
+      { name: "opcbrain", version: "0.1.0" },
       { capabilities: { elicitation: {} } },
     );
     const handshakeMs = this.options.handshakeTimeoutMs ?? 10_000;

@@ -1,34 +1,45 @@
 services:
-  pilotdeck:
+  opcbrain:
     build: .
-    image: pilotdeck:latest
+    image: opcbrain:latest
+    container_name: opc-brain
     ports:
-      - "3001:3001"
+      - "${PILOTDECK_WEB_PORT:-3001}:3001"
     volumes:
-      # Persist all PilotDeck state: generated config, auth DB, permissions,
+      # Persist all OPC Brain state: generated config, auth DB, permissions,
       # sessions/projects, memory, skills/plugins, and router stats.
       - pilotdeck-home:/root/.pilotdeck
       # Optional: mount an existing config file instead of generating one from env vars.
       # Create the host file first, then uncomment this line.
       # - ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
-      # Optional: expose a host workspace to agents running inside the container.
-      # - ${PILOTDECK_WORKSPACE:-${PWD}}:/workspace
+      # Expose a host workspace to agents running inside the container.
+      - ${PILOTDECK_WORKSPACE:-./workspace}:/workspace
     environment:
-      - NODE_ENV=production
-      - PILOT_HOME=/root/.pilotdeck
-      - SERVER_PORT=3001
-      - PILOTDECK_GATEWAY_PORT=18789
-      # ── Authentication (uncomment to require login) ──
-      # - PILOTDECK_DISABLE_LOCAL_AUTH=0
-      #
-      # ── Proxy (uncomment if behind corporate proxy) ──
-      # - https_proxy=http://host.docker.internal:7890
-      # - PILOTDECK_PROXY=http://host.docker.internal:7890
-      #
-      # ── Or configure via env vars instead of mounting yaml ──
-      # - PILOTDECK_MODEL=openai/gpt-4.1
-      # - PILOTDECK_API_KEY=sk-xxx
-      # - PILOTDECK_API_URL=https://api.openai.com/v1
+      NODE_ENV: production
+      PILOT_HOME: /root/.pilotdeck
+      DATABASE_PATH: /root/.pilotdeck/auth.db
+      HOST: 0.0.0.0
+      SERVER_PORT: "3001"
+      PILOTDECK_GATEWAY_PORT: "18789"
+      PILOTDECK_GATEWAY_URL: ws://127.0.0.1:18789/ws
+      PILOTDECK_SKIP_BROWSER_OPEN: "1"
+      PILOTDECK_WORKSPACE_ROOT: /workspace
+      PILOTDECK_DISABLE_LOCAL_AUTH: ${PILOTDECK_DISABLE_LOCAL_AUTH:-true}
+      PILOTDECK_MODEL: ${PILOTDECK_MODEL:-openrouter/deepseek/deepseek-v4-flash}
+      PILOTDECK_LIGHT_MODEL: ${PILOTDECK_LIGHT_MODEL:-openrouter/qwen/qwen3-8b}
+      PILOTDECK_API_KEY: ${PILOTDECK_API_KEY:-PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE}
+      PILOTDECK_API_URL: ${PILOTDECK_API_URL:-https://openrouter.ai/api/v1}
+      PILOTDECK_LIGHT_API_KEY: ${PILOTDECK_LIGHT_API_KEY:-}
+      PILOTDECK_LIGHT_API_URL: ${PILOTDECK_LIGHT_API_URL:-}
+      PILOTDECK_PROXY: ${PILOTDECK_PROXY:-}
+      http_proxy: ${http_proxy:-}
+      https_proxy: ${https_proxy:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3001/health >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
 
 volumes:

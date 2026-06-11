@@ -159,7 +159,7 @@ function syncRepoSkillsToPilotHome(pilotHome) {
     if (previous) {
       skippedDuplicateSlug += 1;
       console.warn(
-        `[pilotdeck] Skipping repo skill '${slug}' at ${sourceDir}; slug already claimed by ${previous}.`,
+        `[opcbrain] Skipping repo skill '${slug}' at ${sourceDir}; slug already claimed by ${previous}.`,
       );
       continue;
     }
@@ -176,7 +176,7 @@ function syncRepoSkillsToPilotHome(pilotHome) {
       created += 1;
     } catch (error) {
       console.warn(
-        `[pilotdeck] Could not import repo skill '${slug}' into ${targetPath}: ${
+        `[opcbrain] Could not import repo skill '${slug}' into ${targetPath}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -223,10 +223,10 @@ function patchMissingSections(configPath) {
       try {
         appendFileSync(configPath, snippet, 'utf8');
         patched = true;
-        console.log(`[pilotdeck] Appended missing "${key}" section to ${configPath}.`);
+        console.log(`[opcbrain] Appended missing "${key}" section to ${configPath}.`);
       } catch (error) {
         console.warn(
-          `[pilotdeck] Could not append "${key}" to ${configPath}: ${
+          `[opcbrain] Could not append "${key}" to ${configPath}: ${
             error instanceof Error ? error.message : String(error)
           }`,
         );
@@ -247,7 +247,7 @@ function main() {
   const skillSync = syncRepoSkillsToPilotHome(pilotHome);
   if (skillSync.created > 0 || skillSync.skippedExisting > 0 || skillSync.skippedDuplicateSlug > 0) {
     console.log(
-      `[pilotdeck] Synced repo skills into ${join(pilotHome, 'skills')}: ` +
+      `[opcbrain] Synced repo skills into ${join(pilotHome, 'skills')}: ` +
         `${skillSync.created} copied, ${skillSync.skippedExisting} skipped existing, ` +
         `${skillSync.skippedDuplicateSlug} skipped duplicate slug.`,
     );
@@ -262,14 +262,14 @@ function main() {
     mkdirSync(dirname(configPath), { recursive: true });
     writeFileSync(configPath, BOOTSTRAP_YAML, 'utf8');
     console.log(
-      `[pilotdeck] No config at ${configPath}; wrote a placeholder so the gateway can boot.`,
+      `[opcbrain] No config at ${configPath}; wrote a placeholder so the gateway can boot.`,
     );
-    console.log('[pilotdeck] Open the Web UI to finish onboarding (provider + API key).');
+    console.log('[opcbrain] Open the Web UI to finish onboarding (provider + API key).');
   } catch (error) {
     console.warn(
-      `[pilotdeck] Could not bootstrap ${configPath}: ${error instanceof Error ? error.message : String(error)}`,
+      `[opcbrain] Could not bootstrap ${configPath}: ${error instanceof Error ? error.message : String(error)}`,
     );
-    console.warn('[pilotdeck] You may need to create it manually before running npm run dev.');
+    console.warn('[opcbrain] You may need to create it manually before running npm run dev.');
   }
 }
 

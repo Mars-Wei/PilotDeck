@@ -1,6 +1,6 @@
 # OPC Brain 首页控制台开发方案
 
-> 本方案描述如何将 `ui-demo.html` 的首页设计对接到 PilotDeck 现有代码中。
+> 本方案描述如何将 `ui-demo.html` 的首页设计对接到 OPC Brain 现有代码中。
 > 版本：v2（修正版）
 > 日期：2026-06-05
 

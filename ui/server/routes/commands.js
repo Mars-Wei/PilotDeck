@@ -692,7 +692,7 @@ Custom commands can be created in:
 
     const projectPath = context?.projectPath || null;
 
-    // PilotDeck's virtual "general" workspace roots at ~/.pilotdeck. It looks
+    // OPC Brain's virtual "general" workspace roots at ~/.pilotdeck. It looks
     // like a real projectPath but the user's mental model is general chat →
     // user/global scope. Force user scope with --global when needed.
     const GENERAL_CWD_PATHS = [path.resolve(resolvePilotHome(process.env))];

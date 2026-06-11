@@ -29,7 +29,7 @@ function getCronDaemonStartLockPath() {
  *
  * Prior to this, the daemon spawned with `stdio: 'ignore'` so all of its
  * lifecycle output, errors, and discovery-scheduler trace was silently
- * discarded — making post-mortem debugging on the PilotDeck Desktop install
+ * discarded — making post-mortem debugging on the OPC Brain Desktop install
  * basically impossible (`~/.pilotdeck/desktop.server.log` only captured the
  * UI server's own output, not its detached children).
  *
@@ -142,7 +142,7 @@ export function startCronDaemonDetached({
 } = {}) {
   const { command, args } = buildCronDaemonSpawnCommandFn();
   const { fd, logPath } = openLogFdFn();
-  // Detach so multiple ui servers (e.g. dev + PilotDeck Desktop side-by-side)
+  // Detach so multiple ui servers (e.g. dev + OPC Brain Desktop side-by-side)
   // can share state through ~/.pilotdeck/cron-daemon.sock, but pipe stdout/stderr
   // into a real log file instead of /dev/null so the daemon is debuggable
   // post-mortem. Stdin stays 'ignore' (the daemon never reads input).

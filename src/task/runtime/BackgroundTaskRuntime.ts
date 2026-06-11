@@ -6,7 +6,7 @@
  * Process model:
  *   - `start(spec)` spawns a *detached* child via `spawn(command, { shell:
  *     true, detached: true })` and immediately calls `child.unref()` so the
- *     PilotDeck process can exit without waiting for the child. (T11)
+ *     OPC Brain process can exit without waiting for the child. (T11)
  *   - stdout / stderr are piped into a `TaskOutputStore` (1 MB ring buffer
  *     + optional disk spill). The runtime never blocks on the stream — the
  *     child runs free until either it exits or `stop` is called.

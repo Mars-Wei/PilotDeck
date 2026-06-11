@@ -8,6 +8,7 @@ apps/
 packages/
 *.log
 .env*
+!.env.example
 dist/
 ui/dist/
 ui/node_modules/

@@ -100,7 +100,7 @@ export type CreateLocalGatewayOptions = {
   /**
    * When true, the project list will not auto-include `projectRoot`.
    * Set by non-interactive launchers (dev mode, install.sh wrapper) where
-   * `process.cwd()` is the PilotDeck source tree, not a user project.
+   * `process.cwd()` is the OPC Brain source tree, not a user project.
    */
   skipDefaultProject?: boolean;
   /**
@@ -158,7 +158,7 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     onError: (scope, error) => {
       // eslint-disable-next-line no-console
       console.warn(
-        `[pilotdeck] Extension watcher failed for ${describeExtensionScope(scope)}:`,
+        `[opcbrain] Extension watcher failed for ${describeExtensionScope(scope)}:`,
         error.message,
       );
     },
@@ -193,11 +193,11 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     }
     if (changeClasses.every((c) => c === "restart-required")) {
       // eslint-disable-next-line no-console
-      console.warn("[pilotdeck] Config change requires process restart:", changedPaths.join(", "));
+      console.warn("[opcbrain] Config change requires process restart:", changedPaths.join(", "));
       return;
     }
     // eslint-disable-next-line no-console
-    console.log("[pilotdeck] Config reloaded, invalidating runtimes:", changedPaths.join(", "));
+    console.log("[opcbrain] Config reloaded, invalidating runtimes:", changedPaths.join(", "));
     registry.invalidate();
     router?.markAllDirty("config_changed");
     configChangeLifecycle.dispatch({
@@ -254,14 +254,14 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
       if (input?.projectKey) {
         // eslint-disable-next-line no-console
         console.log(
-          `[pilotdeck] Extensions reload requested for project ${input.projectKey}:`,
+          `[opcbrain] Extensions reload requested for project ${input.projectKey}:`,
           changedPaths.join(", ") || "(manual)",
         );
         registry.invalidate(input.projectKey);
         router?.markProjectDirty(input.projectKey, "extension_changed");
       } else {
         // eslint-disable-next-line no-console
-        console.log("[pilotdeck] Extensions reload requested for all runtimes:", changedPaths.join(", ") || "(manual)");
+        console.log("[opcbrain] Extensions reload requested for all runtimes:", changedPaths.join(", ") || "(manual)");
         registry.invalidate();
         router?.markAllDirty("extension_changed");
       }
@@ -657,7 +657,7 @@ class ProjectRuntimeRegistry {
           });
           // eslint-disable-next-line no-console
           console.warn(
-            `[pilotdeck] memory maintenance failed for project ${runtime.projectRoot}:`,
+            `[opcbrain] memory maintenance failed for project ${runtime.projectRoot}:`,
             error instanceof Error ? error.message : String(error),
           );
         }
@@ -682,7 +682,7 @@ class ProjectRuntimeRegistry {
         const configServers = loadMcpServerConfig(runtime.projectRoot, this.options.pilotHome);
         for (const diagnostic of configServers.diagnostics) {
           // eslint-disable-next-line no-console
-          console.warn(`[pilotdeck] Ignoring invalid MCP config ${diagnostic.path}: ${diagnostic.message}`);
+          console.warn(`[opcbrain] Ignoring invalid MCP config ${diagnostic.path}: ${diagnostic.message}`);
         }
         const rawServers = {
           ...runtime.pluginRuntime.mcpServers(),
@@ -708,7 +708,7 @@ class ProjectRuntimeRegistry {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
-          `[pilotdeck] MCP runtime startup partial-failed for project ${runtime.projectRoot}:`,
+          `[opcbrain] MCP runtime startup partial-failed for project ${runtime.projectRoot}:`,
           (err as Error).message,
         );
       }
@@ -798,14 +798,14 @@ class ProjectRuntimeRegistry {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
-          `[pilotdeck] Per-session MCP startup failed for ${context.sessionKey}:`,
+          `[opcbrain] Per-session MCP startup failed for ${context.sessionKey}:`,
           (err as Error).message,
         );
       }
     } else if (perSpecs && perSpecs.length > 0) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[pilotdeck] Per-session MCP limit reached (${maxInstances}). ` +
+        `[opcbrain] Per-session MCP limit reached (${maxInstances}). ` +
         `Session ${context.sessionKey} will share the project-level browser instance.`,
       );
     }
@@ -1144,14 +1144,14 @@ function handleExtensionWatchEvent(
   const changed = event.changedPaths.join(", ");
   if (event.scope.kind === "global") {
     // eslint-disable-next-line no-console
-    console.log("[pilotdeck] Extensions changed, invalidating all runtimes:", changed);
+    console.log("[opcbrain] Extensions changed, invalidating all runtimes:", changed);
     registry.invalidate();
     router?.markAllDirty("extension_changed");
     return;
   }
   // eslint-disable-next-line no-console
   console.log(
-    `[pilotdeck] Extensions changed for project ${event.scope.projectRoot}, invalidating runtime:`,
+    `[opcbrain] Extensions changed for project ${event.scope.projectRoot}, invalidating runtime:`,
     changed,
   );
   registry.invalidate(event.scope.projectRoot);

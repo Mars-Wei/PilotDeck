@@ -3,17 +3,24 @@ set -euo pipefail
 
 PILOT_HOME="${PILOT_HOME:-/root/.pilotdeck}"
 CONFIG_FILE="$PILOT_HOME/pilotdeck.yaml"
+SERVER_PORT="${SERVER_PORT:-3001}"
+PILOTDECK_GATEWAY_PORT="${PILOTDECK_GATEWAY_PORT:-18789}"
+PILOTDECK_GATEWAY_URL="${PILOTDECK_GATEWAY_URL:-ws://127.0.0.1:${PILOTDECK_GATEWAY_PORT}/ws}"
+PILOTDECK_WORKSPACE_ROOT="${PILOTDECK_WORKSPACE_ROOT:-/workspace}"
+
+export PILOT_HOME SERVER_PORT PILOTDECK_GATEWAY_PORT PILOTDECK_GATEWAY_URL PILOTDECK_WORKSPACE_ROOT
 
 mkdir -p \
   "$PILOT_HOME/projects" \
   "$PILOT_HOME/router" \
   "$PILOT_HOME/skills" \
   "$PILOT_HOME/plugins" \
-  "$PILOT_HOME/memory"
+  "$PILOT_HOME/memory" \
+  "$PILOTDECK_WORKSPACE_ROOT"
 
 if [ -d "$CONFIG_FILE" ]; then
-  echo "[pilotdeck-docker] ERROR: $CONFIG_FILE is a directory, not a config file." >&2
-  echo "[pilotdeck-docker] If you intended to mount a YAML config, create the host file first or remove the bind mount and use PILOTDECK_* env vars." >&2
+  echo "[opcbrain-docker] ERROR: $CONFIG_FILE is a directory, not a config file." >&2
+  echo "[opcbrain-docker] If you intended to mount a YAML config, create the host file first or remove the bind mount and use PILOTDECK_* env vars." >&2
   exit 1
 fi
 
@@ -31,8 +38,22 @@ if [ ! -f "$CONFIG_FILE" ]; then
   MODEL_ID="${MODEL#*/}"
   LIGHT_MODEL_ID="${LIGHT_MODEL#*/}"
 
+  if [ "$MODEL_ID" = "$LIGHT_MODEL_ID" ]; then
+    SAME_PROVIDER_MODELS="        ${MODEL_ID}:
+          capabilities:
+            maxOutputTokens: 32768"
+  else
+    SAME_PROVIDER_MODELS="        ${MODEL_ID}:
+          capabilities:
+            maxOutputTokens: 32768
+        ${LIGHT_MODEL_ID}:
+          capabilities:
+            maxOutputTokens: 16384"
+  fi
+
   # Router section shared by both same-provider and cross-provider branches
   ROUTER_SECTION="router:
+  enabled: true
   scenarios:
     default: ${MODEL}
   fallback:
@@ -92,14 +113,10 @@ model:
       url: ${API_URL}
       apiKey: ${API_KEY}
       models:
-        ${MODEL_ID}:
-          capabilities:
-            maxOutputTokens: 32768
-        ${LIGHT_MODEL_ID}:
-          capabilities:
-            maxOutputTokens: 16384
+${SAME_PROVIDER_MODELS}
 cron:
   enabled: true
+  timezone: Asia/Shanghai
 ${ROUTER_SECTION}
 YAML
   else
@@ -130,11 +147,12 @@ model:
             maxOutputTokens: 16384
 cron:
   enabled: true
+  timezone: Asia/Shanghai
 ${ROUTER_SECTION}
 YAML
   fi
 
-  echo "[pilotdeck-docker] Generated config at $CONFIG_FILE (provider=$PROVIDER, model=$MODEL, light=$LIGHT_MODEL)"
+  echo "[opcbrain-docker] Generated config at $CONFIG_FILE (provider=$PROVIDER, model=$MODEL, light=$LIGHT_MODEL)"
 fi
 
 # ── Forward proxy env vars ────────────────────────────────────────────
@@ -143,16 +161,19 @@ if [ -n "${PILOTDECK_PROXY:-}" ]; then
   export https_proxy="$PILOTDECK_PROXY"
   export HTTP_PROXY="$PILOTDECK_PROXY"
   export HTTPS_PROXY="$PILOTDECK_PROXY"
-  echo "[pilotdeck-docker] Proxy set to $PILOTDECK_PROXY"
+  echo "[opcbrain-docker] Proxy set to $PILOTDECK_PROXY"
 fi
 
-echo "[pilotdeck-docker] Starting PilotDeck (gateway + UI server)..."
-echo "[pilotdeck-docker] Config: $CONFIG_FILE"
-echo "[pilotdeck-docker] UI will be available at http://0.0.0.0:${SERVER_PORT:-3001}"
+echo "[opcbrain-docker] Starting OPC Brain (gateway + UI server)..."
+echo "[opcbrain-docker] Config: $CONFIG_FILE"
+echo "[opcbrain-docker] Pilot home: $PILOT_HOME"
+echo "[opcbrain-docker] Workspace root: $PILOTDECK_WORKSPACE_ROOT"
+echo "[opcbrain-docker] Gateway URL: $PILOTDECK_GATEWAY_URL"
+echo "[opcbrain-docker] UI will be available inside container at http://0.0.0.0:$SERVER_PORT"
 
 # ── Start gateway + UI server via concurrently ────────────────────────
 cd /app
 
-exec npx concurrently --kill-others --names gateway,server \
-  "node dist/src/cli/pilotdeck.js server" \
+exec concurrently --kill-others --names gateway,server \
+  "node dist/src/cli/pilotdeck.js server --port ${PILOTDECK_GATEWAY_PORT}" \
   "node --import tsx ui/server/index.js"

@@ -15,7 +15,7 @@ export type CreateBashToolOptions = {
   maxTimeoutMs?: number;
 };
 
-const BASH_TOOL_DESCRIPTION = `Run a shell command in the PilotDeck workspace.
+const BASH_TOOL_DESCRIPTION = `Run a shell command in the OPC Brain workspace.
 
 Usage:
 - The \`command\` parameter is passed to \`/bin/sh -c\`.

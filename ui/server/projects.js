@@ -1,12 +1,12 @@
 /**
- * Project / session metadata layer (PilotDeck-only).
+ * Project / session metadata layer (OPC Brain-only).
  *
  * Replaces the legacy four-provider scanner that used to read
- * ~/.gemini/projects/. After the PilotDeck-only migration:
+ * ~/.gemini/projects/. After the OPC Brain-only migration:
  *
  *   - `getProjects()` lists projects via `gateway.listProjects()`.
  *   - `getSessions()` lists session transcripts via
- *     `gateway.listSessions()` (PilotDeck transcripts under
+ *     `gateway.listSessions()` (OPC Brain transcripts under
  *     ~/.pilotdeck/projects/<id>/chats/<sessionKey>.jsonl).
  *   - All sessions are returned in the single `sessions` array.
  *
@@ -73,7 +73,7 @@ function projectDisplayName(fullPath) {
 }
 
 /**
- * Map a PilotDeck `WebSessionInfo` onto the legacy `ProjectSession`
+ * Map an OPC Brain `WebSessionInfo` onto the legacy `ProjectSession`
  * shape the React frontend expects.
  */
 function toLegacySession(session, projectName) {
@@ -232,7 +232,7 @@ async function getProjects(progressCallback = null) {
     // Virtual "general" workspace — a non-project chat space rooted at
     // ~/.pilotdeck. SidebarV2 looks for a project whose `name` or
     // `displayName` equals 'general' to populate the dedicated "General"
-    // toggle section. PilotDeck's gateway.listProjects() only returns
+    // toggle section. OPC Brain's gateway.listProjects() only returns
     // real project directories, so we synthesize one here. New chats
     // started from the General section use this cwd; sessions are
     // sourced from the same backend as any other project.
@@ -325,7 +325,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
 }
 
 /**
- * Resolve a `projectName` (encoded form like `-Users-miwi-PilotDeck`,
+ * Resolve a `projectName` (encoded form like `-Users-miwi-OPCBrain`,
  * a basename, or an already-absolute path) to the absolute project root.
  * Falls back to consulting the directory cache populated by
  * `getProjects()` so worktree-aware paths resolve correctly.
@@ -366,10 +366,10 @@ async function addProjectManually(projectPath, _displayName = null) {
     const name = await allocateProjectIdForPath(absolute, pilotHome);
     rememberProjectDirectory(name, absolute);
 
-    // Materialize a PilotDeck project directory and drop a `.cwd` marker
+    // Materialize an OPC Brain project directory and drop a `.cwd` marker
     // recording the real absolute path. We need the marker because
     // createProjectId() encodes both '/' and literal '-' to '-', so the
-    // PilotDeck's listWebProjects() heuristically tries each `-` as a
+    // OPC Brain's listWebProjects() heuristically tries each `-` as a
     // path separator and drops the project when no decode matches an
     // existing directory — which would silently lose workspaces whose
     // real path contains a dash. getProjects() reads `.cwd` to backfill
@@ -380,7 +380,7 @@ async function addProjectManually(projectPath, _displayName = null) {
         await fs.writeFile(path.join(projectDir, '.cwd'), absolute, 'utf8');
     } catch (error) {
         console.warn(
-            `[projects] failed to materialize PilotDeck project dir for ${name}:`,
+            `[projects] failed to materialize OPC Brain project dir for ${name}:`,
             error?.message || error,
         );
     }
@@ -421,7 +421,7 @@ async function allocateProjectIdForPath(absolutePath, pilotHome) {
 }
 
 async function renameProject(_projectName, _displayName) {
-    // PilotDeck does not yet expose a rename API. Display names are derived
+    // OPC Brain does not yet expose a rename API. Display names are derived
     // from the project's basename today, so this is a no-op.
     return { success: true };
 }

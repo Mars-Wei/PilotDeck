@@ -105,12 +105,12 @@ import { DISABLE_LOCAL_AUTH, IS_PLATFORM } from './constants/config.js';
 import { getConnectableHost } from '../shared/networkHosts.js';
 import { contentDispositionAttachment } from './utils/downloadHeaders.js';
 
-// PilotDeck-only mode: chat execution always goes through src/gateway via
+// OPC Brain-only mode: chat execution always goes through src/gateway via
 // cursor-cli, openai-codex, gemini-cli) has been removed.
 const VALID_PROVIDERS = ['pilotdeck'];
 
 // File-system watchers for the chat transcript root maintained by
-// PilotDeck. Provider-specific watchers (.pilotdeck) were dropped along with the four provider adapters.
+// OPC Brain. Provider-specific watchers (.pilotdeck) were dropped along with the four provider adapters.
 // .gemini) were dropped along with the four provider adapters.
 const PROVIDER_WATCH_PATHS = [
     {
@@ -135,7 +135,7 @@ let projectsWatchers = [];
 let projectsWatcherDebounceTimer = null;
 const connectedClients = new Set();
 const alwaysOnHeartbeat = createAlwaysOnHeartbeatManager({
-    // Legacy four-provider session details have been removed; PilotDeck
+    // Legacy four-provider session details have been removed; OPC Brain
     // gateway sessions are tracked by `pilotdeck-bridge.js` instead.
     getActivePilotDeckSessions: () => []
 });
@@ -440,13 +440,13 @@ app.use('/api/commands', authenticateToken, commandsRoutes);
 
 // Skills API Routes (protected) — list/edit/install skills surfaced in the
 // top-right Skills tab. Backed by ~/.pilotdeck/skills/ and project-level
-// .pilotdeck/skills/ via PilotDeck plugin runtime.
+// .pilotdeck/skills/ via OPC Brain plugin runtime.
 app.use('/api/skills', authenticateToken, skillsRoutes);
 
 // Settings API Routes (protected)
 app.use('/api/settings', authenticateToken, settingsRoutes);
 
-// PilotDeck unified YAML config routes (protected)
+// OPC Brain unified YAML config routes (protected)
 app.use('/api/config', authenticateToken, configRoutes);
 
 // User API Routes (protected)
@@ -455,7 +455,7 @@ app.use('/api/user', authenticateToken, userRoutes);
 // Plugins API Routes (protected)
 app.use('/api/plugins', authenticateToken, pluginsRoutes);
 
-// Unified session messages route (protected) — PilotDeck-only.
+// Unified session messages route (protected) — OPC Brain-only.
 app.use('/api/sessions', authenticateToken, messagesRoutes);
 
 // Agent API Routes (uses API key authentication)
@@ -465,7 +465,7 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/update', authenticateToken, updateRoutes);
 
 // Legacy four-provider config endpoints have been removed. The runtime
-// model is read from PilotDeck config; fall back to a static stub so any
+// model is read from OPC Brain config; fall back to a static stub so any
 // older frontend code paths render without crashing.
 app.get('/api/agents/runtime-config', authenticateToken, (_req, res) => {
     const permSettings = readPermissionSettings();
@@ -478,7 +478,7 @@ app.get('/api/agents/runtime-config', authenticateToken, (_req, res) => {
     });
 });
 
-// Provider-specific endpoints removed by the PilotDeck-only migration.
+// Provider-specific endpoints removed by the OPC Brain-only migration.
 // Returning a structured error keeps any stragglers in the UI from
 // hanging on an unanswered fetch.
 const PROVIDER_REMOVED_PATHS = ['/api/cursor', '/api/codex', '/api/gemini', '/api/cli'];
@@ -486,12 +486,12 @@ for (const removedPrefix of PROVIDER_REMOVED_PATHS) {
     app.use(removedPrefix, (_req, res) => {
         res.status(410).json({
             error: 'endpoint_removed',
-            message: `Provider endpoint ${removedPrefix} was removed during the PilotDeck-only migration.`,
+            message: `Provider endpoint ${removedPrefix} was removed during the OPC Brain-only migration.`,
         });
     });
 }
 
-// PilotDeck routing dashboard. The `/api/ccr/*` URL family was kept for
+// OPC Brain routing dashboard. The `/api/ccr/*` URL family was kept for
 // frontend back-compat (Dashboard tab + useRouterSettings) but the data
 // now comes from `src/router/stats/TokenStatsCollector` via the
 
@@ -642,7 +642,7 @@ app.get('/api/ccr/health', authenticateToken, (_req, res) => {
 
 app.get('/api/ccr/config', authenticateToken, (_req, res) => {
     // The legacy CCR YAML schema is no longer the source of truth for
-    // model routing — that lives in PilotDeck config now. Return null so
+    // model routing — that lives in OPC Brain config now. Return null so
     // the legacy useRouterSettings hook simply renders the "no config"
     // empty state instead of a config editor.
     res.json(null);
@@ -706,7 +706,7 @@ app.use('/memory-dashboard', authenticateToken, express.static(MEMORY_DASHBOARD_
 
 // Hard 404 boundary: anything still asking for /memory-dashboard/* after the
 // static middleware is a missing asset. Without this, the request would fall
-// through to the SPA wildcard below and return the PilotDeck shell index.html,
+// through to the SPA wildcard below and return the OPC Brain shell index.html,
 // which the MemoryPanel iframe then renders — recursively nesting the entire
 // app inside itself (see bug: "嵌套显示 + general memory 多次出现").
 app.use('/memory-dashboard', (_req, res) => {
@@ -1886,7 +1886,7 @@ function handleChatConnection(ws, request) {
     const userId = request?.user?.id ?? request?.user?.userId ?? null;
     ws.__pilotdeckUserId = userId;
     connectedClients.add(ws);
-    // PilotDeck's cron runtime lives inside `pilotdeck server`
+    // OPC Brain's cron runtime lives inside `pilotdeck server`
     // (src/cron via createCronRuntime); no legacy daemon lease needed.
     let cleanedUp = false;
 
@@ -1966,7 +1966,7 @@ function handleChatConnection(ws, request) {
                 const ids = getActiveSessionIdsViaGateway();
                 // Keep the four-provider keys so the legacy UI store does
                 // not need to change shape; everything routes through
-                // PilotDeck under the hood.
+                // OPC Brain under the hood.
                 writer.send({
                     type: 'active-sessions',
                     sessions: { claude: ids, cursor: [], codex: [], gemini: [], pilotdeck: ids },
@@ -2613,7 +2613,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
         const { provider = 'pilotdeck' } = req.query;
         const homeDir = os.homedir();
 
-        // PilotDeck sessions use `web:s_<uuid>` keys; Windows-safe sessions
+        // OPC Brain sessions use `web:s_<uuid>` keys; Windows-safe sessions
         // may use `web-s_<uuid>` because ':' is illegal in Windows filenames.
         if (provider === 'pilotdeck' || /^web[:_-]s_/.test(sessionId)) {
             return res.json(getSessionTokenBudget(sessionId));
@@ -2983,7 +2983,7 @@ async function startServer() {
                 const distIndexPath = path.join(__dirname, '../dist/index.html');
                 const isProduction = fs.existsSync(distIndexPath);
 
-                console.log(`${c.info('[INFO]')} Chat execution routed through PilotDeck gateway (src/gateway).`);
+                console.log(`${c.info('[INFO]')} Chat execution routed through OPC Brain gateway (src/gateway).`);
                 console.log('');
 
                 if (isProduction) {
@@ -3068,7 +3068,7 @@ async function startServer() {
                         stopChromeHealthCheck();
                         shutdownGlobalChrome();
                     } catch { /* Chrome may not have been started */ }
-                    // PilotDeck cron is owned by `pilotdeck server` and shuts
+                    // OPC Brain cron is owned by `pilotdeck server` and shuts
                     // down with it; ui/server never spawns its own daemon.
                 } finally {
                     process.exit(0);

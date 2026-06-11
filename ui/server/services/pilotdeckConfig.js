@@ -562,7 +562,7 @@ export async function writePilotDeckConfig(config) {
   );
   const validation = validatePilotDeckConfig(sanitized);
   if (!validation.valid) {
-    const error = new Error('Invalid PilotDeck config');
+    const error = new Error('Invalid OPC Brain config');
     error.validation = validation;
     throw error;
   }

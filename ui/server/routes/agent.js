@@ -842,7 +842,7 @@ router.post('/', validateExternalApiKey, async (req, res) => {
     return res.status(400).json({ error: 'message is required' });
   }
 
-  // After the PilotDeck-only migration any incoming `provider` is just a
+  // After the OPC Brain-only migration any incoming `provider` is just a
   // label — every request is routed through `src/gateway`. We accept the
   // legacy values plus the new `pilotdeck` alias for forward compatibility.
   if (!['claude', 'cursor', 'codex', 'gemini', 'pilotdeck'].includes(provider)) {
@@ -929,7 +929,7 @@ router.post('/', validateExternalApiKey, async (req, res) => {
       });
     }
 
-    console.log(`🛫 Starting PilotDeck gateway session (provider=${provider})`);
+    console.log(`Starting OPC Brain gateway session (provider=${provider})`);
 
     await runChatViaGateway(
       message.trim(),

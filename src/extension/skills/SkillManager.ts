@@ -68,7 +68,7 @@ export type SkillManagerOptions = {
  * UI server, future SDK callers). Owns the on-disk layout under
  * `~/.pilotdeck/skills/` (user scope) and `<projectRoot>/.pilotdeck/skills/`
  * (project scope). Legacy third-party skill directories are intentionally
- * not consulted — conflating them with PilotDeck's layout caused the
+ * not consulted — conflating them with OPC Brain's layout caused the
  * UI/agent skill drift the migration fixes.
  */
 export class SkillManager {

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="PilotDeck" width="680"/>
+  <img src="assets/banner.png" alt="OPC Brain" width="680"/>
 </p>
 
 <p align="center">
@@ -31,13 +31,13 @@
 
 **News** 🔥
 
-- **[2026.05.28]** PilotDeck is now open source! Visit our official website at [pilotdeck.openbmb.cn](https://pilotdeck.openbmb.cn). We welcome contributions, feedback, and stars from the community.
+- **[2026.05.28]** OPC Brain is now open source! Visit our official website at [pilotdeck.openbmb.cn](https://pilotdeck.openbmb.cn). We welcome contributions, feedback, and stars from the community.
 
 ---
 
-## 💡 About PilotDeck
+## 💡 About OPC Brain
 
-**PilotDeck** is an open-source agent operating system designed around the concept of "WorkSpace". It is jointly developed and open-sourced by Tsinghua University [THUNLP](https://nlp.csai.tsinghua.edu.cn/), [ModelBest](https://modelbest.cn/), [OpenBMB](https://www.openbmb.cn/), and [AI9Stars](https://github.com/AI9Stars). Targeting general-purpose, multi-task scenarios, PilotDeck is built to be a true *productivity tool* for the Agent era.
+**OPC Brain** is an open-source agent operating system designed around the concept of "WorkSpace". It is jointly developed and open-sourced by Tsinghua University [THUNLP](https://nlp.csai.tsinghua.edu.cn/), [ModelBest](https://modelbest.cn/), [OpenBMB](https://www.openbmb.cn/), and [AI9Stars](https://github.com/AI9Stars). Targeting general-purpose, multi-task scenarios, OPC Brain is built to be a true *productivity tool* for the Agent era.
 
 A wave of excellent AI Agent harnesses has emerged in recent years, each with its own focus: **Claude Code / Cursor / Trae Solo** brought model reasoning deep into the programming IDE; **Claude Cowork** introduced the notion of project-level isolation to desktop-side knowledge work; **WorkBuddy** connected agents to IM ecosystems such as WeCom and Feishu so AI is one message away.
 
@@ -48,7 +48,7 @@ When we shift the lens from "one-shot programming" or "immediate Q&A" to **long-
 - Can tasks of different difficulty **automatically be matched to different models**, instead of burning the flagship model on trivial calls?
 - When you step away from the keyboard, can the work keep moving? Can the agent **proactively discover what's worth doing, report progress, and land results as files on disk**?
 
-PilotDeck is an incremental exploration around exactly these questions. It uses the WorkSpace as the fundamental unit — completely isolating files, memory and skills per project — and pairs it with three pillar capabilities: **White-box Memory**, **Smart Routing** and **Always-on**. The entire system natively supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and behaves consistently across front-ends (Web / CLI / IM).
+OPC Brain is an incremental exploration around exactly these questions. It uses the WorkSpace as the fundamental unit — completely isolating files, memory and skills per project — and pairs it with three pillar capabilities: **White-box Memory**, **Smart Routing** and **Always-on**. The entire system natively supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and behaves consistently across front-ends (Web / CLI / IM).
 
 ### ✨ Key Highlights
 
@@ -93,7 +93,7 @@ Task difficulty is auto-detected; complex calls go to flagship models (e.g. Clau
 
 **Always-on Background Execution**
 
-PilotDeck breaks the "you ask, it answers" loop: after you sign off, the agent keeps discovering candidate tasks, running long-horizon monitors, and finally lands deliverables as local files with a summary report waiting for you.
+OPC Brain breaks the "you ask, it answers" loop: after you sign off, the agent keeps discovering candidate tasks, running long-horizon monitors, and finally lands deliverables as local files with a summary report waiting for you.
 
 <p align="center">
   <img src="assets/awo_en.gif" width="100%" alt="Always-on execution demo"/>
@@ -173,14 +173,14 @@ The research team benchmarked 7 complex tasks (multilingual podcast push, multi-
 
 #### 3. White-box Memory — layout & tone never bleed across projects
 
-In black-box agents, mixing tasks in a shared context pool inevitably pollutes memory. PilotDeck's WorkSpace-scoped white-box memory addresses this end-to-end:
+In black-box agents, mixing tasks in a shared context pool inevitably pollutes memory. OPC Brain's WorkSpace-scoped white-box memory addresses this end-to-end:
 
 <table width="100%">
 <thead>
 <tr>
   <th width="14%" align="left">Dimension</th>
   <th width="41%" align="left">Current AI Agents (black-box)</th>
-  <th width="45%" align="left">PilotDeck (white-box)</th>
+  <th width="45%" align="left">OPC Brain (white-box)</th>
 </tr>
 </thead>
 <tbody>
@@ -216,11 +216,11 @@ In black-box agents, mixing tasks in a shared context pool inevitably pollutes m
 
 ## 🖥️ UI & Demo
 
-PilotDeck ships an out-of-the-box Web UI with full WorkSpace management, white-box memory editing, and visualization of multi-agent collaboration.
+OPC Brain ships an out-of-the-box Web UI with full WorkSpace management, white-box memory editing, and visualization of multi-agent collaboration.
 
 ### Use Cases
 
-> All demos below are generated entirely by edge-side models via PilotDeck's Smart Routing — no cloud-side frontier model required.
+> All demos below are generated entirely by edge-side models via OPC Brain's Smart Routing — no cloud-side frontier model required.
 
 #### Work Document Generation
 
@@ -323,7 +323,7 @@ cd ..
 
 **2. Configure a model provider**
 
-PilotDeck reads `~/.pilotdeck/pilotdeck.yaml`. You can create it manually, let the bootstrap script generate one, **or just open the Web UI and configure providers visually in the settings panel.**
+OPC Brain reads `~/.pilotdeck/pilotdeck.yaml`. You can create it manually, let the bootstrap script generate one, **or just open the Web UI and configure providers visually in the settings panel.**
 Supported protocols include OpenAI, Anthropic, DeepSeek, Qwen, Kimi, MiniMax and other OpenAI-compatible endpoints.
 
 ```yaml
@@ -348,17 +348,20 @@ cd ui && npm run start   # production mode, visit http://localhost:3001
 
 ### Option C: Docker Compose
 
-If Docker is installed, you can start PilotDeck with:
+If Docker is installed, you can start OPC Brain with one command:
 
 ```bash
-docker compose up -d
+./scripts/docker-up.sh
+# first run creates .env; edit PILOTDECK_API_KEY, then run it again
 ```
+
+Then open `http://localhost:3001`. See [README_DOCKER.md](README_DOCKER.md) for persistent data, workspace mounts, and reverse proxy notes.
 
 ---
 
 ## 🛠️ Extension Protocol
 
-PilotDeck has an open plugin architecture with a strict boundary between the open-source core and plugin customization. Extending the system is a `plugin.json` away:
+OPC Brain has an open plugin architecture with a strict boundary between the open-source core and plugin customization. Extending the system is a `plugin.json` away:
 
 - **MCP Servers** — first-class integration with any Model Context Protocol server.
 - **Tools & Skills** — register custom tools, or pull community skills via [ClawHub](https://www.npmjs.com/package/clawhub).
@@ -399,7 +402,7 @@ Workflow: **Fork → feature branch → PR**.
 
 We thank Agent OS pioneers such as OpenClaw, Claude Code, Codex, Cursor, and Hermes for their explorations that helped shape this field.
 
-PilotDeck builds upon the following outstanding open-source projects:
+OPC Brain builds upon the following outstanding open-source projects:
 
 - [ClawXRouter](https://github.com/OpenBMB/ClawXRouter) — Intelligent model routing
 - [ClawXMemory](https://github.com/OpenBMB/ClawXMemory) — Agent memory system
@@ -420,13 +423,13 @@ PilotDeck builds upon the following outstanding open-source projects:
 
 ## 🏢 Joint Development
 
-PilotDeck is jointly developed by Tsinghua University [THUNLP](https://nlp.csai.tsinghua.edu.cn/), [ModelBest](https://modelbest.cn/), [OpenBMB](https://www.openbmb.cn/) and [AI9Stars](https://github.com/AI9Stars).
+OPC Brain is jointly developed by Tsinghua University [THUNLP](https://nlp.csai.tsinghua.edu.cn/), [ModelBest](https://modelbest.cn/), [OpenBMB](https://www.openbmb.cn/) and [AI9Stars](https://github.com/AI9Stars).
 
 ---
 
 ## ⭐ Support Us
 
-If PilotDeck has been helpful in your work or research, please consider giving us a Star on GitHub!
+If OPC Brain has been helpful in your work or research, please consider giving us a Star on GitHub!
 
 ---
 
@@ -434,8 +437,8 @@ If PilotDeck has been helpful in your work or research, please consider giving u
 
 ```bibtex
 @misc{pilotdeck2026,
-  author       = {PilotDeck Team},
-  title        = {PilotDeck: A WorkSpace-Centric Open-Source Agent Operating System},
+  author       = {OPC Brain Team},
+  title        = {OPC Brain: A WorkSpace-Centric Open-Source Agent Operating System},
   howpublished = {\url{https://github.com/OpenBMB/PilotDeck}},
   year         = {2026},
   note         = {Accessed: 2026-05-29}

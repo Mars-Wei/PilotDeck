@@ -100,7 +100,7 @@ async function main() {
 
   const map = [
     ['server (express/ws)', server],
-    ['gateway (pilotdeck)', gateway],
+    ['gateway (opcbrain)', gateway],
     ['vite client       ', vite],
   ];
   console.log('[dev-launcher] resolved dev ports:');

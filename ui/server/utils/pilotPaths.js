@@ -25,7 +25,7 @@ function normalizeHomePath(p) {
 }
 
 /**
- * Resolve the active PilotDeck home directory. Honors `PILOT_HOME` so
+ * Resolve the active OPC Brain home directory. Honors `PILOT_HOME` so
  * tests / multi-instance setups can isolate state. Defaults to
  * `~/.pilotdeck`.
  *
@@ -85,4 +85,3 @@ function createLegacyProjectId(projectRoot) {
     const normalized = projectRoot.replace(/\\/g, '/').replace(/^[A-Za-z]:/, '');
     return normalized.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'project';
 }
-

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# PilotDeck self-update script.
+# OPC Brain self-update script.
 # Pulls latest code, rebuilds, and signals the parent process to restart.
 #
 # Usage:
@@ -90,7 +90,7 @@ COMMIT_MSG="$(git log --oneline -1 HEAD)"
 log "Latest commit: $COMMIT_MSG"
 
 if [[ "$DO_RESTART" -eq 1 ]]; then
-  log "Restarting PilotDeck..."
+  log "Restarting OPC Brain..."
   if [[ -n "${PILOTDECK_PID:-}" ]] && kill -0 "$PILOTDECK_PID" 2>/dev/null; then
     kill -SIGUSR2 "$PILOTDECK_PID" 2>/dev/null || true
   fi

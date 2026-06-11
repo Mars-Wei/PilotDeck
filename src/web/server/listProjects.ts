@@ -1,5 +1,5 @@
 /**
- * Enumerate PilotDeck projects.
+ * Enumerate OPC Brain projects.
  *
  * Source of truth (Phase 3): the `projects/` directory under `pilotHome`.
  * Each subdirectory is a project ID; we surface its derived name + the

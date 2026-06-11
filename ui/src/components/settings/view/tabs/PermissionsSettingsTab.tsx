@@ -21,7 +21,7 @@ const IS_WINDOWS = typeof navigator !== 'undefined'
   && !/darwin/i.test(navigator.userAgent);
 
 // Curated convenience shortcuts shown in the Permissions tab. Users can
-// still type any free-form pattern the PilotDeck permission DSL accepts —
+// still type any free-form pattern the OPC Brain permission DSL accepts —
 // these are just one-click presets for the most common allow-list entries.
 const QUICK_ADD_TOOLS = [
   'bash:git log:*',

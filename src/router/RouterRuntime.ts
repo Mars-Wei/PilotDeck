@@ -1,7 +1,12 @@
 import type {
+  CanonicalContentBlock,
   CanonicalModelEvent,
   CanonicalModelRequest,
   ModelRuntime,
+} from "../model/index.js";
+import {
+  cloneMessages,
+  downgradeUnsupportedContent,
 } from "../model/index.js";
 import {
   DEFAULT_SUBAGENT_MAX_TOKENS,
@@ -394,7 +399,10 @@ export function createRouterRuntime(
         model: attempt.model,
         resolvedFrom: attemptIndex === 0 ? decision.resolvedFrom : "fallback",
       };
-      const attemptRequest = applyDecisionToRequest(attemptDecision, request);
+      const attemptRequest = prepareAttemptRequest(
+        applyDecisionToRequest(attemptDecision, request),
+        deps.modelRuntime,
+      );
       lastAttempt = attempt;
       lastDecision = attemptDecision;
 
@@ -404,7 +412,7 @@ export function createRouterRuntime(
         if (estimated > budget) {
           yield {
             type: "text_delta",
-            text: `[PilotDeck] Sub-agent budget exceeded (${estimated} est. tokens > ${budget} limit). Terminating.`,
+            text: `[OPC Brain] Sub-agent budget exceeded (${estimated} est. tokens > ${budget} limit). Terminating.`,
           } as CanonicalModelEvent;
           yield { type: "message_end", finishReason: "stop" } as CanonicalModelEvent;
           return;
@@ -507,7 +515,7 @@ export function createRouterRuntime(
               transientMaxDelayMs,
             );
             console.warn(
-              `[PilotDeck] transientRetry: ${outcome.error.code} (attempt ${transientRetryCount + 1}/${transientRetryMax}, delay=${Math.round(delay)}ms)`,
+              `[OPC Brain] transientRetry: ${outcome.error.code} (attempt ${transientRetryCount + 1}/${transientRetryMax}, delay=${Math.round(delay)}ms)`,
             );
             events.emit({
               type: "pilotdeck_router_transient_retry",
@@ -556,7 +564,7 @@ export function createRouterRuntime(
           zeroUsageAttempt < zeroUsageMax
         ) {
           console.warn(
-            `[PilotDeck] zeroUsageRetry: empty response from ${attempt.provider}/${attempt.model} ` +
+            `[OPC Brain] zeroUsageRetry: empty response from ${attempt.provider}/${attempt.model} ` +
             `(attempt ${zeroUsageAttempt}/${zeroUsageMax}, session=${ctx.sessionId})`,
           );
           events.emit({
@@ -718,6 +726,46 @@ export function createRouterRuntime(
       usageCache.clear();
     },
   };
+}
+
+function prepareAttemptRequest(
+  request: CanonicalModelRequest,
+  modelRuntime: ModelRuntime,
+): CanonicalModelRequest {
+  const messages = cloneMessages(request.messages);
+  try {
+    downgradeUnsupportedContent(
+      messages,
+      modelRuntime.getMultimodal(request.provider, request.model),
+    );
+  } catch {
+    // Let ModelRuntime validation surface the authoritative provider/model error.
+  }
+  return { ...request, messages: stripRawFromMessages(messages) };
+}
+
+function stripRawFromMessages(
+  messages: CanonicalModelRequest["messages"],
+): CanonicalModelRequest["messages"] {
+  return messages.map((message) => ({
+    ...message,
+    content: message.content.map(stripRawFromContentBlock),
+  }));
+}
+
+function stripRawFromContentBlock(block: CanonicalContentBlock): CanonicalContentBlock {
+  if (block.type === "tool_result") {
+    const { raw: _raw, ...rest } = block;
+    return {
+      ...rest,
+      content: rest.content.map((item) => ({ ...item })),
+    };
+  }
+  if (block.type === "tool_call") {
+    const { raw: _raw, ...rest } = block;
+    return rest;
+  }
+  return block;
 }
 
 type AttemptOutcome = {

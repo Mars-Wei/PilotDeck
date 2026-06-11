@@ -1,5 +1,5 @@
 /**
- * Unified session messages endpoint (PilotDeck-only).
+ * Unified session messages endpoint (OPC Brain-only).
  *
  * GET /api/sessions/:sessionId/messages?projectName=&projectPath=&limit=&offset=
  *
@@ -8,7 +8,7 @@
  * `dist/src/web/server/` — that coupled `ui/server/` to compiled
  * artifacts and meant `src/` edits were silently invisible until a
  * `npm run build`. Going through the gateway WebSocket means the
- * standalone `pilotdeck server` process owns the read path and we pick
+ * standalone OPC Brain gateway process owns the read path and we pick
  * up its in-flight session writes automatically.
  *
  * @module routes/messages

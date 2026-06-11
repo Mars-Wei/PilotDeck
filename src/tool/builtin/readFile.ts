@@ -45,7 +45,7 @@ export function createReadFileTool(): PilotDeckToolDefinition<ReadFileInput> {
       + "- By default, offset is 1 and the tool reads from the beginning of the file\n"
       + "- You can optionally specify offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters\n"
       + "- Results are returned using cat -n format, with line numbers starting at 1\n"
-      + "- This tool allows PilotDeck to read images (eg PNG, JPG, etc). When reading an image file the contents are presented visually when the current model supports image input\n"
+      + "- This tool allows OPC Brain to read images (eg PNG, JPG, etc). When reading an image file the contents are presented visually when the current model supports image input\n"
       + "- This tool can read PDF files (.pdf). For large PDFs, provide the pages parameter to validate specific page ranges (e.g., pages: \"1-5\"). Maximum 20 pages per request\n"
       + "- This tool can read Jupyter notebooks (.ipynb files) and returns a text rendering of notebook cells and outputs\n"
       + "- This tool can only read files, not directories\n"

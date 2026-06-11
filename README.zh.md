@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="PilotDeck" width="680"/>
+  <img src="assets/banner.png" alt="OPC Brain" width="680"/>
 </p>
 
 <p align="center">
@@ -31,13 +31,13 @@
 
 **更新日志** 🔥
 
-- **[2026.05.28]** PilotDeck 正式开源！欢迎访问官网 [pilotdeck.openbmb.cn](https://pilotdeck.openbmb.cn)，期待社区的贡献、反馈与 Star 支持。
+- **[2026.05.28]** OPC Brain 正式开源！欢迎访问官网 [pilotdeck.openbmb.cn](https://pilotdeck.openbmb.cn)，期待社区的贡献、反馈与 Star 支持。
 
 ---
 
-## 💡 关于 PilotDeck
+## 💡 关于 OPC Brain
 
-**PilotDeck** 是一个以「WorkSpace（工作舱）」为核心设计的开源智能体操作系统，由清华大学 [THUNLP](https://nlp.csai.tsinghua.edu.cn/) 实验室、[面壁智能](https://modelbest.cn/)、[OpenBMB](https://www.openbmb.cn/) 与 [AI9Stars](https://github.com/AI9Stars) 联合研发并开源，面向通用场景、适用于多任务，是 Agent 时代一个真正的「生产力工具」。
+**OPC Brain** 是一个以「WorkSpace（工作舱）」为核心设计的开源智能体操作系统，由清华大学 [THUNLP](https://nlp.csai.tsinghua.edu.cn/) 实验室、[面壁智能](https://modelbest.cn/)、[OpenBMB](https://www.openbmb.cn/) 与 [AI9Stars](https://github.com/AI9Stars) 联合研发并开源，面向通用场景、适用于多任务，是 Agent 时代一个真正的「生产力工具」。
 
 当前 AI Agent Harness 领域已涌现出一批优秀的代表成果，各有侧重：**Claude Code / Cursor / Trae Solo** 把模型的推理能力深度集成进了编程 IDE；**Claude Cowork** 引入了项目隔离的概念，把 Agent 带到了桌面端的知识工作场景；**WorkBuddy** 打通了 IM 生态，让 AI 在企微 / 飞书等通讯工具中触手可及。
 
@@ -48,7 +48,7 @@
 - 不同难度的任务，能否 **自动匹配不同模型**？而不是简单任务也跑最贵的旗舰模型？
 - 人离开电脑后，活能否继续推进？Agent 能否 **主动发现值得做的事、汇报进展、把成果落地为文件**？
 
-PilotDeck 正是围绕这些问题做的增量探索。它以 WorkSpace 为基本单位，将文件、记忆、技能在项目级别完整隔离与沉淀，并配套提供 **白盒记忆**、**智能路由**、**Always-on** 三大能力，整套系统原生支持 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)，跨前端（Web / CLI / IM）行为一致。
+OPC Brain 正是围绕这些问题做的增量探索。它以 WorkSpace 为基本单位，将文件、记忆、技能在项目级别完整隔离与沉淀，并配套提供 **白盒记忆**、**智能路由**、**Always-on** 三大能力，整套系统原生支持 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)，跨前端（Web / CLI / IM）行为一致。
 
 ### ✨ 核心亮点
 
@@ -105,7 +105,7 @@ PilotDeck 正是围绕这些问题做的增量探索。它以 WorkSpace 为基�
 
 ### 📊 核心能力实测数据
 
-PilotDeck 的三大核心能力在实际生产环境中展现出了显著的优势：
+OPC Brain 的三大核心能力在实际生产环境中展现出了显著的优势：
 
 #### 1. 智能路由：社媒场景节省 ～70% 成本
 
@@ -173,14 +173,14 @@ PilotDeck 的三大核心能力在实际生产环境中展现出了显著的优�
 
 #### 3. 白盒记忆：排版与文风不再"串台"
 
-在传统的黑盒 Agent 中，多任务混居会导致记忆全局污染。PilotDeck 通过 WorkSpace 实现了记忆的白盒化管理：
+在传统的黑盒 Agent 中，多任务混居会导致记忆全局污染。OPC Brain 通过 WorkSpace 实现了记忆的白盒化管理：
 
 <table width="100%">
 <thead>
 <tr>
   <th width="14%" align="left">维度</th>
   <th width="41%" align="left">现有 AI Agent（黑盒）</th>
-  <th width="45%" align="left">PilotDeck（白盒）</th>
+  <th width="45%" align="left">OPC Brain（白盒）</th>
 </tr>
 </thead>
 <tbody>
@@ -216,11 +216,11 @@ PilotDeck 的三大核心能力在实际生产环境中展现出了显著的优�
 
 ## 🖥️ 交互界面与演示
 
-PilotDeck 提供了开箱即用的 Web UI，支持完整的 WorkSpace 管理、白盒记忆编辑、以及多智能体协作过程的可视化。
+OPC Brain 提供了开箱即用的 Web UI，支持完整的 WorkSpace 管理、白盒记忆编辑、以及多智能体协作过程的可视化。
 
 ### 使用场景
 
-> 以下所有演示均由端侧模型通过 PilotDeck 智能路由完成生成——无需调用云端大模型。
+> 以下所有演示均由端侧模型通过 OPC Brain 智能路由完成生成——无需调用云端大模型。
 
 #### 工作文档生成
 
@@ -322,7 +322,7 @@ cd ..
 ```
 
 **2. 配置模型 Provider**
-PilotDeck 依赖 `~/.pilotdeck/pilotdeck.yaml` 进行配置。您可以手动创建、运行启动脚本自动生成，**或者在启动 Web UI 后直接在设置界面中进行可视化配置**。
+OPC Brain 依赖 `~/.pilotdeck/pilotdeck.yaml` 进行配置。您可以手动创建、运行启动脚本自动生成，**或者在启动 Web UI 后直接在设置界面中进行可视化配置**。
 支持 OpenAI、Anthropic、DeepSeek、Qwen、Kimi、MiniMax 等多种协议。
 
 ```yaml
@@ -347,17 +347,20 @@ cd ui && npm run start   # 生产模式，访问 http://localhost:3001
 
 ### 方式三：Docker Compose
 
-如果您已安装 Docker，也可以直接使用容器方式启动：
+如果您已安装 Docker，可以一键启动 OPC Brain：
 
 ```bash
-docker compose up -d
+./scripts/docker-up.sh
+# 第一次运行会创建 .env；填写 PILOTDECK_API_KEY 后再次执行
 ```
+
+然后访问 `http://localhost:3001`。持久化数据、工作区挂载、反向代理配置见 [README_DOCKER.md](README_DOCKER.md)。
 
 ---
 
 ## 🛠️ 扩展与插件 (Extension Protocol)
 
-PilotDeck 采用开放的插件架构，插件代码与开源核心严格隔离。开发者可以通过 `plugin.json` 轻松扩展系统能力：
+OPC Brain 采用开放的插件架构，插件代码与开源核心严格隔离。开发者可以通过 `plugin.json` 轻松扩展系统能力：
 
 - **MCP Servers**: 原生支持集成 Model Context Protocol 服务器。
 - **Tools & Skills**: 注册自定义工具，或通过 [ClawHub](https://www.npmjs.com/package/clawhub) 引入社区 Skill。
@@ -368,7 +371,7 @@ PilotDeck 采用开放的插件架构，插件代码与开源核心严格隔离�
 
 ## 🤝 参与贡献
 
-感谢所有为 PilotDeck 提交代码与反馈的开发者！我们欢迎新的成员加入，共同构建下一代智能体操作系统。
+感谢所有为 OPC Brain 提交代码与反馈的开发者！我们欢迎新的成员加入，共同构建下一代智能体操作系统。
 
 贡献流程：**Fork 本仓库 → 创建 Feature 分支 → 提交 PR**。
 
@@ -398,7 +401,7 @@ PilotDeck 采用开放的插件架构，插件代码与开源核心严格隔离�
 
 感谢 OpenClaw、Claude Code、Codex、Cursor、Hermes 等 Agent OS 先行者的探索，为这一领域的发展提供了重要启发。
 
-PilotDeck 的建设离不开以下优秀开源项目的支持：
+OPC Brain 的建设离不开以下优秀开源项目的支持：
 
 - [ClawXRouter](https://github.com/OpenBMB/ClawXRouter) — 智能模型路由
 - [ClawXMemory](https://github.com/OpenBMB/ClawXMemory) — Agent 记忆系统
@@ -420,14 +423,14 @@ PilotDeck 的建设离不开以下优秀开源项目的支持：
 ## 🏢 联合研发
 
 <p align="center">
-  PilotDeck 由清华大学 <a href="https://nlp.csai.tsinghua.edu.cn/">THUNLP</a>、<a href="https://modelbest.cn/">面壁智能</a>、<a href="https://www.openbmb.cn/">OpenBMB</a> 与 <a href="https://github.com/AI9Stars">AI9Stars</a> 联合研发。
+  OPC Brain 由清华大学 <a href="https://nlp.csai.tsinghua.edu.cn/">THUNLP</a>、<a href="https://modelbest.cn/">面壁智能</a>、<a href="https://www.openbmb.cn/">OpenBMB</a> 与 <a href="https://github.com/AI9Stars">AI9Stars</a> 联合研发。
 </p>
 
 ---
 
 ## ⭐ 支持我们
 
-如果您觉得 PilotDeck 对您的工作或研究有帮助，请点亮一颗 Star 支持我们！
+如果您觉得 OPC Brain 对您的工作或研究有帮助，请点亮一颗 Star 支持我们！
 
 ---
 
@@ -435,8 +438,8 @@ PilotDeck 的建设离不开以下优秀开源项目的支持：
 
 ```bibtex
 @misc{pilotdeck2026,
-  author       = {PilotDeck Team},
-  title        = {PilotDeck: A WorkSpace-Centric Open-Source Agent Operating System},
+  author       = {OPC Brain Team},
+  title        = {OPC Brain: A WorkSpace-Centric Open-Source Agent Operating System},
   howpublished = {\url{https://github.com/OpenBMB/PilotDeck}},
   year         = {2026},
   note         = {Accessed: 2026-05-29}

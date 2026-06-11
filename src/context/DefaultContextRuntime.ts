@@ -65,7 +65,7 @@ export type DefaultContextRuntimeOptions = {
   snipEngine?: SnipEngine;
   /** Reactive overflow recovery (prompt_too_long → truncate head). */
   overflowRecovery?: ContextOverflowRecovery;
-  /** PILOTDECK.md instruction file discovery (multi-scope hierarchy). */
+  /** OPC Brain instruction file discovery (multi-scope hierarchy). */
   instructionDiscovery?: InstructionDiscovery;
   /** Project root forwarded to MemoryResolver.retrieve. */
   projectRoot?: string;
@@ -233,7 +233,7 @@ export class DefaultContextRuntime implements ContextRuntime {
         diagnostics.push({
           code: "instruction_discovery_failed",
           severity: "warning",
-          message: "Failed to discover PILOTDECK.md instruction files.",
+          message: "Failed to discover OPC Brain instruction files.",
         });
       }
     }

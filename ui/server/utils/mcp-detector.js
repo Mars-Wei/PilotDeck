@@ -41,7 +41,7 @@ export async function detectTaskMasterMCPServer() {
         if (!configData) {
             return {
                 hasMCPServer: false,
-                reason: 'No pilotdeck configuration file found',
+                reason: 'No OPC Brain configuration file found',
                 hasConfig: false
             };
         }

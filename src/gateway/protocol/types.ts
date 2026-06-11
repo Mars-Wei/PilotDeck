@@ -333,7 +333,7 @@ export interface Gateway {
    */
   readSessionMessages(input: WebReadSessionMessagesInput): Promise<WebReadSessionMessagesResult>;
   /**
-   * Web Phase 3 — enumerate projects from PilotDeck home + an optional
+   * Web Phase 3 — enumerate projects from OPC Brain home + an optional
    * registry.
    */
   listProjects(): Promise<WebListProjectsResult>;

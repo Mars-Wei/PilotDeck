@@ -1,170 +1,193 @@
-# PilotDeck Docker
+# OPC Brain Docker 一键部署
 
-PilotDeck runs as two cooperating Node.js processes in the container:
+这个仓库已经内置 Docker 一键部署配置。容器内会同时启动两个进程：
 
-- **Gateway**: agent runtime on `PILOTDECK_GATEWAY_PORT` (default `18789`)
-- **UI Server**: web frontend + REST/WebSocket adapter on `SERVER_PORT` (default `3001`)
+- Gateway：智能体运行时，默认监听容器内 `18789`
+- UI Server：Web 页面、REST API、WebSocket 适配层，默认监听容器内 `3001`
 
-The Docker Compose setup persists the full `PILOT_HOME` directory, including generated config, auth DB, permissions, sessions/projects, memory, skills/plugins, and router stats.
+浏览器只需要访问宿主机暴露的 Web 端口，默认是 `http://localhost:3001`。
 
-## Quick Start with Docker Compose
+## 1. 准备环境变量
 
-### Prerequisites
+最快方式：
 
-- [Docker](https://docs.docker.com/get-docker/) v20+
-- [Docker Compose](https://docs.docker.com/compose/) v2+
+```bash
+./scripts/docker-up.sh
+```
 
-### Option A: Configure via environment variables
+第一次运行会自动创建 `.env` 并停止。你可以先填写 `PILOTDECK_API_KEY`，也可以保留占位符，启动后在 Web UI 里完成模型配置。
 
-Set the model provider variables in `docker-compose.yml` or an `.env` file:
+手动方式：
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，推荐先填写：
 
 ```env
-PILOTDECK_MODEL=openai/gpt-4.1
-PILOTDECK_API_KEY=sk-your-api-key
-PILOTDECK_API_URL=https://api.openai.com/v1
+PILOTDECK_API_KEY=你的 API Key
 ```
 
-Then start:
+如果暂时不填，保持 `PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE` 即可，首次打开页面会进入配置流程。
+
+默认使用 OpenRouter。常见模型配置示例：
+
+```env
+# OpenRouter
+PILOTDECK_MODEL=openrouter/deepseek/deepseek-v4-flash
+PILOTDECK_LIGHT_MODEL=openrouter/qwen/qwen3-8b
+PILOTDECK_API_URL=https://openrouter.ai/api/v1
+
+# DeepSeek
+PILOTDECK_MODEL=deepseek/deepseek-v4-flash
+PILOTDECK_LIGHT_MODEL=deepseek/deepseek-v4-flash
+PILOTDECK_API_URL=https://api.deepseek.com/v1
+
+# Kimi / Moonshot
+PILOTDECK_MODEL=moonshot/kimi-k2.6
+PILOTDECK_LIGHT_MODEL=moonshot/kimi-k2.6
+PILOTDECK_API_URL=https://api.moonshot.cn/v1
+```
+
+## 2. 一键启动
+
+```bash
+./scripts/docker-up.sh
+```
+
+或直接使用 Compose：
 
 ```bash
 docker compose up -d --build
 ```
 
-If `/root/.pilotdeck/pilotdeck.yaml` does not exist in the `pilotdeck-home` volume, the entrypoint generates it from the `PILOTDECK_*` environment variables on first start.
-
-### Option B: Configure via YAML file
-
-Create the host config file first:
+查看状态：
 
 ```bash
-mkdir -p ~/.pilotdeck
-cat > ~/.pilotdeck/pilotdeck.yaml <<'YAML'
-schemaVersion: 1
-agent:
-  model: openai/gpt-4.1
-model:
-  providers:
-    openai:
-      protocol: openai
-      url: https://api.openai.com/v1
-      apiKey: sk-your-api-key
-      models:
-        gpt-4.1: {}
-YAML
+docker compose ps
+docker compose logs -f opcbrain
 ```
 
-Then uncomment the config bind mount in `docker-compose.yml`:
-
-```yaml
-volumes:
-  - pilotdeck-home:/root/.pilotdeck
-  - ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
-```
-
-Start the service:
-
-```bash
-docker compose up -d --build
-```
-
-The UI is available at **http://localhost:3001**.
-
-## Workspace Mounts
-
-Agents run inside the container. To let them access a host project, mount it into `/workspace` by uncommenting the workspace bind mount:
-
-```yaml
-volumes:
-  - pilotdeck-home:/root/.pilotdeck
-  - ${PILOTDECK_WORKSPACE:-${PWD}}:/workspace
-```
-
-You can set `PILOTDECK_WORKSPACE=/path/to/project` before running `docker compose up`.
-
-## Manual Docker Build & Run
-
-### Build the image
-
-```bash
-docker build -t pilotdeck:latest .
-```
-
-### Run with environment variables
-
-```bash
-docker run -d --name pilotdeck \
-  -p 3001:3001 \
-  -v pilotdeck-home:/root/.pilotdeck \
-  -e PILOTDECK_MODEL=openai/gpt-4.1 \
-  -e PILOTDECK_API_KEY=sk-your-api-key \
-  -e PILOTDECK_API_URL=https://api.openai.com/v1 \
-  pilotdeck:latest
-```
-
-### Run with a config file
-
-```bash
-docker run -d --name pilotdeck \
-  -p 3001:3001 \
-  -v pilotdeck-home:/root/.pilotdeck \
-  -v ~/.pilotdeck/pilotdeck.yaml:/root/.pilotdeck/pilotdeck.yaml:ro \
-  pilotdeck:latest
-```
-
-### Run with a workspace mount
-
-```bash
-docker run -d --name pilotdeck \
-  -p 3001:3001 \
-  -v pilotdeck-home:/root/.pilotdeck \
-  -v "$PWD":/workspace \
-  -e PILOTDECK_MODEL=openai/gpt-4.1 \
-  -e PILOTDECK_API_KEY=sk-your-api-key \
-  -e PILOTDECK_API_URL=https://api.openai.com/v1 \
-  pilotdeck:latest
-```
-
-### Run with a proxy
-
-```bash
-docker run -d --name pilotdeck \
-  -p 3001:3001 \
-  -v pilotdeck-home:/root/.pilotdeck \
-  -e PILOTDECK_MODEL=openai/gpt-4.1 \
-  -e PILOTDECK_API_KEY=sk-your-api-key \
-  -e PILOTDECK_API_URL=https://api.openai.com/v1 \
-  -e PILOTDECK_PROXY=http://host.docker.internal:7890 \
-  pilotdeck:latest
-```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|---|---|---|
-| `PILOT_HOME` | PilotDeck state directory inside the container | `/root/.pilotdeck` |
-| `PILOTDECK_MODEL` | Main model identifier, formatted as `provider/model` | `openrouter/deepseek/deepseek-v4-flash` |
-| `PILOTDECK_LIGHT_MODEL` | Lightweight routing/judge model identifier | `openrouter/qwen/qwen3-8b` |
-| `PILOTDECK_API_KEY` | API key for the main model provider | `PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE` |
-| `PILOTDECK_API_URL` | Base URL for the main model provider API | `https://openrouter.ai/api/v1` |
-| `PILOTDECK_LIGHT_API_KEY` | API key for a different light-model provider | Falls back to `PILOTDECK_API_KEY` |
-| `PILOTDECK_LIGHT_API_URL` | Base URL for a different light-model provider | Falls back to `PILOTDECK_API_URL` |
-| `PILOTDECK_PROXY` | HTTP/HTTPS proxy URL | — |
-| `SERVER_PORT` | UI server port | `3001` |
-| `PILOTDECK_GATEWAY_PORT` | Gateway port used by the UI bridge | `18789` |
-
-## Architecture
+打开：
 
 ```text
-Browser (localhost:3001) ──► UI Server (port 3001) ──► Gateway (port 18789)
+http://localhost:3001
 ```
 
-Both processes are managed by `concurrently` inside the Docker container.
+如果你在服务器上部署，把 `localhost` 换成服务器 IP 或域名。
 
-## Development
+## 3. 数据持久化
+
+Compose 会创建并挂载 Docker volume：
+
+```text
+pilotdeck-home -> /root/.pilotdeck
+```
+
+这里会保存：
+
+- `pilotdeck.yaml` 模型配置
+- 登录/本地用户数据库
+- 会话、项目、附件
+- 记忆数据
+- 路由统计
+- skills/plugins
+- Always-On 与 cron 数据
+
+删除容器不会删除这些数据。需要完整清空时执行：
 
 ```bash
-npm install
-npm run dev
+docker compose down -v
 ```
 
-This starts the Gateway and UI dev server with hot reload.
+## 4. 工作区挂载
+
+`.env` 里的：
+
+```env
+PILOTDECK_WORKSPACE=./workspace
+```
+
+会挂载到容器内：
+
+```text
+/workspace
+```
+
+生产环境建议改成绝对路径：
+
+```env
+PILOTDECK_WORKSPACE=/data/opcbrain-workspace
+```
+
+智能体只能直接访问容器内的文件。如果希望它操作某个宿主机项目，需要把该项目或上级目录挂载进容器。
+
+## 5. 使用已有配置文件
+
+如果你已经有宿主机上的配置：
+
+```text
+~/.pilotdeck/pilotdeck.yaml
+```
+
+可以在 `docker-compose.yml` 里打开这行：
+
+```yaml
+- ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
+```
+
+注意：宿主机文件必须先存在，否则 Docker 可能会创建同名目录，导致启动失败。
+
+## 6. 常用运维命令
+
+```bash
+# 启动/更新
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f opcbrain
+
+# 重启
+docker compose restart opcbrain
+
+# 停止
+docker compose down
+
+# 清空容器和持久化数据
+docker compose down -v
+
+# 进入容器
+docker compose exec opcbrain bash
+```
+
+## 7. 反向代理
+
+Nginx 反向代理到：
+
+```text
+http://127.0.0.1:3001
+```
+
+需要保留 WebSocket 头：
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+## 8. 健康检查
+
+```bash
+curl http://localhost:3001/health
+```
+
+返回 `{"status":"ok" ...}` 表示 UI server 已启动。Gateway 由容器内进程管理，UI server 会通过 `ws://127.0.0.1:18789/ws` 连接它。

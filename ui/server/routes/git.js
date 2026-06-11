@@ -941,7 +941,7 @@ Generate the commit message:`;
 
           if ((parsed.type === 'claude-response' || parsed.type === 'pilotdeck-response') && parsed.data) {
             const message = parsed.data.message || parsed.data;
-            console.log('📦 PilotDeck response message:', JSON.stringify(message, null, 2).substring(0, 500));
+            console.log('OPC Brain response message:', JSON.stringify(message, null, 2).substring(0, 500));
             if (message.content && Array.isArray(message.content)) {
               // Extract text from content array
               for (const item of message.content) {
@@ -973,7 +973,7 @@ Generate the commit message:`;
     console.log('🚀 Calling AI agent with provider:', provider);
     console.log('📝 Prompt length:', prompt.length);
 
-    // All providers route through the PilotDeck gateway. The `provider`
+    // All providers route through the OPC Brain gateway. The `provider`
     // value is kept only as a label in the resulting message frames.
     await runChatViaGateway(
       prompt,

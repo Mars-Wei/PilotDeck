@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Activity,
@@ -284,20 +284,27 @@ function collectPricedSessions(groups: ProjectGroup[], generalGroup: ProjectGrou
 export type DashboardV2Props = {
   projectFilter?: string | null;
   projectFullPath?: string | null;
-  onSelectProject?: (projectName: string) => void;
+  onSelectProject?: (projectName: string, projectFullPath?: string | null) => void;
 };
 
 export default function DashboardV2({ projectFilter, projectFullPath, onSelectProject }: DashboardV2Props = {}) {
   const { t } = useTranslation('routing');
   const { data, loading, error, refresh } = useRoutingDashboard();
-  const [scope, setScope] = useState<DashboardScope>(() => (projectFilter ? 'project' : 'total'));
+  const [scope, setScope] = useState<DashboardScope>('total');
+  const projectCardSelectionRef = useRef(false);
   const hasProjectScope = Boolean(projectFilter);
   const activeScope: DashboardScope = hasProjectScope ? scope : 'total';
   const effectiveProjectFilter = activeScope === 'project' ? projectFilter : null;
   const effectiveProjectFullPath = activeScope === 'project' ? projectFullPath : null;
 
   useEffect(() => {
-    setScope(projectFilter ? 'project' : 'total');
+    if (projectCardSelectionRef.current && projectFilter) {
+      projectCardSelectionRef.current = false;
+      setScope('project');
+      return;
+    }
+    projectCardSelectionRef.current = false;
+    setScope('total');
   }, [projectFilter, projectFullPath]);
 
   const { groups, generalGroup, recent, filteredOverall } = useMemo(() => {
@@ -420,7 +427,7 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
                 aria-label={t('dashboard.scope.label', { defaultValue: '统计范围' }) as string}
                 className="flex h-8 rounded-md bg-neutral-100 p-0.5 dark:bg-neutral-900"
               >
-                {(['project', 'total'] as DashboardScope[]).map((item) => (
+                {(['total', 'project'] as DashboardScope[]).map((item) => (
                   <button
                     key={item}
                     type="button"
@@ -452,6 +459,28 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
             </button>
           </div>
         </div>
+
+        {/* Global project cards */}
+        {!effectiveProjectFilter && (groups.length > 0 || generalGroup) && (
+          <div className="mt-6 space-y-3">
+            <div className="text-xxs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+              {t('dashboard.projects.title', { defaultValue: '按项目' })}
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {groups.map((grp) => (
+                <ProjectCostCard
+                  key={grp.name}
+                  group={grp}
+                  onClick={onSelectProject ? () => {
+                    projectCardSelectionRef.current = true;
+                    onSelectProject(grp.name, grp.fullPath);
+                  } : undefined}
+                />
+              ))}
+              {generalGroup && <ProjectCostCard group={generalGroup} />}
+            </div>
+          </div>
+        )}
 
         {/* Overall stat cards */}
         <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -540,25 +569,11 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
           </div>
         )}
 
-        {pricedSessions.length > 0 && (
-          <PriceSection sessions={pricedSessions} />
-        )}
-
         {/* Global view: project cost cards grid + recent routes */}
         {!effectiveProjectFilter && (
           <>
-            {(groups.length > 0 || generalGroup) && (
-              <div className="mt-6 space-y-3">
-                <div className="text-xxs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                  {t('dashboard.projects.title', { defaultValue: '按项目' })}
-                </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {groups.map((grp) => (
-                    <ProjectCostCard key={grp.name} group={grp} onClick={onSelectProject ? () => onSelectProject(grp.name) : undefined} />
-                  ))}
-                  {generalGroup && <ProjectCostCard group={generalGroup} />}
-                </div>
-              </div>
+            {pricedSessions.length > 0 && (
+              <PriceSection sessions={pricedSessions} />
             )}
 
             <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
@@ -610,6 +625,10 @@ export default function DashboardV2({ projectFilter, projectFullPath, onSelectPr
               )}
             </div>
           </>
+        )}
+
+        {effectiveProjectFilter && pricedSessions.length > 0 && (
+          <PriceSection sessions={pricedSessions} />
         )}
       </div>
     </div>

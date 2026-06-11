@@ -1,15 +1,15 @@
 /**
- * PilotDeck bridge — the only chat-execution entry point in `ui/server/`.
+ * OPC Brain bridge — the only chat-execution entry point in `ui/server/`.
  *
  *
- *   1. Connects to the standalone PilotDeck gateway server
+ *   1. Connects to the standalone OPC Brain gateway server
  *      (`pilotdeck server`, default ws://127.0.0.1:18789/ws) as a
  *      WebSocket client. We never instantiate an in-process gateway
  *      here — that would create a second, divergent agent runtime that
  *      doesn't share `~/.pilotdeck/projects/<id>/chats/*.jsonl` writes
  *      and permission state with the CLI/TUI surfaces. One process, one
  *      gateway.
- *   2. Maps each old "sessionId" → PilotDeck "sessionKey" (1:1, generated
+ *   2. Maps each old "sessionId" → OPC Brain "sessionKey" (1:1, generated
  *      on first turn and remembered for resume).
  *   3. Translates GatewayEvent → NormalizedMessage and writes back via
  *      `writer.send(...)` so the existing UI rendering pipeline stays
@@ -103,7 +103,7 @@ function normalizeToolErrorCode(errorCode, resultPreview) {
 
 /**
  * Default permission mode for sessions started from the Web UI. We use
- * `default` so PilotDeck's `Permission.decide()` fully evaluates rules
+ * `default` so OPC Brain's `Permission.decide()` fully evaluates rules
  * + tool semantics — read-only tools allow, side-effecting tools either
  * surface an interactive `permission_request` (resolved via the banner)
  * or short-circuit on an allow rule the user accumulated this session.
@@ -657,9 +657,9 @@ function tryParseJson(value) {
 }
 
 /**
- * Run a chat command through the PilotDeck gateway.
+ * Run a chat command through the OPC Brain gateway.
  *
- * The frontend addresses sessions by the PilotDeck `sessionKey` itself
+ * The frontend addresses sessions by the OPC Brain `sessionKey` itself
  * (`web:s_<uuid>`). On the first turn we mint a key and announce it via
  * a `session_created` frame; the frontend stores that and uses it on
  * every subsequent turn (and after page refresh, since the URL embeds

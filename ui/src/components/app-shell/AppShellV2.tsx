@@ -82,10 +82,13 @@ export default function AppShellV2() {
   const matchProjectChat = useMatch('/p/:projectName/c/:sessionId');
   const matchProject = useMatch('/p/:projectName');
   const matchLegacySession = useMatch('/session/:sessionId');
+  const matchSessions = useMatch('/sessions');
+  const matchProjects = useMatch('/projects');
   const projectNameParam =
     matchProjectChat?.params.projectName ?? matchProject?.params.projectName ?? undefined;
   const sessionId =
     matchProjectChat?.params.sessionId ?? matchLegacySession?.params.sessionId ?? undefined;
+  const routeTab: AppTab | null = matchSessions ? 'sessions' : matchProjects ? 'projects' : null;
 
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { ws, sendMessage, latestMessage, isConnected, subscribe } = useWebSocket();
@@ -132,8 +135,8 @@ export default function AppShellV2() {
     activeSessions,
   });
 
-  const isRootHomeRoute = !projectNameParam && !sessionId && !selectedProject;
-  const effectiveActiveTab = isRootHomeRoute && activeTab !== 'sessions' && activeTab !== 'projects' ? 'home' : activeTab;
+  const isRootHomeRoute = !routeTab && !projectNameParam && !sessionId && !selectedProject;
+  const effectiveActiveTab = routeTab ?? (isRootHomeRoute ? 'home' : activeTab);
   const homeData = useHomeDashboardData({
     projects: sidebarSharedProps.projects,
     processingSessions,
@@ -191,18 +194,28 @@ export default function AppShellV2() {
   ]);
 
   useEffect(() => {
+    if (routeTab) return;
     if (projectNameParam || sessionId || selectedProject) return;
-    if (activeTab === 'sessions' || activeTab === 'projects') return;
     if (activeTab !== 'home') {
       setActiveTab('home');
     }
   }, [
     activeTab,
     projectNameParam,
+    routeTab,
     selectedProject,
     sessionId,
     setActiveTab,
   ]);
+
+  useEffect(() => {
+    if (!routeTab) return;
+    setSelectedProject(null);
+    setSelectedSession(null);
+    if (activeTab !== routeTab) {
+      setActiveTab(routeTab);
+    }
+  }, [activeTab, routeTab, setActiveTab, setSelectedProject, setSelectedSession]);
 
   useEffect(() => {
     window.refreshProjects = refreshProjectsSilently;
@@ -305,7 +318,7 @@ export default function AppShellV2() {
       if (!message || message.type !== 'notification:navigate') return;
 
       // Provider hint from notifications is no longer stored; all sessions
-      // go through the unified pilotdeck gateway.
+      // go through the unified OPC Brain gateway.
 
       setActiveTab('chat');
       void refreshProjectsSilently();
@@ -391,15 +404,34 @@ export default function AppShellV2() {
   );
 
   const handleSelectProjectByName = useCallback(
-    (name: string) => {
-      const target = sidebarSharedProps.projects.find((p) => p.name === name);
-      if (target) {
-        setSelectedProject(target);
-        setSelectedSession(null);
-        navigate(`/p/${encodeURIComponent(target.name)}`);
+    (name: string, fullPath?: string | null) => {
+      const normalizePath = (value?: string | null) => (value ? value.replace(/\/+$/, '') : '');
+      const targetPath = normalizePath(fullPath);
+      const target = sidebarSharedProps.projects.find((p) => {
+        if (p.name === name || p.displayName === name) return true;
+        if (!targetPath) return false;
+        return normalizePath(p.fullPath) === targetPath || normalizePath(p.path) === targetPath;
+      });
+      const fallbackProject: Project | null = fullPath
+        ? {
+            name,
+            displayName: name,
+            fullPath,
+            path: fullPath,
+            sessions: [],
+          }
+        : null;
+      const nextProject = target ?? fallbackProject;
+      if (!nextProject) return;
+
+      setSelectedProject(nextProject);
+      setSelectedSession(null);
+      navigate(`/p/${encodeURIComponent(nextProject.name)}`);
+      if (fullPath) {
+        setActiveTab('dashboard');
       }
     },
-    [navigate, setSelectedProject, setSelectedSession, sidebarSharedProps.projects],
+    [navigate, setActiveTab, setSelectedProject, setSelectedSession, sidebarSharedProps.projects],
   );
 
   const handleSelectTab = useCallback(
@@ -409,6 +441,13 @@ export default function AppShellV2() {
         setSelectedSession(null);
         navigate('/');
         setActiveTab('home');
+        return;
+      }
+      if (tab === 'sessions' || tab === 'projects') {
+        setSelectedProject(null);
+        setSelectedSession(null);
+        navigate(`/${tab}`);
+        setActiveTab(tab);
         return;
       }
       setActiveTab(tab);

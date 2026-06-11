@@ -103,7 +103,7 @@ export class TokenBudgetManager {
         // T7.
         return this.multimediaTokens;
       case "audio":
-        // T8: PilotDeck-specific. Legacy lacks audio blocks
+        // T8: OPC Brain-specific. Legacy lacks audio blocks
         // (intentional_difference, see §4.2 footnote).
         return this.multimediaTokens;
       case "tool_call": {
@@ -115,7 +115,7 @@ export class TokenBudgetManager {
         // T10: count text plus stable placeholders for visual tool output.
         return this.estimateTextTokens(flattenToolResultBlockText(block));
       case "tool_result_reference":
-        // T13: PilotDeck-only block; preview only.
+        // T13: OPC Brain-only block; preview only.
         return this.estimateTextTokens(block.preview);
     }
   }

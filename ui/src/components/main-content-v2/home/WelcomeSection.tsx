@@ -59,7 +59,7 @@ export default function WelcomeSection({
             <Plus className="h-4 w-4" strokeWidth={1.75} />
             新建会话
           </button>
-          <WelcomeButton icon={FolderOpen} label="打开项目" onClick={onOpenProject} />
+          <WelcomeButton icon={FolderOpen} label="打开项目" onClick={onOpenProject} to="/projects" />
           <WelcomeButton icon={Zap} label="新建任务" onClick={onNewTask} />
           <WelcomeButton icon={FileUp} label="导入文档" onClick={onImportDoc} />
         </div>
@@ -98,16 +98,36 @@ function WelcomeButton({
   icon: Icon,
   label,
   onClick,
+  to,
 }: {
   icon: LucideIcon;
   label: string;
   onClick: () => void;
+  to?: string;
 }) {
+  const className = 'inline-flex items-center gap-2 rounded-xl border border-surface-200 bg-white/70 px-4 py-2.5 text-sm font-medium text-surface-700 backdrop-blur transition hover:bg-white dark:border-surface-700 dark:bg-surface-800/70 dark:text-surface-200 dark:hover:bg-surface-700';
+
+  if (to) {
+    return (
+      <a
+        href={to}
+        onClick={(event) => {
+          event.preventDefault();
+          window.location.assign(to);
+        }}
+        className={className}
+      >
+        <Icon className="h-4 w-4" strokeWidth={1.75} />
+        {label}
+      </a>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-xl border border-surface-200 bg-white/70 px-4 py-2.5 text-sm font-medium text-surface-700 backdrop-blur transition hover:bg-white dark:border-surface-700 dark:bg-surface-800/70 dark:text-surface-200 dark:hover:bg-surface-700"
+      className={className}
     >
       <Icon className="h-4 w-4" strokeWidth={1.75} />
       {label}

@@ -4,7 +4,8 @@ FROM node:22-bookworm AS builder
 WORKDIR /build
 
 # System deps for native modules (node-pty, sharp, bcrypt, better-sqlite3)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update \
+    && apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     python3 make g++ git \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,10 +47,11 @@ FROM node:22-bookworm-slim
 WORKDIR /app
 
 # Runtime system dependencies + tsx/concurrently for process management
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update \
+    && apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     ripgrep git curl procps \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g tsx concurrently
+    && npm install -g tsx@4.21.0 concurrently@8.2.2
 
 # Copy built application from builder
 COPY --from=builder /build/package.json /build/pnpm-lock.yaml ./
@@ -63,11 +65,12 @@ COPY --from=builder /build/ui/package.json ui/package.json
 COPY --from=builder /build/ui/node_modules/ ui/node_modules/
 COPY --from=builder /build/ui/server/ ui/server/
 COPY --from=builder /build/ui/dist/ ui/dist/
+COPY --from=builder /build/ui/public/ ui/public/
 COPY --from=builder /build/ui/scripts/ ui/scripts/
 COPY --from=builder /build/ui/shared/ ui/shared/
 COPY --from=builder /build/ui/vite.config.js ui/vite.config.js
 
-# Create PilotDeck state/workspace directories used by the gateway, UI server,
+# Create OPC Brain state/workspace directories used by the gateway, UI server,
 # permissions, skills/plugins, memory, auth, and router stats.
 RUN mkdir -p \
     /root/.pilotdeck/projects \
