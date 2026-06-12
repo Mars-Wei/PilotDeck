@@ -3,12 +3,14 @@ services:
     build: .
     image: opcbrain:latest
     container_name: opc-brain
-    ports:
-      - "${OPCBRAIN_WEB_PORT:-3001}:3001"
+    # Use host networking so the container can reach host-local services (e.g.
+    # vLLM on localhost:9096) and shares the same network namespace as a native
+    # deployment. This keeps one opcbrain.yaml working for both Docker and local.
+    network_mode: host
     volumes:
-      # Persist all OPC Brain state: generated config, auth DB, permissions,
-      # sessions/projects, memory, skills/plugins, and router stats.
-      - opcbrain-home:/root/.opcbrain
+      # Use the host's .opcbrain directory so Docker and local deployments share
+      # the same generated config, auth DB, sessions/projects, memory, etc.
+      - ${HOME}/.opcbrain:/root/.opcbrain
       # Optional: mount an existing config file instead of generating one from env vars.
       # Create the host file first, then uncomment this line.
       # - ${OPCBRAIN_CONFIG:-${HOME}/.opcbrain/opcbrain.yaml}:/root/.opcbrain/opcbrain.yaml:ro
@@ -41,8 +43,6 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
-    networks:
-      - opcbrain-net
 
   # Uncomment to run a local vLLM instance alongside OPC Brain.
   # Requires the NVIDIA Container Toolkit and a CUDA-capable GPU.
@@ -68,10 +68,3 @@ services:
   #           - driver: nvidia
   #             count: 1
   #             capabilities: [gpu]
-
-volumes:
-  opcbrain-home:
-
-networks:
-  opcbrain-net:
-    driver: bridge

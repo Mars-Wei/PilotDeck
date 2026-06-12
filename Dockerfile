@@ -51,7 +51,7 @@ RUN apt-get -o Acquire::Retries=5 update \
     && apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
     ripgrep git curl procps \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g tsx@4.21.0 concurrently@8.2.2
+    && npm install -g tsx@4.21.0 concurrently@8.2.2 clawhub@0.21.0
 
 # Copy built application from builder
 COPY --from=builder /build/package.json /build/pnpm-lock.yaml ./
