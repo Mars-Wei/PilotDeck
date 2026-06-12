@@ -41,6 +41,37 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
+    networks:
+      - opcbrain-net
+
+  # Uncomment to run a local vLLM instance alongside OPC Brain.
+  # Requires the NVIDIA Container Toolkit and a CUDA-capable GPU.
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   container_name: opc-brain-vllm
+  #   runtime: nvidia
+  #   volumes:
+  #     - ~/.cache/huggingface:/root/.cache/huggingface
+  #   command: >
+  #     --model Qwen/Qwen3-30B-A3B
+  #     --tensor-parallel-size 1
+  #     --max-model-len 32768
+  #     --port 8000
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - opcbrain-net
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
 
 volumes:
   opcbrain-home:
+
+networks:
+  opcbrain-net:
+    driver: bridge

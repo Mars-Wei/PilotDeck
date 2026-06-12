@@ -25,6 +25,12 @@ const CUSTOM_PROVIDER: CatalogProvider = {
   models: [],
 };
 
+function isLocalProvider(provider: CatalogProvider | null, url: string): boolean {
+  if (!provider) return false;
+  if (provider.id === 'vllm') return true;
+  return /localhost|127\.0\.0\.1|::1/.test(url.trim());
+}
+
 const DEFAULT_PROVIDER = CATALOG_PROVIDERS.find((provider) => provider.id === 'openrouter') ?? CATALOG_PROVIDERS[0];
 
 function defaultModelForProvider(provider: CatalogProvider | null) {
@@ -89,12 +95,13 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
     ? customProtocol
     : (selectedProvider?.protocol ?? 'openai');
   const effectiveProviderId = isCustomMode ? customProviderId.trim() : (selectedProvider?.id ?? '');
+  const localProvider = isLocalProvider(selectedProvider, effectiveUrl);
   const canTest = Boolean(
     selectedProvider &&
-    apiKey.trim() &&
     effectiveModelId &&
     effectiveProviderId &&
-    (!isCustomMode || effectiveUrl.trim()),
+    (!isCustomMode || effectiveUrl.trim()) &&
+    (localProvider || apiKey.trim()),
   );
 
   const handleProviderSelect = useCallback((provider: CatalogProvider) => {
@@ -352,7 +359,7 @@ export default function LlmConfigurationStep({ onSaved }: LlmConfigurationStepPr
               type="password"
               value={apiKey}
               onChange={(e) => { setApiKey(e.target.value); setTestStatus('idle'); setTestMessage(''); }}
-              placeholder="sk-..."
+              placeholder={localProvider ? '可选（本地 vLLM）' : 'sk-...'}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-foreground/40 focus:outline-none"
               autoComplete="off"
               spellCheck={false}

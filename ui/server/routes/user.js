@@ -29,11 +29,14 @@ function hasUsablePilotDeckConfig() {
   if (!provider || typeof provider !== 'object') return false;
 
   const hasUrl = typeof provider.url === 'string' && provider.url.trim();
-  const apiKey = typeof provider.apiKey === 'string' ? provider.apiKey.trim() : '';
-  const hasRealKey = Boolean(apiKey) && apiKey !== PLACEHOLDER_API_KEY;
   const hasModel = provider.models && typeof provider.models === 'object' && modelId in provider.models;
 
-  return Boolean(hasUrl && hasRealKey && hasModel);
+  // Local providers (e.g. vLLM) do not require an API key.
+  const isLocalProvider = providerId === 'vllm' || /localhost|127\.0\.0\.1|::1/.test(String(provider.url || '').trim());
+  const apiKey = typeof provider.apiKey === 'string' ? provider.apiKey.trim() : '';
+  const hasRealKey = Boolean(apiKey) && apiKey !== PLACEHOLDER_API_KEY;
+
+  return Boolean(hasUrl && hasModel && (isLocalProvider || hasRealKey));
 }
 
 function spawnAsync(command, args, options = {}) {

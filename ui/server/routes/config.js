@@ -209,8 +209,8 @@ router.get('/provider', (_req, res) => {
 
 router.post('/test-connection', async (req, res) => {
   const { providerType, baseUrl, apiKey, model } = req.body || {};
-  if (!baseUrl || !apiKey || !model) {
-    return res.status(400).json({ ok: false, error: 'baseUrl, apiKey, and model are required' });
+  if (!baseUrl || !model) {
+    return res.status(400).json({ ok: false, error: 'baseUrl and model are required' });
   }
 
   // Accept V2 protocols ('openai' | 'anthropic') as well as the legacy
@@ -218,6 +218,7 @@ router.post('/test-connection', async (req, res) => {
   const normalizedType = String(providerType || '').toLowerCase();
   const isAnthropic = normalizedType === 'anthropic';
   const normalizedBaseUrl = String(baseUrl).trim().replace(/\/+$/, '');
+  const trimmedKey = typeof apiKey === 'string' ? apiKey.trim() : '';
   const timeout = 10_000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
@@ -228,13 +229,16 @@ router.post('/test-connection', async (req, res) => {
 
     if (isAnthropic) {
       url = `${normalizedBaseUrl}/v1/messages`;
+      const headers = {
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      };
+      if (trimmedKey) {
+        headers['x-api-key'] = trimmedKey;
+      }
       fetchOptions = {
         method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model,
           max_tokens: 1,
@@ -244,12 +248,15 @@ router.post('/test-connection', async (req, res) => {
       };
     } else {
       url = `${normalizedBaseUrl}/chat/completions`;
+      const headers = {
+        'content-type': 'application/json',
+      };
+      if (trimmedKey) {
+        headers.Authorization = `Bearer ${trimmedKey}`;
+      }
       fetchOptions = {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'content-type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model,
           max_tokens: 1,

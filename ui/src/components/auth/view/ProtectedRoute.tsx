@@ -10,7 +10,7 @@ type ProtectedRouteProps = {
 };
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading, needsSetup, hasCompletedOnboarding, refreshOnboardingStatus } = useAuth();
+  const { user, isLoading, needsSetup, hasCompletedOnboarding, completeOnboarding } = useAuth();
 
   if (isLoading) {
     return <AuthLoadingScreen />;
@@ -25,7 +25,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!hasCompletedOnboarding) {
-    return <Onboarding onComplete={refreshOnboardingStatus} />;
+    // Auto-complete onboarding and proceed to the main page. The local model
+    // config is already the default, so no manual API key step is required.
+    void completeOnboarding();
+    return <AuthLoadingScreen />;
   }
 
   return <>{children}</>;

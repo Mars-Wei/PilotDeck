@@ -15,13 +15,19 @@ const ENV_REFERENCE_PATTERN = /^\$\{([A-Za-z_][A-Za-z0-9_]*)\}$/;
  * the source guarantees every downstream caller (streamModel, AlwaysOn,
  * Cron, plugins) sees the cleaned value.
  */
-export function resolveApiKey(value: unknown, env: CredentialEnv = process.env): string {
+export function resolveApiKey(
+  value: unknown,
+  env: CredentialEnv = process.env,
+  options: { required?: boolean } = { required: true },
+): string {
   if (typeof value !== "string") {
+    if (!options.required) return "";
     throw new ModelConfigError("missing_api_key", "Provider apiKey must be a non-empty string.");
   }
 
   const trimmed = value.trim();
   if (trimmed.length === 0) {
+    if (!options.required) return "";
     throw new ModelConfigError("missing_api_key", "Provider apiKey must be a non-empty string.");
   }
 
@@ -34,6 +40,7 @@ export function resolveApiKey(value: unknown, env: CredentialEnv = process.env):
   const rawResolved = env[envName];
   const resolved = typeof rawResolved === "string" ? rawResolved.trim() : "";
   if (!resolved) {
+    if (!options.required) return "";
     throw new ModelConfigError("missing_api_key", `Environment variable ${envName} is not set.`, {
       envName,
     });

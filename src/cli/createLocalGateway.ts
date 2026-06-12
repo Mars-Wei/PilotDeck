@@ -1185,6 +1185,11 @@ function ensureRouterConfig(
   defaultSelection: PilotAgentModelSelection,
 ): RouterConfig {
   const defaultRef = { id: defaultSelection.id, provider: defaultSelection.provider, model: defaultSelection.model };
+  // Only auto-derive the stats baseline from the default model when it is a
+  // paid/cloud provider. For local/free deployments (vllm) we leave the
+  // baseline unset so TokenStatsCollector falls back to a representative
+  // public model and local usage shows meaningful savings.
+  const baselineModel = defaultRef.provider === "vllm" ? undefined : defaultRef;
   if (router) {
     // Scenarios is optional at the parse boundary (see schema.ts) — the UI
     // can persist a partial `router:` block, e.g. user toggled `enabled`
@@ -1197,7 +1202,7 @@ function ensureRouterConfig(
       fallback: router.fallback ?? { default: [defaultRef] },
       tokenSaver: router.tokenSaver ?? buildDefaultTokenSaver(defaultRef),
       autoOrchestrate: router.autoOrchestrate ?? buildDefaultAutoOrchestrate(),
-      stats: { enabled: true, baselineModel: defaultRef, ...(router.stats ?? {}) },
+      stats: { enabled: true, baselineModel, ...(router.stats ?? {}) },
     };
   }
   return {
@@ -1206,7 +1211,7 @@ function ensureRouterConfig(
     zeroUsageRetry: { enabled: true, maxAttempts: 2 },
     tokenSaver: buildDefaultTokenSaver(defaultRef),
     autoOrchestrate: buildDefaultAutoOrchestrate(),
-    stats: { enabled: true, baselineModel: defaultRef },
+    stats: { enabled: true, baselineModel },
   };
 }
 

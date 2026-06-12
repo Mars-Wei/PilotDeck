@@ -177,7 +177,11 @@ function validateProvider(id, provider, errors) {
     errors.push(`model.providers.${id}.protocol must be "openai" or "anthropic"`);
   }
   if (!normalizeString(provider.url)) errors.push(`model.providers.${id}.url is required`);
-  if (!normalizeString(provider.apiKey)) errors.push(`model.providers.${id}.apiKey is required`);
+  const url = normalizeString(provider.url);
+  const isLocalProvider = id === 'vllm' || /localhost|127\.0\.0\.1|::1/.test(url);
+  if (!isLocalProvider && !normalizeString(provider.apiKey)) {
+    errors.push(`model.providers.${id}.apiKey is required`);
+  }
 }
 
 function validateModelRef(config, ref, label, errors) {

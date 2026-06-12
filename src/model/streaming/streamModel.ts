@@ -267,10 +267,14 @@ function buildHeaders(provider: ProviderConfig): HeadersInit {
   // `invalid_token`, so guard at the wire boundary too.
   const apiKey = provider.apiKey.trim();
   if (provider.protocol === "anthropic") {
-    headers["x-api-key"] = apiKey;
-    headers["anthropic-version"] = headers["anthropic-version"] ?? "2023-06-01";
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+      headers["anthropic-version"] = headers["anthropic-version"] ?? "2023-06-01";
+    }
   } else {
-    headers.authorization = headers.authorization ?? `Bearer ${apiKey}`;
+    if (apiKey || headers.authorization) {
+      headers.authorization = headers.authorization ?? `Bearer ${apiKey}`;
+    }
   }
 
   return headers;

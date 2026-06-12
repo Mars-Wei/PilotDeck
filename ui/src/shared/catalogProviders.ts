@@ -121,6 +121,16 @@ export const CATALOG_PROVIDERS: CatalogProvider[] = [
       { id: 'deepseek-r1', displayName: 'DeepSeek R1 (Volc)', maxContextTokens: 65536 },
     ],
   },
+  {
+    id: 'vllm',
+    displayName: 'vLLM (Local)',
+    protocol: 'openai',
+    defaultUrl: 'http://localhost:8000/v1',
+    models: [
+      { id: 'qwen3-30b-a3b', displayName: 'Qwen3 30B A3B (local)', maxContextTokens: 131072 },
+      { id: 'deepseek-v3', displayName: 'DeepSeek V3 (local)', maxContextTokens: 65536 },
+    ],
+  },
 ];
 
 export function findCatalogProviderById(id: string): CatalogProvider | undefined {

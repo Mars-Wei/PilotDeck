@@ -91,12 +91,22 @@ export function createRouterRuntime(
   config: RouterConfig,
   deps: RouterRuntimeDeps,
 ): RouterRuntime {
+  const defaultScenario = config.scenarios?.default;
+  // Only auto-derive the stats baseline from the default scenario when the
+  // default scenario is a paid model. If the default is a local/free model,
+  // leave baselineModel unset so TokenStatsCollector falls back to a
+  // representative public model (deepseek/deepseek-v4-flash), which lets
+  // local-model usage show meaningful savings.
+  const baselineModel =
+    config.stats?.baselineModel ??
+    (defaultScenario && defaultScenario.provider !== "vllm"
+      ? { provider: defaultScenario.provider, model: defaultScenario.model }
+      : undefined);
+
   const stats = new TokenStatsCollector({
     ...config.stats,
     enabled: config.stats?.enabled ?? false,
-    baselineModel: config.scenarios?.default
-      ? { provider: config.scenarios.default.provider, model: config.scenarios.default.model }
-      : config.stats?.baselineModel,
+    baselineModel,
   });
   const externalStore = !!deps.sessionStore;
   const sessionStore = deps.sessionStore ?? new SessionRouterStore({
@@ -233,6 +243,23 @@ export function createRouterRuntime(
           tokenSaverTier = tokenSaver.tier;
         }
       }
+    }
+
+    // Prefer the local default model for every tier except complex
+    // orchestration, so free local usage is maximized while still reserving
+    // paid/cloud models for sub-agent orchestration when explicitly configured.
+    if (
+      defaultScenario &&
+      defaultScenario.provider === "vllm" &&
+      selection &&
+      selection.provider !== "vllm" &&
+      tokenSaverTier !== "complex"
+    ) {
+      console.log(
+        `[router] local-preference: overriding tier=${tokenSaverTier} selection ${selection.provider}/${selection.model} -> ${defaultScenario.provider}/${defaultScenario.model}`,
+      );
+      selection = defaultScenario;
+      resolvedFrom = "tokenSaver";
     }
 
     if (!selection && scenarioOutcome.subagentModelHint) {
