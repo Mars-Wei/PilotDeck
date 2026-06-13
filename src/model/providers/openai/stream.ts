@@ -138,7 +138,23 @@ export function normalizeOpenAIStreamEvent(
     }
 
     const reasoning = delta.reasoning ?? delta.reasoning_content;
-    if (typeof reasoning === "string" && reasoning.length > 0) {
+    const hasContentText = events.some(
+      (e) => e.type === "text_delta" && typeof (e as { text?: string }).text === "string",
+    );
+
+    if (
+      typeof reasoning === "string" &&
+      reasoning.length > 0 &&
+      !hasContentText &&
+      (delta.content === null || delta.content === undefined ||
+        (typeof delta.content === "string" && delta.content.length === 0))
+    ) {
+      // Local/OpenAI-compatible servers such as llama.cpp serving GPT-OSS
+      // may emit all output in a "reasoning_content" field with an empty
+      // "content" field. Surface that reasoning as regular text so the user
+      // actually sees a response.
+      events.push({ type: "text_delta", text: reasoning, raw });
+    } else if (typeof reasoning === "string" && reasoning.length > 0) {
       const prev = state.reasoningSnapshot;
       let emit: string;
       if (reasoning.startsWith(prev)) {

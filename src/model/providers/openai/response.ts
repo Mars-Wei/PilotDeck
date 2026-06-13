@@ -27,6 +27,19 @@ export function parseOpenAIResponse(raw: unknown, provider = "openai"): Canonica
     }
   }
 
+  // Some local/OpenAI-compatible servers (e.g. llama.cpp serving GPT-OSS)
+  // return reasoning in a separate "reasoning_content" field with an empty
+  // "content" field. Treat that reasoning as the assistant text so the user
+  // actually sees a response.
+  const reasoningContent =
+    content.length === 0 &&
+    typeof (message as Record<string, unknown>).reasoning_content === "string"
+      ? (message as Record<string, unknown>).reasoning_content
+      : "";
+  if (typeof reasoningContent === "string" && reasoningContent.length > 0) {
+    content.push({ type: "text", text: reasoningContent });
+  }
+
   if (Array.isArray(message.tool_calls)) {
     content.push(...message.tool_calls.map((toolCall) => toCanonicalToolCall(toolCall, provider)));
   }
