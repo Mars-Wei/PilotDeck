@@ -1,13 +1,4 @@
-<p align="center">
-  <img src="assets/banner.png" alt="OPC Brain" width="680"/>
-</p>
 
-<p align="center">
-  面向任务制的 AI Agent 生产力平台 —— 以 WorkSpace 为单位，重新定义智能体的操作边界与记忆演化。
-</p>
-
-
----
 
 ## 💡 关于 OPC Brain
 当我们把视角从"单次编程"或"即时问答"切换到**长周期、多项目并行的生产力创作**时，仍有一些尚未被很好回答的问题：
