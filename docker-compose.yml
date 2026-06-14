@@ -3,10 +3,17 @@ services:
     build: .
     image: opcbrain:latest
     container_name: opc-brain
-    # Use host networking so the container can reach host-local services (e.g.
-    # vLLM on localhost:9096) and shares the same network namespace as a native
-    # deployment. This keeps one opcbrain.yaml working for both Docker and local.
-    network_mode: host
+    # Publish the Web UI port to the host. Bridge networking works on every
+    # platform (Linux, macOS, Windows). On macOS/Windows `network_mode: host`
+    # does NOT publish ports to the host, so the browser cannot reach the UI —
+    # explicit port mapping avoids that.
+    ports:
+      - "${OPCBRAIN_WEB_PORT:-3001}:3001"
+    # Reach host-local services (e.g. a vLLM/llama.cpp server running on the
+    # host) via `host.docker.internal` instead of `localhost`. Point the
+    # provider URL in opcbrain.yaml at http://host.docker.internal:9096.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       # Use the host's .opcbrain directory so Docker and local deployments share
       # the same generated config, auth DB, sessions/projects, memory, etc.
