@@ -91,6 +91,7 @@ import projectsRoutes, { WORKSPACES_ROOT, validateWorkspacePath } from './routes
 import userRoutes from './routes/user.js';
 import pluginsRoutes from './routes/plugins.js';
 import messagesRoutes from './routes/messages.js';
+import voiceRoutes, { TALKER_VOICE_URL } from './routes/voice.js';
 import { closeMemoryServices, startMemoryScheduler, stopMemoryScheduler } from './services/memoryService.js';
 import { createNormalizedMessage } from './pilotdeck-message.js';
 import { startEnabledPluginServers, stopAllPlugins, getPluginPort } from './utils/plugin-process-manager.js';
@@ -460,6 +461,9 @@ app.use('/api/sessions', authenticateToken, messagesRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
+
+// Voice config Routes (mints talker access tokens; protected)
+app.use('/api/voice', authenticateToken, voiceRoutes);
 
 // Self-update API Routes (protected)
 app.use('/api/update', authenticateToken, updateRoutes);
@@ -1812,6 +1816,64 @@ function handlePluginWsProxy(clientWs, pathname) {
     });
 }
 
+// Reverse-proxy the browser voice WebSocket to the talker voice sidecar so the
+// browser stays same-origin and the sidecar port need not be exposed. Binary
+// frames (PCM audio) are relayed with their binary flag preserved.
+function handleVoiceProxy(clientWs, request) {
+    let accessToken = '';
+    try {
+        accessToken = new URL(request.url, 'http://localhost').searchParams.get('access_token') || '';
+    } catch {
+        accessToken = '';
+    }
+    if (!accessToken) {
+        clientWs.close(4401, 'Missing access token');
+        return;
+    }
+
+    // Real-time audio relay: disable Nagle so 300ms PCM chunks and ack frames
+    // are flushed immediately instead of being coalesced (which causes choppy,
+    // stuttering playback).
+    try { clientWs._socket?.setNoDelay(true); } catch { /* socket may be unavailable */ }
+
+    const upstreamUrl = `${TALKER_VOICE_URL}?access_token=${encodeURIComponent(accessToken)}`;
+    // perMessageDeflate:false — never compress PCM audio; compression adds CPU
+    // and latency jitter on every frame.
+    const upstream = new WebSocket(upstreamUrl, { maxPayload: 0, perMessageDeflate: false });
+    const pending = [];
+
+    upstream.on('open', () => {
+        console.log('[Voice] WS proxy connected to talker sidecar');
+        try { upstream._socket?.setNoDelay(true); } catch { /* socket may be unavailable */ }
+        for (const [data, isBinary] of pending) {
+            upstream.send(data, { binary: isBinary });
+        }
+        pending.length = 0;
+    });
+
+    upstream.on('message', (data, isBinary) => {
+        if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data, { binary: isBinary });
+    });
+    clientWs.on('message', (data, isBinary) => {
+        if (upstream.readyState === WebSocket.OPEN) {
+            upstream.send(data, { binary: isBinary });
+        } else if (upstream.readyState === WebSocket.CONNECTING) {
+            pending.push([data, isBinary]);
+        }
+    });
+
+    upstream.on('close', (code, reason) => {
+        if (clientWs.readyState === WebSocket.OPEN) clientWs.close();
+    });
+    clientWs.on('close', () => { if (upstream.readyState === WebSocket.OPEN) upstream.close(); });
+
+    upstream.on('error', (err) => {
+        console.error('[Voice] WS proxy upstream error:', err.message);
+        if (clientWs.readyState === WebSocket.OPEN) clientWs.close(4502, 'Voice upstream error');
+    });
+    clientWs.on('error', () => { if (upstream.readyState === WebSocket.OPEN) upstream.close(); });
+}
+
 // WebSocket connection handler that routes based on URL path
 wss.on('connection', (ws, request) => {
     const url = request.url;
@@ -1825,6 +1887,8 @@ wss.on('connection', (ws, request) => {
         handleShellConnection(ws);
     } else if (pathname === '/ws') {
         handleChatConnection(ws, request);
+    } else if (pathname === '/voice-ws') {
+        handleVoiceProxy(ws, request);
     } else if (pathname.startsWith('/plugin-ws/')) {
         handlePluginWsProxy(ws, pathname);
     } else {
