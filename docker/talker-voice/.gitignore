@@ -1,0 +1,6 @@
+# Runtime artifacts created by the bind-mounted talker sidecar — never commit.
+data/
+logs/
+__pycache__/
+*.log
+*.pyc

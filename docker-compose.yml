@@ -43,12 +43,54 @@ services:
       OPCBRAIN_PROXY: ${OPCBRAIN_PROXY:-}
       http_proxy: ${http_proxy:-}
       https_proxy: ${https_proxy:-}
+      # Voice integration: shared secret with the talker-voice sidecar (the
+      # ui-server mints talker tokens with it) and the sidecar WS URL the
+      # /voice-ws proxy forwards to. Voice is disabled unless TALKER_AUTH_SECRET
+      # is set.
+      TALKER_AUTH_SECRET: ${TALKER_AUTH_SECRET:-}
+      TALKER_VOICE_URL: ${TALKER_VOICE_URL:-ws://talker-voice:11995/ws}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3001/health >/dev/null"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 60s
+    restart: unless-stopped
+
+  # talker voice sidecar: full-duplex speech (cloud ASR/TTS + talker's own fast
+  # LLM as the conversational brain). It delegates "do real work" requests back
+  # to OPC Brain via the delegate_to_opcbrain tool. Only useful when
+  # TALKER_AUTH_SECRET + DASHSCOPE_API_KEY are set; the rest of the stack runs
+  # fine without it.
+  talker-voice:
+    build:
+      context: ./docker/talker-voice
+      # talker lives in a sibling repo, supplied as a named build context.
+      additional_contexts:
+        - talker=../talker
+    image: opcbrain-talker-voice:latest
+    container_name: opc-brain-voice
+    # Mount the sidecar source so voice_server.py / opcbrain_tool.py /
+    # config.voice.json can be iterated on with just a container restart
+    # (no image rebuild needed). The image still bakes a copy as a fallback.
+    volumes:
+      - ./docker/talker-voice:/app/sidecar
+    environment:
+      # DashScope (Aliyun) — Qwen3 ASR + qwen-turbo LLM.
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      # Baidu TTS credentials (config_baidu style).
+      BAIDU_APP_ID: ${BAIDU_APP_ID:-}
+      BAIDU_API_KEY: ${BAIDU_API_KEY:-}
+      BAIDU_SECRET_KEY: ${BAIDU_SECRET_KEY:-}
+      TALKER_AUTH_SECRET: ${TALKER_AUTH_SECRET:-}
+      # OPC Brain ui-server WS, reachable by service name on the compose network.
+      OPCBRAIN_VOICE_GATEWAY: ${OPCBRAIN_VOICE_GATEWAY:-ws://opcbrain:3001/ws}
+      # OPC Brain ui-server HTTP base, used for /api/voice/project-list (project
+      # name resolution + cross-project delegation). Derived from the gateway URL
+      # if unset.
+      OPCBRAIN_VOICE_HTTP: ${OPCBRAIN_VOICE_HTTP:-http://opcbrain:3001}
+    expose:
+      - "11995"
     restart: unless-stopped
 
   # Uncomment to run a local vLLM instance alongside OPC Brain.
