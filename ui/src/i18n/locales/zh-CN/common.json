@@ -20,6 +20,7 @@
   "tabs": {
     "home": "主页",
     "chat": "智能体",
+    "voice": "语音",
     "alwaysOn": "常驻",
     "shell": "终端",
     "files": "文件",
@@ -28,6 +29,28 @@
     "dashboard": "路由",
     "memory": "记忆",
     "skills": "技能"
+  },
+  "voice": {
+    "title": "语音助理",
+    "noProject": "请先选择一个项目，再使用语音助理。",
+    "disabledTitle": "语音功能未配置",
+    "disabledHint": "请在部署中启动 talker-voice 服务并设置 TALKER_AUTH_SECRET 与 DASHSCOPE_API_KEY。",
+    "hint": "点击下方按钮开始语音对话。需要动手做的事会交给 OPCBrain 执行并讲给你听。",
+    "start": "开始语音对话",
+    "connecting": "连接中…",
+    "stop": "结束对话",
+    "mute": "静音",
+    "unmute": "取消静音",
+    "delegating": "正在让 OPCBrain 处理…",
+    "wakeListening": "聆听唤醒词",
+    "status": {
+      "connecting": "连接中…",
+      "idleOff": "未开始",
+      "ready": "已就绪，请开始说话",
+      "listening": "聆听中…",
+      "processing": "思考中…",
+      "speaking": "说话中…"
+    }
   },
   "skillsTab": {
     "pickProject": "选一个项目来管理它的技能。",

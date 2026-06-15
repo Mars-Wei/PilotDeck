@@ -1,16 +1,15 @@
 import type { ReactNode } from 'react';
 import {
   Activity,
-  KeyRound,
   RadioTower,
   Router,
-  Settings,
   type LucideIcon,
 } from 'lucide-react';
 import type { DashboardData } from '../../../hooks/useRoutingDashboard';
-import type { HomeAlertItem, HomeCostSummary, HomeTaskStats } from '../../../hooks/useHomeDashboardData';
+import type { HomeAlertItem, HomeCostSummary } from '../../../hooks/useHomeDashboardData';
 import type { HomeStatusData } from '../../../hooks/useHomeStatus';
 import { formatCost } from './homeUtils';
+import VoiceConversationZone from '../../voice/VoiceConversationZone';
 
 type SystemStatusPanelProps = {
   isConnected: boolean;
@@ -20,12 +19,9 @@ type SystemStatusPanelProps = {
   routingData: DashboardData | null;
   routingError: string | null;
   homeCost?: HomeCostSummary | null;
-  taskStats: HomeTaskStats;
   alerts: HomeAlertItem[];
   alwaysOnError: string | null;
   onOpenDashboard: () => void;
-  onOpenSettings: () => void;
-  onOpenApiKeys: () => void;
 };
 
 export default function SystemStatusPanel({
@@ -36,12 +32,9 @@ export default function SystemStatusPanel({
   routingData,
   routingError,
   homeCost,
-  taskStats,
   alerts,
   alwaysOnError,
   onOpenDashboard,
-  onOpenSettings,
-  onOpenApiKeys,
 }: SystemStatusPanelProps) {
   const total = routingData?.overall?.total;
   const hasTodayCost = Boolean(homeCost?.hasTodayWindow && homeCost.todayRequestCount > 0);
@@ -99,8 +92,11 @@ export default function SystemStatusPanel({
   const memoryStatus = statusData?.memory?.status ?? (isLoadingProjects ? 'pending' : alerts.length > 0 ? 'warning' : 'pending');
 
   return (
-    <aside className="hidden w-72 shrink-0 overflow-y-auto border-l border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900 lg:block">
-      <div className="space-y-4">
+    <aside className="hidden w-72 shrink-0 flex-col border-l border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900 lg:flex">
+      {/* Voice area occupies the top (big button when collapsed, conversation when open). */}
+      <VoiceConversationZone />
+      {/* Status content sits below the voice area; capped + scrollable, bottom-aligned when voice is off. */}
+      <div className="mt-auto max-h-[55%] shrink-0 space-y-4 overflow-y-auto p-4">
         <Panel title="系统状态">
           <StatusRow
             icon={RadioTower}
@@ -178,27 +174,6 @@ export default function SystemStatusPanel({
           </div>
         </Panel>
 
-        <Panel title="快捷操作">
-          <QuickAction
-            icon={Settings}
-            label="设置"
-            onClick={onOpenSettings}
-          />
-          <QuickAction
-            icon={KeyRound}
-            label="API 密钥"
-            onClick={onOpenApiKeys}
-          />
-          {taskStats.running > 0 ? (
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className="mt-2 w-full rounded-lg bg-amber-50 px-3 py-2 text-left text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15"
-            >
-              {taskStats.running} 个任务运行中
-            </button>
-          ) : null}
-        </Panel>
       </div>
     </aside>
   );
@@ -265,19 +240,6 @@ function StatusRow({
         {value}
       </span>
     </div>
-  );
-}
-
-function QuickAction({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-surface-700 transition hover:bg-white hover:text-surface-900 dark:text-surface-300 dark:hover:bg-surface-700 dark:hover:text-surface-100"
-    >
-      <Icon className="h-4 w-4" strokeWidth={1.75} />
-      <span>{label}</span>
-    </button>
   );
 }
 

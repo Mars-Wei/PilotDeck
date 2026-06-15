@@ -15,6 +15,7 @@ import HomeChrome from '../main-content-v2/home/HomeChrome';
 import { useHomeDashboardData } from '../../hooks/useHomeDashboardData';
 import { useRoutingDashboard } from '../../hooks/useRoutingDashboard';
 import MainAreaV2 from './MainAreaV2';
+import { VoiceAssistantProvider } from '../../contexts/VoiceAssistantContext';
 
 const SettingsComponent = lazy(() => import('../settings/view/Settings'));
 const ProjectCreationWizard = lazy(() => import('../project-creation-wizard'));
@@ -479,6 +480,7 @@ export default function AppShellV2() {
 
   return (
     <div className="ui-v2 fixed inset-0 flex bg-white font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <VoiceAssistantProvider projects={sidebarSharedProps.projects} selectedProject={selectedProject}>
       <main className="flex min-w-0 flex-1 flex-col">
         <HomeChrome
           activeTab={effectiveActiveTab}
@@ -566,6 +568,7 @@ export default function AppShellV2() {
             document.body,
           )
         : null}
+      </VoiceAssistantProvider>
 	    </div>
 	  );
 	}
