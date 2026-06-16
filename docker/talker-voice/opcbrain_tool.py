@@ -351,6 +351,41 @@ def build_opcbrain_tool(
     return delegate_to_opcbrain
 
 
+def build_end_conversation_tool() -> BaseTool:
+    """Build the ``end_conversation`` tool.
+
+    The talker LLM calls this when the user clearly wants to end the voice
+    call (e.g. 「退下吧」「再见」「拜拜」「没事了」「先这样」「不用了」). The tool
+    returns a short goodbye that the assistant speaks; the Web UI watches for
+    this tool call (via the conversation's ``tool_call`` state) and hangs up
+    once the goodbye finishes playing. Detecting the *intent* with the LLM is
+    far more robust than client-side keyword matching and avoids treating the
+    exit phrase as ordinary chat.
+    """
+
+    end_schema: dict[str, Any] = {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    }
+
+    @tool("end_conversation", args_schema=end_schema)
+    async def end_conversation() -> str:
+        """当用户明确想结束这次语音对话时调用。
+
+        例如用户说「退下吧」「再见」「拜拜」「没事了」「先这样」「不用了」「就到这吧」
+        等表示要结束的话时，调用本工具来优雅地结束通话。不要把这类结束语当成普通
+        聊天继续搭话。
+        """
+        return "好的，我先退下了。"
+
+    end_conversation.description = (
+        "当用户明确想结束语音对话（退下吧/再见/拜拜/没事了/先这样/不用了 等）时调用，"
+        "用于优雅地结束本次通话。"
+    )
+    return end_conversation
+
+
 def build_list_projects_tool() -> BaseTool:
     """Build the ``list_projects`` tool: list project names the assistant can target."""
 

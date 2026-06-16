@@ -65,18 +65,23 @@ function projectPathOf(p: Project | null): string {
 export type VoiceSettings = {
   wakeEnabled: boolean;
   wakeWord: string;
+  /** Minimum pinyin similarity (0–1) for the heard speech to trigger the wake. */
+  wakeThreshold: number;
   dismissWord: string;
   idleTimeoutMs: number;
   goodbyeLine: string;
+  welcomeLine: string;
   fanOutThreshold: number;
 };
 
 const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   wakeEnabled: false,
   wakeWord: '小智秘书',
+  wakeThreshold: 0.5,
   dismissWord: '退下吧',
   idleTimeoutMs: 60_000,
   goodbyeLine: '我先退下了',
+  welcomeLine: '你好，我是小智秘书，需要我帮你做什么？',
   fanOutThreshold: 5,
 };
 
@@ -92,6 +97,110 @@ function normalizePhrase(s: string): string {
 function getSpeechRecognition(): any {
   if (typeof window === 'undefined') return null;
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
+}
+
+// Exit-intent detection (frontend, reliable). The talker LLM does NOT reliably
+// call a tool to end the call, but DashScope ASR transcribes accurately, so we
+// match the user's speech against exit phrases. STRONG phrases match anywhere;
+// AMBIGUOUS ones only match in a short utterance (so "就这样做这件事" — a long
+// instruction — doesn't end the call, while "就这样吧" does).
+const STRONG_EXIT_PHRASES = [
+  '退下吧', '退下', '我先退下', '拜拜', '再见', '回头见', '回见', '告辞',
+  '结束对话', '不打扰了', '下次再聊', '不聊了',
+];
+const AMBIGUOUS_EXIT_PHRASES = [
+  '没事了', '没别的事', '不用了', '就这样', '就到这', '就到此', '好了谢谢',
+  '先这样', '我挂了', '挂了', '结束吧',
+];
+function matchesExitIntent(text: string): boolean {
+  const t = normalizePhrase(text);
+  if (!t) return false;
+  if (STRONG_EXIT_PHRASES.some((p) => t.includes(normalizePhrase(p)))) return true;
+  if (t.length <= 10 && AMBIGUOUS_EXIT_PHRASES.some((p) => t.includes(normalizePhrase(p)))) return true;
+  return false;
+}
+
+// ── Pinyin fuzzy matching for the wake word ──────────────────────────────
+// Browser zh-CN recognition mis-hears proper-noun wake words (e.g. 「小智秘书」
+// often comes back as 「小日蜜蜂」). Comparing pinyin syllables with a similarity
+// threshold tolerates these near-misses (秘→蜜 are identical in pinyin; 智→日,
+// 书→蜂 are close), without the brittleness of exact-text matching.
+
+let _pinyinFn: ((text: string) => string[]) | null = null;
+let _pinyinLoading: Promise<void> | null = null;
+
+/** Lazy-load pinyin-pro (own chunk; only when the wake word is enabled). */
+function ensurePinyin(): Promise<void> {
+  if (_pinyinFn) return Promise.resolve();
+  if (!_pinyinLoading) {
+    _pinyinLoading = import('pinyin-pro')
+      .then((mod: any) => {
+        const fn = mod?.pinyin ?? mod?.default?.pinyin;
+        _pinyinFn = (text: string) => {
+          try {
+            return (fn(text, { toneType: 'none', type: 'array' }) as string[])
+              .map((s) => s.toLowerCase().replace(/[^a-z]/g, ''))
+              .filter(Boolean);
+          } catch {
+            return [];
+          }
+        };
+      })
+      .catch(() => { _pinyinFn = null; _pinyinLoading = null; });
+  }
+  return _pinyinLoading;
+}
+
+function toPinyinSyllables(text: string): string[] {
+  return _pinyinFn ? _pinyinFn(text) : [];
+}
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  let curr = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i += 1) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[n];
+}
+
+/** Per-syllable similarity in [0,1] (1 = identical pinyin). */
+function syllableSim(a: string, b: string): number {
+  if (a === b) return 1;
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 0;
+  return Math.max(0, 1 - levenshtein(a, b) / maxLen);
+}
+
+/**
+ * Best-window pinyin similarity of `wake` syllables against `heard` syllables.
+ * Slides a window of the wake length over the heard utterance so extra words
+ * around the wake phrase don't dilute the score.
+ */
+function pinyinMatchScore(heard: string[], wake: string[]): number {
+  if (wake.length === 0 || heard.length === 0) return 0;
+  if (heard.length < wake.length) {
+    // Compare what we have, normalized by the full wake length.
+    let s = 0;
+    for (let i = 0; i < heard.length; i += 1) s += syllableSim(heard[i], wake[i]);
+    return s / wake.length;
+  }
+  let best = 0;
+  for (let start = 0; start + wake.length <= heard.length; start += 1) {
+    let s = 0;
+    for (let i = 0; i < wake.length; i += 1) s += syllableSim(heard[start + i], wake[i]);
+    best = Math.max(best, s / wake.length);
+  }
+  return best;
 }
 
 /** Speak a short line via the browser TTS (independent of the talker mic). */
@@ -302,17 +411,33 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
   const startWake = useCallback(() => {
     const SR = getSpeechRecognition();
     if (!SR || recognitionRef.current) return;
-    const word = normalizePhrase(settingsRef.current.wakeWord);
-    if (!word) return;
+    if (!normalizePhrase(settingsRef.current.wakeWord)) return;
+    void ensurePinyin();
     let rec: any;
     try { rec = new SR(); } catch { return; }
     rec.lang = 'zh-CN';
     rec.continuous = true;
     rec.interimResults = true;
+    rec.onstart = () => { console.info('[voice-wake] start (listening for)', settingsRef.current.wakeWord); };
     rec.onresult = (e: any) => {
+      const wakeWord = settingsRef.current.wakeWord;
+      const threshold = settingsRef.current.wakeThreshold || 0.5;
+      const wakeSyll = toPinyinSyllables(wakeWord);
       for (let i = e.resultIndex ?? 0; i < e.results.length; i += 1) {
-        const txt = normalizePhrase(e.results[i]?.[0]?.transcript || '');
-        if (txt && txt.includes(word)) {
+        const raw = e.results[i]?.[0]?.transcript || '';
+        let hit = false;
+        let score = 0;
+        if (wakeSyll.length > 0) {
+          score = pinyinMatchScore(toPinyinSyllables(raw), wakeSyll);
+          hit = score >= threshold;
+        } else {
+          // pinyin not loaded yet → exact normalized substring fallback
+          const t = normalizePhrase(raw);
+          hit = Boolean(t) && t.includes(normalizePhrase(wakeWord));
+        }
+        console.info('[voice-wake] heard:', JSON.stringify(raw), 'pinyinScore=', score.toFixed(2), 'thr=', threshold, 'match=', hit);
+        if (hit) {
+          console.info('[voice-wake] WAKE matched → connecting');
           stopWake();
           openPanelRef.current();
           void startRef.current();
@@ -321,6 +446,7 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
       }
     };
     rec.onerror = (e: any) => {
+      console.info('[voice-wake] error:', e?.error);
       // Permission/service denied → give up (don't busy-loop restart).
       if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
         wantWakeRef.current = false;
@@ -328,13 +454,14 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
       }
     };
     rec.onend = () => {
+      console.info('[voice-wake] end (restart=', wantWakeRef.current, ')');
       setWakeListening(false);
       recognitionRef.current = null;
       // Chrome auto-stops on silence; restart while we still want to listen.
       if (wantWakeRef.current) {
         setTimeout(() => {
           if (wantWakeRef.current && !recognitionRef.current) startWake();
-        }, 400);
+        }, 800);
       }
     };
     wantWakeRef.current = true;
@@ -342,7 +469,9 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
     try {
       rec.start();
       setWakeListening(true);
-    } catch {
+      console.info('[voice-wake] recognizer.start() called');
+    } catch (err) {
+      console.info('[voice-wake] start() threw:', err);
       recognitionRef.current = null;
       wantWakeRef.current = false;
     }
@@ -351,7 +480,10 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
   // Run the recognizer only while idle + wake enabled (talker owns the mic
   // during an active call, so don't double-capture).
   useEffect(() => {
-    if (enabled && settings.wakeEnabled && !active && !connecting) {
+    const shouldRun = enabled && settings.wakeEnabled && !active && !connecting;
+    console.info('[voice-wake] lifecycle: enabled=', enabled, 'wakeEnabled=', settings.wakeEnabled,
+      'active=', active, 'connecting=', connecting, '→ run=', shouldRun);
+    if (shouldRun) {
       startWake();
     } else {
       stopWake();
@@ -359,24 +491,71 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
     return () => { stopWake(); };
   }, [enabled, settings.wakeEnabled, active, connecting, startWake, stopWake]);
 
-  // Dismiss word: end the call when the user says e.g. 「退下吧」.
-  const lastDismissIdxRef = useRef(0);
+  // Exit intent: the talker LLM calls the `end_conversation` tool when the user
+  // says they want to stop (退下吧/再见/拜拜/没事了/…). We detect it via the
+  // conversation's tool_call state (same channel as delegate_to_opcbrain) and
+  // hang up once the spoken goodbye finishes. Letting the LLM judge intent is
+  // robust to phrasing AND — unlike scanning conv.messages for a keyword — is
+  // not fooled by the history the SDK replays on reconnect (tool_call state is
+  // not replayed). The talker voice speaks the goodbye, so no browser TTS here.
+  // Ignore the conversation history the SDK replays on (re)connect so an old
+  // exit phrase in it can't end the call instantly.
+  const connectAtRef = useRef(0);
+  useEffect(() => { connectAtRef.current = active ? Date.now() : 0; }, [active]);
+
+  const endPendingRef = useRef(false);
+  const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastExitIdxRef = useRef(0);
+  const clearEndState = useCallback(() => {
+    endPendingRef.current = false;
+    if (endTimerRef.current) { clearTimeout(endTimerRef.current); endTimerRef.current = null; }
+  }, []);
+  const triggerEnd = useCallback((reason: string) => {
+    if (endPendingRef.current) return;
+    endPendingRef.current = true;
+    console.info('[voice-end] ending —', reason);
+    // Let the spoken goodbye (LLM reply or end_conversation tool) play, then hang up.
+    endTimerRef.current = setTimeout(() => { clearEndState(); void stop(); }, 4500);
+  }, [stop, clearEndState]);
   useEffect(() => {
-    if (!active) { lastDismissIdxRef.current = 0; return; }
+    if (!active) { clearEndState(); lastExitIdxRef.current = 0; return; }
+    // LLM tool path (bonus — only when the model actually calls it).
+    if (conv?.tool_call?.name === 'end_conversation') { triggerEnd('end_conversation tool'); return; }
+    // Primary path: match the user's transcribed speech against exit phrases.
     const msgs = conv?.messages ?? [];
-    const word = normalizePhrase(settingsRef.current.dismissWord);
-    if (word) {
-      for (let i = lastDismissIdxRef.current; i < msgs.length; i += 1) {
-        const m = msgs[i];
-        if (m.role === 'user' && normalizePhrase(m.content).includes(word)) {
-          lastDismissIdxRef.current = msgs.length;
-          void dismiss(true);
-          return;
-        }
+    if (connectAtRef.current && Date.now() - connectAtRef.current < 2500) {
+      lastExitIdxRef.current = msgs.length; // skip replayed history
+      return;
+    }
+    for (let i = lastExitIdxRef.current; i < msgs.length; i += 1) {
+      const m = msgs[i];
+      if (m.role === 'user' && matchesExitIntent(m.content)) {
+        lastExitIdxRef.current = msgs.length;
+        triggerEnd(`phrase: ${m.content}`);
+        return;
       }
     }
-    lastDismissIdxRef.current = msgs.length;
-  }, [active, conv?.messages, dismiss]);
+    lastExitIdxRef.current = msgs.length;
+  }, [active, conv, triggerEnd, clearEndState]);
+
+  // Pre-warm the browser cache for the heavy voice assets (ORT wasm + Silero
+  // model + SDK) as soon as the page knows voice is enabled. The big download
+  // then happens quietly in the background, so the first call connects fast
+  // instead of stalling on a multi-MB download. Safe: no mic, no connection.
+  useEffect(() => {
+    if (enabled !== true) return;
+    const assets = [
+      '/talker/index.js',
+      '/talker/vendor/onnxruntime-web/ort.wasm.min.js',
+      '/talker/vendor/onnxruntime-web/ort-wasm-simd-threaded.mjs',
+      '/talker/vendor/onnxruntime-web/ort-wasm-simd-threaded.wasm',
+      '/talker/vendor/vad-web/bundle.min.js',
+      '/talker/vendor/vad-web/silero_vad_v5.onnx',
+    ];
+    for (const url of assets) {
+      fetch(url, { cache: 'force-cache' }).catch(() => { /* best-effort warm */ });
+    }
+  }, [enabled]);
 
   // Idle timeout: hang up after silence (but not mid-processing/speaking).
   const streamState = conv?.streamState;
@@ -386,7 +565,11 @@ export function VoiceAssistantProvider({ children, projects, selectedProject }: 
     const ms = settings.idleTimeoutMs;
     if (!ms || ms <= 0) return undefined;
     if (streamState === 'processing' || streamState === 'speaking') return undefined;
-    const timer = setTimeout(() => { void dismiss(true); }, ms);
+    console.info('[voice-idle] arming idle timer', ms, 'ms (streamState=', streamState, 'msgs=', msgCount, ')');
+    const timer = setTimeout(() => {
+      console.info('[voice-idle] idle timeout fired → hanging up');
+      void dismiss(true);
+    }, ms);
     return () => clearTimeout(timer);
   }, [active, settings.idleTimeoutMs, streamState, msgCount, dismiss]);
 

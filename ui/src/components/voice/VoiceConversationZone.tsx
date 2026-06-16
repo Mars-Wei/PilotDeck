@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Mic, MicOff, PhoneOff, Sparkles, X } from 'lucide-react';
 import { useVoiceAssistant } from '../../contexts/VoiceAssistantContext';
@@ -17,6 +17,16 @@ export default function VoiceConversationZone() {
     settings, wakeListening,
     openPanel, closePanel, start, stop, toggleMute, setTargetProject,
   } = useVoiceAssistant();
+
+  // Keep the transcript pinned to the latest: scroll to the bottom on open,
+  // when the history loads, and whenever new turns / status arrive.
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
+  const msgCount = conv?.messages?.length ?? 0;
+  const streamState = conv?.streamState;
+  useLayoutEffect(() => {
+    const el = transcriptRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [panelOpen, msgCount, streamState]);
 
   const statusLabel = useMemo(() => {
     if (connecting) return t('voice.status.connecting', { defaultValue: '连接中…' });
@@ -124,12 +134,22 @@ export default function VoiceConversationZone() {
       </div>
 
       {/* Transcript (scrolls) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+      <div ref={transcriptRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {!conv?.messages?.length ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 px-2 text-center text-xs text-surface-400">
-            <Sparkles className="h-5 w-5" />
-            <p>{t('voice.hint', { defaultValue: '点击下方按钮或说出唤醒词开始语音对话。需要动手做的事会交给 OPCBrain 执行并讲给你听。' })}</p>
-          </div>
+          active ? (
+            // Connected, awaiting first turn → show the greeting as the
+            // assistant's opening message (in the conversation, not browser TTS).
+            <div className="flex flex-col gap-2">
+              <div className="self-start rounded-2xl rounded-bl-sm bg-surface-100 px-3 py-1.5 text-xs text-surface-800 dark:bg-surface-800 dark:text-surface-100">
+                {settings.welcomeLine || t('voice.welcome', { defaultValue: '你好，我是小智秘书，需要我帮你做什么？' })}
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-2 text-center text-xs text-surface-400">
+              <Sparkles className="h-5 w-5" />
+              <p>{t('voice.hint', { defaultValue: '点击下方按钮或说出唤醒词开始语音对话。需要动手做的事会交给 OPCBrain 执行并讲给你听。' })}</p>
+            </div>
+          )
         ) : (
           <div className="flex flex-col gap-2">
             {conv.messages.map((m, i) => (

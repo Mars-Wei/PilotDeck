@@ -28,7 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from talker import Talker
 from talker.log_utils import mute_other_logging
 from talker.serving.modules.tts_manager import TTSManager
-from talker.serving.events import ASRResultFinal, LLMAgentResponseFinish
+from talker.serving.events import ASRResultFinal, LLMAgentResponseFinish, TurnTTSCueRequested
 from talker.serving.service_manager import ServiceManager
 
 import opcbrain_tool
@@ -66,9 +66,12 @@ talker_instance = Talker.from_config(args.config)
 # Register the OPCBrain tools before any session is created:
 #  - delegate_to_opcbrain: hand real work to OPCBrain (optionally to a named project)
 #  - list_projects: enumerate targetable projects (cross-project / name resolution)
+#  - end_conversation: let the LLM end the call on exit intent (the Web UI hangs
+#    up when it sees this tool call, after the goodbye is spoken)
 talker_instance.add_agent_tools([
     opcbrain_tool.build_opcbrain_tool(GATEWAY_URL),
     opcbrain_tool.build_list_projects_tool(),
+    opcbrain_tool.build_end_conversation_tool(),
 ])
 
 # ── Conversation history sync (Phase C) ───────────────────────────────────
@@ -100,6 +103,47 @@ async def _post_voice_record(user_text: str, assistant_text: str) -> None:
         logger.warning("voice record POST failed: %s", exc)
 
 
+# ── Spoken welcome on connect ──────────────────────────────────────────────
+# Greet in talker's own voice right after the client attaches. Uses a transient
+# TTS cue (doesn't touch official response/conversation state, and TTS playback
+# doesn't need the client VAD loaded, so it plays immediately — also masking any
+# remaining load). The line comes from voice.welcomeLine in opcbrain.yaml.
+VOICE_SETTINGS_URL = f"{opcbrain_tool.HTTP_BASE}/api/voice/settings"
+DEFAULT_WELCOME = "你好，我是小智秘书，需要我帮你做什么？"
+_welcome_cache: dict = {"line": None}
+
+
+async def _get_welcome_line() -> str:
+    if _welcome_cache["line"] is not None:
+        return _welcome_cache["line"]
+    line = DEFAULT_WELCOME
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.get(VOICE_SETTINGS_URL)
+            resp.raise_for_status()
+            wl = (resp.json() or {}).get("welcomeLine")
+            if isinstance(wl, str) and wl.strip():
+                line = wl.strip()
+    except Exception as exc:  # noqa: BLE001 - fall back to default
+        logger.warning("failed to fetch welcomeLine: %s", exc)
+    _welcome_cache["line"] = line
+    return line
+
+
+async def _speak_welcome(service) -> None:
+    """Speak the greeting once the client has attached + can play audio."""
+    try:
+        await asyncio.sleep(1.2)  # let the client attach before we synthesize
+        line = await _get_welcome_line()
+        if not line:
+            return
+        await service.event_bus.publish(
+            TurnTTSCueRequested(session_id=service.session_id, text=line)
+        )
+    except Exception:  # noqa: BLE001 - greeting must never break the call
+        logger.exception("welcome cue failed")
+
+
 def _attach_recording(service) -> None:
     """Subscribe per-turn recording handlers to one connection's event bus."""
     state = {"user_text": ""}
@@ -128,8 +172,9 @@ async def _create_service_with_recording(self, *a, **kw):
     service = await _orig_create_service(self, *a, **kw)
     try:
         _attach_recording(service)
-    except Exception:  # noqa: BLE001 - recording must never block connections
-        logger.exception("Failed to attach voice recording hook")
+        asyncio.create_task(_speak_welcome(service))
+    except Exception:  # noqa: BLE001 - recording/greeting must never block connections
+        logger.exception("Failed to attach voice hooks")
     return service
 
 

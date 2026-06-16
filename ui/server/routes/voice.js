@@ -14,9 +14,16 @@ const router = express.Router();
 const DEFAULT_VOICE_SETTINGS = {
   wakeEnabled: false,
   wakeWord: '小智秘书',
+  // Browser zh-CN speech recognition often mis-hears proper-noun wake words
+  // (e.g. 「小智秘书」 → 「小日蜜蜂」). We match by pinyin similarity instead of
+  // exact text; wakeThreshold (0–1) is the minimum similarity to trigger.
+  wakeThreshold: 0.5,
   dismissWord: '退下吧',
   idleTimeoutMs: 60_000,
   goodbyeLine: '我先退下了',
+  // Spoken (browser TTS) the moment a call starts connecting — gives instant
+  // feedback while the voice pipeline loads, and serves as the greeting.
+  welcomeLine: '你好，我是小智秘书，需要我帮你做什么？',
   fanOutThreshold: 5,
 };
 
@@ -33,8 +40,11 @@ function readVoiceSettings() {
   // Coerce/guard a few fields so the frontend never gets a bad value.
   merged.wakeEnabled = Boolean(merged.wakeEnabled);
   merged.wakeWord = String(merged.wakeWord || DEFAULT_VOICE_SETTINGS.wakeWord).trim();
+  const thr = Number(merged.wakeThreshold);
+  merged.wakeThreshold = Number.isFinite(thr) && thr > 0 && thr <= 1 ? thr : DEFAULT_VOICE_SETTINGS.wakeThreshold;
   merged.dismissWord = String(merged.dismissWord || DEFAULT_VOICE_SETTINGS.dismissWord).trim();
   merged.goodbyeLine = String(merged.goodbyeLine || DEFAULT_VOICE_SETTINGS.goodbyeLine).trim();
+  merged.welcomeLine = String(merged.welcomeLine ?? DEFAULT_VOICE_SETTINGS.welcomeLine).trim();
   const idle = Number(merged.idleTimeoutMs);
   merged.idleTimeoutMs = Number.isFinite(idle) && idle > 0 ? idle : DEFAULT_VOICE_SETTINGS.idleTimeoutMs;
   const fan = Number(merged.fanOutThreshold);
