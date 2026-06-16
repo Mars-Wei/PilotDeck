@@ -717,6 +717,32 @@ app.use('/memory-dashboard', (_req, res) => {
     res.status(404).type('text/plain').send('Not found in memory-dashboard.');
 });
 
+// Serve pre-compressed vendored voice assets (the ONNX-runtime wasm + Silero
+// VAD model under /talker/vendor/) to slash the first-connect download in
+// China: 10.6MB wasm -> ~1.7MB (brotli) / ~2.7MB (gzip). We ship .br/.gz next
+// to the raw file and pick one based on Accept-Encoding; otherwise fall through
+// to express.static (raw). The browser transparently decodes Content-Encoding.
+app.get(/^\/talker\/vendor\/.+\.(wasm|onnx)$/, (req, res, next) => {
+    try {
+        const rel = req.path.replace(/^\/+/, '');            // talker/vendor/...
+        const abs = path.join(__dirname, '..', 'public', rel);
+        const accept = String(req.headers['accept-encoding'] || '');
+        const type = req.path.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream';
+        let enc = null;
+        let file = null;
+        if (/\bbr\b/.test(accept) && fs.existsSync(`${abs}.br`)) { enc = 'br'; file = `${abs}.br`; }
+        else if (/\bgzip\b/.test(accept) && fs.existsSync(`${abs}.gz`)) { enc = 'gzip'; file = `${abs}.gz`; }
+        if (!enc) return next();
+        res.setHeader('Content-Encoding', enc);
+        res.setHeader('Content-Type', type);
+        res.setHeader('Vary', 'Accept-Encoding');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.sendFile(file);
+    } catch {
+        return next();
+    }
+});
+
 // Serve public files (like api-docs.html)
 app.use(express.static(path.join(__dirname, '../public')));
 
