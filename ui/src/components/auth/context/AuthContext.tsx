@@ -70,6 +70,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  const completeOnboarding = useCallback(async () => {
+    try {
+      await api.user.completeOnboarding();
+    } catch (caughtError) {
+      console.error('Error completing onboarding:', caughtError);
+    }
+    setHasCompletedOnboarding(true);
+  }, []);
+
   const refreshOnboardingStatus = useCallback(async () => {
     await checkOnboardingStatus();
   }, [checkOnboardingStatus]);
@@ -210,6 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       logout,
       refreshOnboardingStatus,
+      completeOnboarding,
     }),
     [
       error,
@@ -219,6 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       needsSetup,
       refreshOnboardingStatus,
+      completeOnboarding,
       register,
       token,
       user,

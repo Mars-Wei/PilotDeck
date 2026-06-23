@@ -20,6 +20,7 @@
   "tabs": {
     "home": "Home",
     "chat": "Agent",
+    "voice": "Voice",
     "alwaysOn": "Always-On",
     "shell": "Shell",
     "files": "Files",
@@ -28,6 +29,28 @@
     "dashboard": "Routing",
     "memory": "Memory",
     "skills": "Skills"
+  },
+  "voice": {
+    "title": "Voice Assistant",
+    "noProject": "Select a project first to use the voice assistant.",
+    "disabledTitle": "Voice is not configured",
+    "disabledHint": "Start the talker-voice service and set TALKER_AUTH_SECRET and DASHSCOPE_API_KEY in your deployment.",
+    "hint": "Tap the button below to start talking. Anything that needs real work is delegated to OPCBrain and spoken back to you.",
+    "start": "Start voice chat",
+    "connecting": "Connecting…",
+    "stop": "End chat",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "delegating": "Asking OPCBrain to handle it…",
+    "wakeListening": "Listening for wake word",
+    "status": {
+      "connecting": "Connecting…",
+      "idleOff": "Not started",
+      "ready": "Ready — start speaking",
+      "listening": "Listening…",
+      "processing": "Thinking…",
+      "speaking": "Speaking…"
+    }
   },
   "skillsTab": {
     "pickProject": "Open a project to manage its skills.",

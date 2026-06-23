@@ -33,6 +33,7 @@ import {
     sanitizeSessionIdForPath,
 } from './utils/pilotPaths.js';
 import { mapCronRunOutcome } from '../../src/cron/protocol/types.js';
+import { GLOBAL_ASSISTANT } from './services/voiceTranscript.js';
 import sessionManager from './sessionManager.js';
 import { applyCustomSessionNames } from './database/db.js';
 
@@ -279,6 +280,50 @@ async function getProjects(progressCallback = null) {
         sessionMeta: {
             total: generalTotal,
             hasMore: generalTotal > generalSessions.length,
+        },
+        taskmaster: { hasTaskmaster: false },
+        alwaysOn: { enabled: false },
+    });
+
+    // Virtual "全局助理" workspace — carries project-less (global) voice
+    // conversations (Phase C). Like `general`, it is synthesized here (the
+    // gateway only returns real project dirs) so the sidebar/session lists can
+    // surface global voice chats. Its transcripts live under
+    // `<pilotHome>/projects/<id(global-assistant root)>/chats/`, written by
+    // `services/voiceTranscript.js`.
+    const globalRoot = GLOBAL_ASSISTANT.root;
+    let gaSessions = [];
+    let gaTotal = 0;
+    let gaLastActivity;
+    try {
+        const gaGateway = await getPilotDeckGateway();
+        const [gaSessionsResult, gaSummary] = await Promise.all([
+            gaGateway.listSessions({ projectKey: globalRoot, limit: 5 }).catch(() => ({ sessions: [] })),
+            gaGateway.describeProject({ projectKey: globalRoot }).catch(() => null),
+        ]);
+        gaSessions = (gaSessionsResult.sessions || []).map((session) =>
+            toLegacySession(session, GLOBAL_ASSISTANT.name),
+        );
+        applyCustomSessionNames(gaSessions, 'claude');
+        gaTotal = typeof gaSummary?.sessionCount === 'number' ? gaSummary.sessionCount : gaSessions.length;
+        gaLastActivity = gaSummary?.lastActivity;
+    } catch {
+        gaSessions = [];
+        gaTotal = 0;
+        gaLastActivity = undefined;
+    }
+    rememberProjectDirectory(GLOBAL_ASSISTANT.name, globalRoot);
+    // Place it right after `general` (index 0) so both pseudo-workspaces lead.
+    result.splice(1, 0, {
+        name: GLOBAL_ASSISTANT.name,
+        displayName: GLOBAL_ASSISTANT.displayName,
+        fullPath: globalRoot,
+        path: globalRoot,
+        lastActivity: gaLastActivity,
+        sessions: gaSessions,
+        sessionMeta: {
+            total: gaTotal,
+            hasMore: gaTotal > gaSessions.length,
         },
         taskmaster: { hasTaskmaster: false },
         alwaysOn: { enabled: false },

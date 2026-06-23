@@ -95,11 +95,14 @@ export class TokenStatsCollector {
 
     if (record.usage.nativeCost != null && record.usage.nativeCost > 0) {
       record.cost = { input: 0, output: 0, cacheRead: 0, total: record.usage.nativeCost };
+    } else if (record.provider === "vllm") {
+      // Local vLLM deployments are always free.
+      record.cost = { input: 0, output: 0, cacheRead: 0, total: 0 };
     } else {
       record.cost = this.calculateCost(record.usage, record.provider, record.model);
     }
 
-    record.baselineCost = this.calculateBaselineCostForRecord(record.usage, record.provider, record.model) ?? record.cost!.total;
+    record.baselineCost = this.calculateBaselineCostForRecord(record.usage, record.provider, record.model);
 
     this.recentRecords.push(record);
     if (this.recentRecords.length > 500) {
@@ -280,6 +283,10 @@ export class TokenStatsCollector {
     provider: string,
     model: string,
   ): { input: number; output: number; cacheRead: number; total: number } {
+    // Local providers (vLLM / llama.cpp) do not incur API costs.
+    if (provider === "vllm" || /localhost|127\.0\.0\.1|::1/.test(provider)) {
+      return { input: 0, output: 0, cacheRead: 0, total: 0 };
+    }
     const pricing = this.lookupPricing(provider, model);
     if (!pricing) return { input: 0, output: 0, cacheRead: 0, total: 0 };
     const inputCost = ((usage.inputTokens ?? 0) / 1_000_000) * (pricing.input ?? 0);
@@ -315,8 +322,9 @@ export class TokenStatsCollector {
     model: string,
   ): number | undefined {
     if (!this.baselineModel?.model) {
-      const cost = this.calculateCost(usage, provider, model);
-      return cost.total;
+      // Use a representative public model as the baseline so local/free
+      // deployments still show meaningful savings.
+      return this.calculateCost(usage, "openrouter", "deepseek/deepseek-v4-flash").total;
     }
     const baseProvider = this.baselineModel.provider || provider;
     const baseModel = this.baselineModel.model;

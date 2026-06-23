@@ -313,6 +313,11 @@ function validateTopLevel(rawConfig: PilotRawConfig, diagnostics: PilotConfigDia
     // ~/.opcbrain/opcbrain.yaml can carry both gateway-side and ui-side
     // config without producing diagnostic noise.
     "webui",
+    // Reserved namespace for the voice assistant (talker sidecar + Web UI wake
+    // word). Like `webui`, the gateway does not parse `voice.*` itself but
+    // tolerates it so one ~/.opcbrain/opcbrain.yaml can also carry voice config
+    // (wakeWord / dismissWord / idleTimeoutMs / goodbyeLine / …) without noise.
+    "voice",
     "telemetry",
   ]);
   for (const key of Object.keys(rawConfig)) {

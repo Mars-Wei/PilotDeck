@@ -116,11 +116,11 @@ export default function HomeChrome({
       <div className="flex min-h-0 flex-1">
         <HomeSidebar
           activeId={activeTab}
-          projects={recentProjects}
           unreadCount={unreadCount}
           runningCount={runningCount}
           onTabClick={handleNavClick}
-          onProjectClick={selectProject}
+          onOpenSettings={onShowSettings}
+          onOpenApiKeys={onOpenApiKeys}
         />
         <div className="min-w-0 flex-1 overflow-hidden">
           {children}
@@ -133,12 +133,9 @@ export default function HomeChrome({
           routingData={routingData}
           routingError={routingError}
           homeCost={homeCost}
-          taskStats={taskStats}
           alerts={alerts}
           alwaysOnError={alwaysOnError}
           onOpenDashboard={() => openTab('dashboard')}
-          onOpenSettings={onShowSettings}
-          onOpenApiKeys={onOpenApiKeys}
         />
       </div>
     </div>

@@ -621,6 +621,50 @@ export const PROVIDER_CATALOG: ProviderCatalog = {
     },
   },
 
+  // ── vLLM (Local) ───────────────────────────────────────────────────────
+
+  vllm: {
+    displayName: "vLLM (Local)",
+    protocol: "openai",
+    defaultUrl: "http://localhost:8000/v1",
+    // Local vLLM deployments are typically unauthenticated.
+    apiKeyOptional: true,
+    models: {
+      "qwen3-30b-a3b": {
+        displayName: "Qwen3 30B A3B (local)",
+        capabilities: {
+          supportsToolUse: true,
+          supportsStreaming: true,
+          supportsParallelToolCalls: true,
+          supportsThinking: false,
+          supportsJsonSchema: true,
+          supportsSystemPrompt: true,
+          supportsPromptCache: false,
+          maxContextTokens: 131072,
+          maxOutputTokens: 32768,
+        },
+        multimodal: { input: ["text"] },
+        aliases: [],
+      },
+      "deepseek-v3": {
+        displayName: "DeepSeek V3 (local)",
+        capabilities: {
+          supportsToolUse: true,
+          supportsStreaming: true,
+          supportsParallelToolCalls: true,
+          supportsThinking: false,
+          supportsJsonSchema: true,
+          supportsSystemPrompt: true,
+          supportsPromptCache: false,
+          maxContextTokens: 65536,
+          maxOutputTokens: 8192,
+        },
+        multimodal: { input: ["text"] },
+        aliases: [],
+      },
+    },
+  },
+
   // ── Proxy providers (no built-in models; use cross-provider lookup) ───
 
   openrouter: {

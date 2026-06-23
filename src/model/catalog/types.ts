@@ -14,6 +14,8 @@ export type CatalogProviderEntry = {
   protocol: ModelProtocol;
   defaultUrl: string;
   apiKeyEnvVar?: string;
+  /** When true, the provider may be used with an empty apiKey (e.g. local vLLM). */
+  apiKeyOptional?: boolean;
   models: Record<string, CatalogModelEntry>;
 };
 

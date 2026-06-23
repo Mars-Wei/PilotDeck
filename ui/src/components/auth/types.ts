@@ -44,6 +44,7 @@ export type AuthContextValue = {
   register: (username: string, password: string) => Promise<AuthActionResult>;
   logout: () => void;
   refreshOnboardingStatus: () => Promise<void>;
+  completeOnboarding: () => Promise<void>;
 };
 
 export type AuthProviderProps = {

@@ -3,13 +3,14 @@ import {
   Brain,
   FolderOpen,
   Home,
+  KeyRound,
   MessageSquare,
   Puzzle,
+  Settings,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
-import type { AppTab, Project } from '../../../types/app';
-import { projectName } from './homeUtils';
+import type { AppTab } from '../../../types/app';
 
 export type HomeNavId = AppTab;
 
@@ -22,20 +23,20 @@ type MenuItem = {
 
 type HomeSidebarProps = {
   activeId: HomeNavId;
-  projects: Project[];
   unreadCount: number;
   runningCount: number;
   onTabClick: (tab: HomeNavId) => void;
-  onProjectClick: (projectName: string) => void;
+  onOpenSettings: () => void;
+  onOpenApiKeys: () => void;
 };
 
 export default function HomeSidebar({
   activeId,
-  projects,
   unreadCount,
   runningCount,
   onTabClick,
-  onProjectClick,
+  onOpenSettings,
+  onOpenApiKeys,
 }: HomeSidebarProps) {
   const menuItems: MenuItem[] = [
     { id: 'home', label: '首页', icon: Home },
@@ -76,34 +77,34 @@ export default function HomeSidebar({
         })}
       </div>
 
-      {projects.length > 0 ? (
-        <div className="border-t border-surface-200 px-2 py-3 dark:border-surface-800 lg:px-3">
-          <div className="mb-2 hidden px-3 text-xs font-semibold uppercase tracking-wider text-surface-400 dark:text-surface-500 lg:block">
-            最近项目
-          </div>
-          <div className="space-y-1">
-            {projects.slice(0, 3).map((project, index) => (
-              <button
-                key={project.name}
-                type="button"
-                onClick={() => onProjectClick(project.name)}
-                className="flex w-full items-center gap-2 truncate rounded-lg px-3 py-1.5 text-left text-surface-500 transition hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
-              >
-                <span
-                  className={
-                    index === 0
-                      ? 'h-2 w-2 shrink-0 rounded-full bg-emerald-500'
-                      : index === 1
-                        ? 'h-2 w-2 shrink-0 rounded-full bg-amber-500'
-                        : 'h-2 w-2 shrink-0 rounded-full bg-sky-500'
-                  }
-                />
-                <span className="hidden truncate text-xs lg:block">{projectName(project)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      {/* Quick actions (moved here from the right status panel). */}
+      <div className="space-y-1 border-t border-surface-200 px-2 py-3 dark:border-surface-800 lg:px-3">
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-surface-600 transition hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
+        >
+          <Settings className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+          <span className="hidden text-sm lg:block">设置</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenApiKeys}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-surface-600 transition hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
+        >
+          <KeyRound className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+          <span className="hidden text-sm lg:block">API 密钥</span>
+        </button>
+        {runningCount > 0 ? (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="mt-1 hidden w-full rounded-lg bg-amber-50 px-3 py-2 text-left text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15 lg:block"
+          >
+            {runningCount} 个任务运行中
+          </button>
+        ) : null}
+      </div>
     </nav>
   );
 }

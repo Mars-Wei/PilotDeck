@@ -3,12 +3,21 @@ services:
     build: .
     image: opcbrain:latest
     container_name: opc-brain
+    # Publish the Web UI port to the host. Bridge networking works on every
+    # platform (Linux, macOS, Windows). On macOS/Windows `network_mode: host`
+    # does NOT publish ports to the host, so the browser cannot reach the UI —
+    # explicit port mapping avoids that.
     ports:
       - "${OPCBRAIN_WEB_PORT:-3001}:3001"
+    # Reach host-local services (e.g. a vLLM/llama.cpp server running on the
+    # host) via `host.docker.internal` instead of `localhost`. Point the
+    # provider URL in opcbrain.yaml at http://host.docker.internal:9096.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      # Persist all OPC Brain state: generated config, auth DB, permissions,
-      # sessions/projects, memory, skills/plugins, and router stats.
-      - opcbrain-home:/root/.opcbrain
+      # Use the host's .opcbrain directory so Docker and local deployments share
+      # the same generated config, auth DB, sessions/projects, memory, etc.
+      - ${HOME}/.opcbrain:/root/.opcbrain
       # Optional: mount an existing config file instead of generating one from env vars.
       # Create the host file first, then uncomment this line.
       # - ${OPCBRAIN_CONFIG:-${HOME}/.opcbrain/opcbrain.yaml}:/root/.opcbrain/opcbrain.yaml:ro
@@ -34,6 +43,12 @@ services:
       OPCBRAIN_PROXY: ${OPCBRAIN_PROXY:-}
       http_proxy: ${http_proxy:-}
       https_proxy: ${https_proxy:-}
+      # Voice integration: shared secret with the talker-voice sidecar (the
+      # ui-server mints talker tokens with it) and the sidecar WS URL the
+      # /voice-ws proxy forwards to. Voice is disabled unless TALKER_AUTH_SECRET
+      # is set.
+      TALKER_AUTH_SECRET: ${TALKER_AUTH_SECRET:-}
+      TALKER_VOICE_URL: ${TALKER_VOICE_URL:-ws://talker-voice:11995/ws}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3001/health >/dev/null"]
       interval: 30s
@@ -42,5 +57,63 @@ services:
       start_period: 60s
     restart: unless-stopped
 
-volumes:
-  opcbrain-home:
+  # talker voice sidecar: full-duplex speech (cloud ASR/TTS + talker's own fast
+  # LLM as the conversational brain). It delegates "do real work" requests back
+  # to OPC Brain via the delegate_to_opcbrain tool. Only useful when
+  # TALKER_AUTH_SECRET + DASHSCOPE_API_KEY are set; the rest of the stack runs
+  # fine without it.
+  talker-voice:
+    build:
+      context: ./docker/talker-voice
+      # talker lives in a sibling repo, supplied as a named build context.
+      additional_contexts:
+        - talker=../talker
+    image: opcbrain-talker-voice:latest
+    container_name: opc-brain-voice
+    # Mount the sidecar source so voice_server.py / opcbrain_tool.py /
+    # config.voice.json can be iterated on with just a container restart
+    # (no image rebuild needed). The image still bakes a copy as a fallback.
+    volumes:
+      - ./docker/talker-voice:/app/sidecar
+    environment:
+      # DashScope (Aliyun) — Qwen3 ASR + qwen-turbo LLM.
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      # Baidu TTS credentials (config_baidu style).
+      BAIDU_APP_ID: ${BAIDU_APP_ID:-}
+      BAIDU_API_KEY: ${BAIDU_API_KEY:-}
+      BAIDU_SECRET_KEY: ${BAIDU_SECRET_KEY:-}
+      TALKER_AUTH_SECRET: ${TALKER_AUTH_SECRET:-}
+      # OPC Brain ui-server WS, reachable by service name on the compose network.
+      OPCBRAIN_VOICE_GATEWAY: ${OPCBRAIN_VOICE_GATEWAY:-ws://opcbrain:3001/ws}
+      # OPC Brain ui-server HTTP base, used for /api/voice/project-list (project
+      # name resolution + cross-project delegation). Derived from the gateway URL
+      # if unset.
+      OPCBRAIN_VOICE_HTTP: ${OPCBRAIN_VOICE_HTTP:-http://opcbrain:3001}
+    expose:
+      - "11995"
+    restart: unless-stopped
+
+  # Uncomment to run a local vLLM instance alongside OPC Brain.
+  # Requires the NVIDIA Container Toolkit and a CUDA-capable GPU.
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   container_name: opc-brain-vllm
+  #   runtime: nvidia
+  #   volumes:
+  #     - ~/.cache/huggingface:/root/.cache/huggingface
+  #   command: >
+  #     --model Qwen/Qwen3-30B-A3B
+  #     --tensor-parallel-size 1
+  #     --max-model-len 32768
+  #     --port 8000
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - opcbrain-net
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]

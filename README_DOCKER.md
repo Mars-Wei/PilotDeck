@@ -191,3 +191,36 @@ curl http://localhost:3001/health
 ```
 
 返回 `{"status":"ok" ...}` 表示 UI server 已启动。Gateway 由容器内进程管理，UI server 会通过 `ws://127.0.0.1:18789/ws` 连接它。
+
+## 9. 语音助理（可选）
+
+集成了 [talker](https://github.com/) 的全双工语音对话能力，作为 `talker-voice` sidecar 运行。
+定位：**talker 自己的快速 LLM 负责语音对话**，需要真正动手做事时调用 `delegate_to_opcbrain`
+工具，把任务交给 OPC Brain 执行，再把结果口语化播报。语音轮内工具默认自动放行（`bypassPermissions`）。
+
+启用步骤：
+
+1. 准备 talker 仓库（与本仓库同级目录 `../talker`）。
+2. 构建并 vendoring 前端 SDK（产物在 `ui/public/talker/`）：
+   ```bash
+   node ui/scripts/build-talker-sdk.mjs --build
+   ```
+3. 在 `.env` 填写：
+   ```env
+   # DashScope（阿里云）key：Qwen3 ASR + CosyVoice TTS
+   DASHSCOPE_API_KEY=你的key
+   # ui-server 与 sidecar 之间的共享密钥，任意长随机串
+   TALKER_AUTH_SECRET=$(openssl rand -hex 32)
+   ```
+4. 启动（含 sidecar）：
+   ```bash
+   docker compose up -d --build
+   ```
+5. 打开 Web UI，先选择一个项目，切到「语音」Tab，点「开始语音对话」。
+
+说明：
+
+- 不填 `TALKER_AUTH_SECRET` 时语音 Tab 显示「未配置」，其余功能不受影响。
+- sidecar 启动需要有效的 `DASHSCOPE_API_KEY`（云端 ASR/TTS 在初始化时即校验 key）。
+- 浏览器需允许麦克风权限；语音 VAD/onnxruntime 运行时从 jsdelivr CDN 加载，需外网。
+- 健康检查：`docker compose logs -f talker-voice`，容器内 `curl http://127.0.0.1:11995/healthz`。
