@@ -2,10 +2,15 @@
 
 // electron-builder afterPack hook.
 //
-// We copy the staged backend (apps/desktop/.backend-stage) into the packaged
-// app's Contents/Resources/backend ourselves, because electron-builder's
-// `extraResources` matcher silently drops `node_modules` directories. `cp -R`
-// preserves the (few) relative symlinks the flat npm install leaves behind.
+// 1. We copy the staged backend (apps/desktop/.backend-stage) into the packaged
+//    app's Contents/Resources/backend ourselves, because electron-builder's
+//    `extraResources` matcher silently drops `node_modules` directories. `cp -R`
+//    preserves the (few) relative symlinks the flat npm install leaves behind.
+// 2. Adding files into the bundle breaks the app's code-signature seal, so we
+//    re-sign the whole .app with an AD-HOC identity (free, no Apple account).
+//    On Apple Silicon an app must be at least ad-hoc signed to run; without this
+//    a downloaded build is killed as "damaged". It is NOT notarized, so users
+//    still bypass Gatekeeper once on first open (see README).
 
 const { execSync } = require('node:child_process');
 const fs = require('node:fs');
@@ -36,4 +41,12 @@ exports.default = async function afterPack(context) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   execSync(`cp -R ${JSON.stringify(stage)} ${JSON.stringify(dest)}`, { stdio: 'inherit' });
   console.log(`[after-pack] backend payload copied → ${dest}`);
+
+  // Re-seal the bundle with an ad-hoc signature (identity "-") now that its
+  // contents are final. --deep covers the nested Electron framework/helpers and
+  // the bundled node/native binaries.
+  const appPath = path.join(appOutDir, `${productName}.app`);
+  execSync(`codesign --force --deep --sign - ${JSON.stringify(appPath)}`, { stdio: 'inherit' });
+  execSync(`codesign --verify --deep --strict ${JSON.stringify(appPath)}`, { stdio: 'inherit' });
+  console.log(`[after-pack] ad-hoc signed + verified → ${appPath}`);
 };

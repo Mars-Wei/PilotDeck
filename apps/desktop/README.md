@@ -74,7 +74,7 @@ layout (`app.isPackaged`) and resolves the backend from `process.resourcesPath/b
 
 Run it: `open "release/mac-arm64/OPC Brain.app"`.
 
-## Build a `.dmg` (P2b — self-contained, unsigned)
+## Build a `.dmg` (P2b — self-contained, ad-hoc signed)
 
 ```bash
 cd apps/desktop && npm run dist
@@ -86,15 +86,26 @@ On top of staging, this:
   (`better-sqlite3`, `node-pty`, …) are ABI-matched to the runtime;
 - `npm prune --omit=dev` to shrink (~594 MB → ~412 MB);
 - generates a placeholder icon (`scripts/make-icon.mjs` → `build/icon.png`);
-- runs electron-builder with the `dmg` target → `release/OPC Brain-<ver>-arm64.dmg` (~264 MB).
+- runs electron-builder with the `dmg` target → `release/OPC Brain-<ver>-arm64.dmg` (~264 MB);
+- the `afterPack` hook copies the backend in, then **ad-hoc signs** the whole `.app`
+  (`codesign --force --deep --sign -`) so it runs on Apple Silicon. This is free and needs no
+  Apple account, but the app is **not notarized**.
 
 At runtime `server-manager.js` spawns the backend under the bundled Node
 (`<backend>/.node/bin/node`), so the app needs **no system Node** and works when launched from
 Finder (no shell PATH). Verified by launching with a stripped PATH.
 
-> **Unsigned**: macOS Gatekeeper will warn on first open — right-click → Open once to allow it.
-> Signing + notarization (needs an Apple Developer ID), a real icon, and cross-platform builds
-> are the next steps.
+### Installing a downloaded build (Gatekeeper)
+
+Because the build is ad-hoc signed but **not notarized**, macOS quarantines it on download and
+shows “unverified developer” / “damaged” on first open. Bypass it once:
+
+- **Right-click the app → Open → Open** (then it's remembered), or
+- System Settings → Privacy & Security → **“Open Anyway”**, or
+- strip the quarantine flag: `xattr -dr com.apple.quarantine "/Applications/OPC Brain.app"`.
+
+This is normal for open-source macOS apps. To remove the prompt entirely you'd need a paid
+**Apple Developer ID** signature + notarization (deferred — see roadmap).
 
 ## Caveats (P1)
 
@@ -111,7 +122,7 @@ Finder (no shell PATH). Verified by launching with a stripped PATH.
 - **P2a — Packaging-readiness** ✅: `electron-builder --dir` unpacked `.app`; packaged-path
   resolution; flat-`node_modules` staging + `afterPack` backend copy.
 - **P2b — Self-contained `.dmg`** ✅: bundled portable Node v24.18.0 + spawn under it (no system
-  Node dependency); `npm prune --omit=dev`; placeholder icon; unsigned `dmg` target.
+  Node dependency); `npm prune --omit=dev`; placeholder icon; ad-hoc signed `dmg` target.
 - **P2c — Distribution polish**: code-signing / notarization (Apple Developer ID); real icon
   art; `.exe` / AppImage for cross-platform.
 - **P3 — Native integration**: tray, launch-at-login, native notifications, deep links,
