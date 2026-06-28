@@ -516,6 +516,18 @@
     "empty": "No MCP servers configured yet.",
     "advanced": "Advanced: raw JSON",
     "expand": "Expand",
+    "openChronicle": {
+      "title": "OpenChronicle Local Context Memory",
+      "description": "Connect the local OpenChronicle daemon so OPC Brain can query current screen context, recent activity, raw captures, and desktop memory.",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "installedStatus": "Installed locally",
+      "notInstalled": "Install not detected",
+      "reachable": "Daemon reachable",
+      "unreachable": "Daemon offline",
+      "installToScope": "Write to {{scope}} config",
+      "installed": "OpenChronicle MCP config was written. If the daemon is not running, start it with openchronicle start."
+    },
     "unnamed": "Unnamed server",
     "noSummary": "No command or URL configured",
     "nameRequired": "Every MCP server needs a name before saving.",
@@ -531,11 +543,13 @@
       "perSession": "Per-session server",
       "perSessionHelp": "Start a fresh MCP process for each agent session.",
       "url": "URL",
-      "headers": "Headers"
+      "headers": "Headers",
+      "instructions": "Usage policy"
     },
     "placeholders": {
       "key": "Key",
-      "value": "Value"
+      "value": "Value",
+      "instructions": "Tell the model when it should use this MCP server."
     },
     "actions": {
       "addArg": "Add argument",

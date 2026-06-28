@@ -15,11 +15,13 @@ import {
   AutoCompactionPolicy,
   CachedMicroCompactionEngine,
   CompactionEngine,
+  CompositeExtensionResolver,
   ContextOverflowRecovery,
   DefaultContextRuntime,
   InstructionDiscovery,
   MicroCompactionEngine,
   PluginRuntimeExtensionResolver,
+  StaticMcpInstructionResolver,
   SnipEngine,
   TokenBudgetManager,
   ToolResultBudget,
@@ -365,6 +367,7 @@ type ProjectRuntime = {
    * session.  Populated during `ensureMcpReady()`.
    */
   perSessionServerSpecs?: import("../mcp/protocol/types.js").PilotDeckMcpServerSpec[];
+  mcpInstructions?: import("../mcp/protocol/types.js").PilotDeckMcpServerInstructions[];
 };
 
 class ProjectRuntimeRegistry {
@@ -700,6 +703,7 @@ class ProjectRuntimeRegistry {
           const mcp = new McpRuntime(sharedServers);
           runtime.mcpRuntime = mcp;
           await mcp.start();
+          runtime.mcpInstructions = mcp.getInstructions();
           const defs = await createMcpToolDefinitionsFromRuntime(mcp);
           for (const def of defs) {
             if (!runtime.tools.has(def.name)) runtime.tools.register(def);
@@ -763,6 +767,7 @@ class ProjectRuntimeRegistry {
 
     // -- per-session MCP runtime (e.g. browser-use) --------------------
     let sessionTools: ToolRegistry = runtime.tools;
+    let sessionMcpInstructions = runtime.mcpInstructions ?? [];
     const perSpecs = runtime.perSessionServerSpecs;
     const maxInstances = runtime.snapshot.config.gateway?.maxPerSessionMcpInstances ?? 5;
     if (perSpecs && perSpecs.length > 0 && this.sessionMcpRuntimes.size < maxInstances) {
@@ -794,6 +799,13 @@ class ProjectRuntimeRegistry {
               sessionTools.register(def);
             }
           }
+        }
+        const runtimeInstructions = sessionMcp.getInstructions();
+        if (runtimeInstructions.length > 0) {
+          sessionMcpInstructions = [
+            ...sessionMcpInstructions,
+            ...runtimeInstructions,
+          ];
         }
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -879,7 +891,15 @@ class ProjectRuntimeRegistry {
       );
     }
     const lifecycle = new LifecycleRuntime(hookRuntime);
-    const extension = new PluginRuntimeExtensionResolver(runtime.pluginRuntime);
+    const extension = new CompositeExtensionResolver([
+      new PluginRuntimeExtensionResolver(runtime.pluginRuntime),
+      new StaticMcpInstructionResolver(
+        sessionMcpInstructions.map((entry) => ({
+          serverName: entry.serverId,
+          instructions: entry.instructions,
+        })),
+      ),
+    ]);
     const projectRoot = runtime.projectRoot;
     const memoryResolver = runtime.memory;
     const now = this.options.now;

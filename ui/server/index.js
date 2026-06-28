@@ -75,6 +75,7 @@ import sessionManager from './sessionManager.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
+import openchronicleRoutes from './routes/openchronicle.js';
 import taskmasterRoutes from './routes/taskmaster.js';
 import memoryRoutes, { MEMORY_DASHBOARD_DIR } from './routes/memory.js';
 import mcpUtilsRoutes from './routes/mcp-utils.js';
@@ -423,6 +424,8 @@ app.use('/api/git', authenticateToken, gitRoutes);
 
 // MCP API Routes (protected)
 app.use('/api/mcp', authenticateToken, mcpRoutes);
+
+app.use('/api/openchronicle', authenticateToken, openchronicleRoutes);
 
 // TaskMaster API Routes (protected)
 app.use('/api/taskmaster', authenticateToken, taskmasterRoutes);

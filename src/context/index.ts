@@ -119,6 +119,8 @@ export {
   PluginRuntimeExtensionResolver,
   type PluginRuntimeLike,
 } from "./extension/PluginRuntimeExtensionResolver.js";
+export { CompositeExtensionResolver } from "./extension/CompositeExtensionResolver.js";
+export { StaticMcpInstructionResolver } from "./extension/StaticMcpInstructionResolver.js";
 export {
   MemoryAttachmentBuilder,
   type MemoryAttachmentBuilderResult,

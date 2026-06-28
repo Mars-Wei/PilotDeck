@@ -148,7 +148,7 @@ export class McpClient {
     this.serverInstructions =
       typeof instructions === "string"
         ? instructions
-        : (this.peekInstructions(client) ?? "");
+        : (this.peekInstructions(client) ?? this.spec.instructions ?? "");
   }
 
   private peekInstructions(client: Client): string | undefined {
@@ -273,7 +273,8 @@ export class McpClient {
     const e = err as { code?: number; message?: string; statusCode?: number } | null;
     if (!e) return false;
     if (e.statusCode === 404) return true;
-    return /session.*expired/i.test(e.message ?? "");
+    const message = e.message ?? "";
+    return /session.*expired/i.test(message) || /session.*not found/i.test(message);
   }
 
   /**
