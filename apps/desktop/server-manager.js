@@ -1,0 +1,174 @@
+'use strict';
+
+// Server manager for the OPC Brain desktop shell.
+//
+// Spawns the two backend processes we already run in dev — the gateway
+// (`src/cli/pilotdeck.ts server`) and the UI Express server
+// (`ui/server/index.js`) — under the *system* Node runtime via the `tsx`
+// loader, then resolves once the UI server answers HTTP. The Electron window
+// loads `http://127.0.0.1:<serverPort>`.
+//
+// Port probing mirrors scripts/dev-launcher.mjs (same env overrides). Vite is
+// NOT started: in this mode the UI server serves the built ui/dist statically
+// (ui/server/index.js → express.static('../dist')).
+
+const { spawn } = require('node:child_process');
+const net = require('node:net');
+const http = require('node:http');
+const path = require('node:path');
+
+const repoRoot = path.resolve(__dirname, '..', '..');
+const uiDir = path.join(repoRoot, 'ui');
+
+const GATEWAY_PORT_BASE = 18789;
+const SERVER_PORT_BASE = 3001;
+const MAX_PORT_TRIES = 20;
+const READY_TIMEOUT_MS = 45_000;
+const STOP_GRACE_MS = 4_000;
+
+// System Node binary. In Electron, process.execPath is the Electron binary, so
+// we must not use it — fall back to `node` on PATH (override via env if needed).
+const NODE_BIN = process.env.OPCBRAIN_NODE_BIN || 'node';
+const isWin = process.platform === 'win32';
+
+/** @type {{ name: string, child: import('child_process').ChildProcess }[]} */
+const children = [];
+let stopping = false;
+
+function isPortFree(port, host = '127.0.0.1') {
+  return new Promise((resolve) => {
+    const probe = net.createServer();
+    probe.once('error', () => resolve(false));
+    probe.once('listening', () => probe.close(() => resolve(true)));
+    probe.listen(port, host);
+  });
+}
+
+function envPortOverride(name) {
+  const raw = process.env[name];
+  if (!raw) return undefined;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+async function findFreePort(label, base, hardOverride) {
+  if (hardOverride !== undefined) return hardOverride;
+  for (let offset = 0; offset < MAX_PORT_TRIES; offset += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await isPortFree(base + offset)) return base + offset;
+  }
+  throw new Error(`Could not find a free ${label} port within ${MAX_PORT_TRIES} of ${base}.`);
+}
+
+function waitForHttp(port, { timeoutMs = READY_TIMEOUT_MS } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const attempt = () => {
+      if (stopping) return reject(new Error('Startup aborted'));
+      const req = http.get({ host: '127.0.0.1', port, path: '/', timeout: 2_000 }, (res) => {
+        res.resume();
+        resolve();
+      });
+      req.on('error', retry);
+      req.on('timeout', () => {
+        req.destroy();
+        retry();
+      });
+    };
+    const retry = () => {
+      if (Date.now() >= deadline) {
+        reject(new Error(`UI server did not become ready on :${port} within ${timeoutMs}ms`));
+      } else {
+        setTimeout(attempt, 400);
+      }
+    };
+    attempt();
+  });
+}
+
+function spawnChild(name, args, cwd, extraEnv) {
+  const child = spawn(NODE_BIN, args, {
+    cwd,
+    env: { ...process.env, ...extraEnv },
+    stdio: ['ignore', 'inherit', 'inherit'],
+    // Group leader on posix so stop() can reap the whole tree via -pid.
+    detached: !isWin,
+  });
+  child.on('exit', (code, signal) => {
+    const idx = children.findIndex((c) => c.child === child);
+    if (idx !== -1) children.splice(idx, 1);
+    if (!stopping && (code ?? 0) !== 0) {
+      onChildCrash?.(name, code, signal);
+    }
+  });
+  children.push({ name, child });
+  return child;
+}
+
+let onChildCrash = null;
+
+/**
+ * Start the backend. Resolves with the resolved ports once the UI server is
+ * reachable over HTTP.
+ * @param {(name:string, code:number|null, signal:string|null)=>void} [crashHandler]
+ */
+async function start(crashHandler) {
+  onChildCrash = crashHandler || null;
+  stopping = false;
+
+  const gatewayPort = await findFreePort('gateway', GATEWAY_PORT_BASE, envPortOverride('OPCBRAIN_GATEWAY_PORT'));
+  const serverPort = await findFreePort('server', SERVER_PORT_BASE, envPortOverride('SERVER_PORT'));
+
+  console.log(`[desktop] gateway → :${gatewayPort}, ui-server → :${serverPort}`);
+
+  // Gateway first: it writes ~/.opcbrain/server-token, which the UI server's
+  // pilotdeck-bridge reads (with its own 30s retry), so the order is forgiving.
+  spawnChild('gateway', ['--import', 'tsx', 'src/cli/pilotdeck.ts', 'server'], repoRoot, {
+    OPCBRAIN_GATEWAY_PORT: String(gatewayPort),
+    OPCBRAIN_SKIP_DEFAULT_PROJECT: '1',
+  });
+
+  spawnChild('ui-server', ['--import', 'tsx', 'server/index.js'], uiDir, {
+    SERVER_PORT: String(serverPort),
+    OPCBRAIN_GATEWAY_URL: `ws://127.0.0.1:${gatewayPort}/ws`,
+    OPCBRAIN_DESKTOP: '1',
+    OPCBRAIN_SKIP_BROWSER_OPEN: '1',
+  });
+
+  await waitForHttp(serverPort);
+  return { serverPort, gatewayPort, url: `http://127.0.0.1:${serverPort}` };
+}
+
+function killChild(name, child) {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  try {
+    if (isWin) {
+      child.kill('SIGTERM');
+    } else if (child.pid) {
+      // Negative pid → kill the process group (reaps tsx + grandchildren).
+      process.kill(-child.pid, 'SIGTERM');
+    }
+  } catch {
+    // already gone
+  }
+}
+
+/** Stop all child processes, escalating to SIGKILL after a grace period. */
+async function stop() {
+  stopping = true;
+  const snapshot = children.slice();
+  for (const { name, child } of snapshot) killChild(name, child);
+
+  await new Promise((resolve) => setTimeout(resolve, STOP_GRACE_MS));
+
+  for (const { child } of children.slice()) {
+    try {
+      if (!isWin && child.pid) process.kill(-child.pid, 'SIGKILL');
+      else child.kill('SIGKILL');
+    } catch {
+      // gone
+    }
+  }
+}
+
+module.exports = { start, stop, repoRoot, uiDir };

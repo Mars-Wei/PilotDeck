@@ -1,0 +1,14 @@
+{
+  "name": "opcbrain-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "OPC Brain desktop shell (Electron). P1: thin shell that spawns the existing gateway + UI server and renders the React UI in a native window.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^42.5.0"
+  }
+}
