@@ -199,3 +199,5 @@ CLAUDE.md
 # Electron desktop build artifacts
 apps/desktop/.backend-stage/
 apps/desktop/release/
+apps/desktop/.cache/
+apps/desktop/build/

@@ -9,7 +9,9 @@
     "dev": "electron .",
     "start": "electron .",
     "stage": "node scripts/stage-backend.mjs",
-    "pack:dir": "npm run stage && electron-builder --dir"
+    "make-icon": "node scripts/make-icon.mjs",
+    "pack:dir": "npm run stage && npm run make-icon && electron-builder --dir",
+    "dist": "npm run stage && npm run make-icon && electron-builder"
   },
   "devDependencies": {
     "electron": "^42.5.0",
@@ -28,14 +30,18 @@
       "package.json"
     ],
     "afterPack": "scripts/after-pack.cjs",
+    "icon": "build/icon.png",
     "mac": {
       "target": [
         {
-          "target": "dir",
+          "target": "dmg",
           "arch": "arm64"
         }
       ],
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "identity": null,
+      "gatekeeperAssess": false
     }
   }
 }

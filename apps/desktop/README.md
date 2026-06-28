@@ -74,9 +74,27 @@ layout (`app.isPackaged`) and resolves the backend from `process.resourcesPath/b
 
 Run it: `open "release/mac-arm64/OPC Brain.app"`.
 
-> This `--dir` app still spawns the backend under your **system Node 22+** (it isn't bundled
-> yet) and is unsigned. Bundling a portable Node, pruning to production deps, the real `.dmg`,
-> and code-signing are the next step.
+## Build a `.dmg` (P2b — self-contained, unsigned)
+
+```bash
+cd apps/desktop && npm run dist
+```
+
+On top of staging, this:
+- downloads + bundles a pinned **portable Node (v24.18.0, darwin-arm64)** into the payload
+  (`.node/bin/node`), and runs the stage `npm install` **under that Node** so native modules
+  (`better-sqlite3`, `node-pty`, …) are ABI-matched to the runtime;
+- `npm prune --omit=dev` to shrink (~594 MB → ~412 MB);
+- generates a placeholder icon (`scripts/make-icon.mjs` → `build/icon.png`);
+- runs electron-builder with the `dmg` target → `release/OPC Brain-<ver>-arm64.dmg` (~264 MB).
+
+At runtime `server-manager.js` spawns the backend under the bundled Node
+(`<backend>/.node/bin/node`), so the app needs **no system Node** and works when launched from
+Finder (no shell PATH). Verified by launching with a stripped PATH.
+
+> **Unsigned**: macOS Gatekeeper will warn on first open — right-click → Open once to allow it.
+> Signing + notarization (needs an Apple Developer ID), a real icon, and cross-platform builds
+> are the next steps.
 
 ## Caveats (P1)
 
@@ -92,9 +110,10 @@ Run it: `open "release/mac-arm64/OPC Brain.app"`.
 
 - **P2a — Packaging-readiness** ✅: `electron-builder --dir` unpacked `.app`; packaged-path
   resolution; flat-`node_modules` staging + `afterPack` backend copy.
-- **P2b — Real `.dmg`**: bundle a portable Node 22+ and spawn the backend under it (no system
-  Node dependency); prune to production deps + shrink size; `.icns` icon; `dmg` target;
-  code-signing / notarization; then `.exe` / AppImage for cross-platform.
+- **P2b — Self-contained `.dmg`** ✅: bundled portable Node v24.18.0 + spawn under it (no system
+  Node dependency); `npm prune --omit=dev`; placeholder icon; unsigned `dmg` target.
+- **P2c — Distribution polish**: code-signing / notarization (Apple Developer ID); real icon
+  art; `.exe` / AppImage for cross-platform.
 - **P3 — Native integration**: tray, launch-at-login, native notifications, deep links,
   auto-update.
 - **P4 — Sidecars & polish**: OpenChronicle/voice install & management UX, local-ASR wake word.

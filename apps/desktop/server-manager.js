@@ -47,15 +47,24 @@ function resolveBackendRoot() {
 const repoRoot = resolveBackendRoot();
 const uiDir = path.join(repoRoot, 'ui');
 
+// Node binary to spawn the backend with. Packaged apps ship a portable Node
+// under <backend>/.node/bin/node and must use it (a Finder launch has no shell
+// PATH, and the native modules are ABI-matched to this Node). Dev uses the
+// system `node`. Override with OPCBRAIN_NODE_BIN.
+function resolveNodeBin() {
+  if (process.env.OPCBRAIN_NODE_BIN) return process.env.OPCBRAIN_NODE_BIN;
+  const bundled = path.join(repoRoot, '.node', 'bin', 'node');
+  if (fs.existsSync(bundled)) return bundled;
+  return 'node';
+}
+
 const GATEWAY_PORT_BASE = 18789;
 const SERVER_PORT_BASE = 3001;
 const MAX_PORT_TRIES = 20;
 const READY_TIMEOUT_MS = 45_000;
 const STOP_GRACE_MS = 4_000;
 
-// System Node binary. In Electron, process.execPath is the Electron binary, so
-// we must not use it — fall back to `node` on PATH (override via env if needed).
-const NODE_BIN = process.env.OPCBRAIN_NODE_BIN || 'node';
+const NODE_BIN = resolveNodeBin();
 const isWin = process.platform === 'win32';
 
 /** @type {{ name: string, child: import('child_process').ChildProcess }[]} */
@@ -147,6 +156,7 @@ async function start(crashHandler) {
   const serverPort = await findFreePort('server', SERVER_PORT_BASE, envPortOverride('SERVER_PORT'));
 
   console.log(`[desktop] backendRoot = ${repoRoot}`);
+  console.log(`[desktop] NODE_BIN = ${NODE_BIN}`);
   console.log(`[desktop] gateway → :${gatewayPort}, ui-server → :${serverPort}`);
 
   // Gateway first: it writes ~/.opcbrain/server-token, which the UI server's
