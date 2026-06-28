@@ -2,13 +2,40 @@
   "name": "opcbrain-desktop",
   "private": true,
   "version": "0.1.0",
-  "description": "OPC Brain desktop shell (Electron). P1: thin shell that spawns the existing gateway + UI server and renders the React UI in a native window.",
+  "description": "OPC Brain desktop shell (Electron). Thin shell that spawns the existing gateway + UI server and renders the React UI in a native window.",
+  "author": "OPC Brain",
   "main": "main.js",
   "scripts": {
     "dev": "electron .",
-    "start": "electron ."
+    "start": "electron .",
+    "stage": "node scripts/stage-backend.mjs",
+    "pack:dir": "npm run stage && electron-builder --dir"
   },
   "devDependencies": {
-    "electron": "^42.5.0"
+    "electron": "^42.5.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.opcbrain.desktop",
+    "productName": "OPC Brain",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server-manager.js",
+      "package.json"
+    ],
+    "afterPack": "scripts/after-pack.cjs",
+    "mac": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": "arm64"
+        }
+      ],
+      "category": "public.app-category.productivity"
+    }
   }
 }

@@ -15,9 +15,36 @@
 const { spawn } = require('node:child_process');
 const net = require('node:net');
 const http = require('node:http');
+const fs = require('node:fs');
 const path = require('node:path');
 
-const repoRoot = path.resolve(__dirname, '..', '..');
+// Backend root differs between a dev checkout and a packaged app:
+//   - dev: the repo root (two levels up from apps/desktop)
+//   - packaged: the staged backend tree under Contents/Resources/backend,
+//     copied there via electron-builder `extraResources`.
+// We read app.isPackaged when Electron is present, and fall back to probing for
+// the packaged layout so this module stays usable outside Electron.
+function resolveBackendRoot() {
+  let packaged = false;
+  try {
+    packaged = require('electron').app?.isPackaged === true;
+  } catch {
+    packaged = false;
+  }
+  if (packaged && process.resourcesPath) {
+    return path.join(process.resourcesPath, 'backend');
+  }
+  // Fallback: detect a packaged layout even if the electron require failed.
+  if (process.resourcesPath) {
+    const candidate = path.join(process.resourcesPath, 'backend');
+    if (fs.existsSync(path.join(candidate, 'ui', 'server', 'index.js'))) {
+      return candidate;
+    }
+  }
+  return path.resolve(__dirname, '..', '..');
+}
+
+const repoRoot = resolveBackendRoot();
 const uiDir = path.join(repoRoot, 'ui');
 
 const GATEWAY_PORT_BASE = 18789;
@@ -119,6 +146,7 @@ async function start(crashHandler) {
   const gatewayPort = await findFreePort('gateway', GATEWAY_PORT_BASE, envPortOverride('OPCBRAIN_GATEWAY_PORT'));
   const serverPort = await findFreePort('server', SERVER_PORT_BASE, envPortOverride('SERVER_PORT'));
 
+  console.log(`[desktop] backendRoot = ${repoRoot}`);
   console.log(`[desktop] gateway → :${gatewayPort}, ui-server → :${serverPort}`);
 
   // Gateway first: it writes ~/.opcbrain/server-token, which the UI server's

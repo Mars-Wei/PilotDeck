@@ -195,3 +195,7 @@ Auto-Research-Skills/
 
 # Local agent notes
 CLAUDE.md
+
+# Electron desktop build artifacts
+apps/desktop/.backend-stage/
+apps/desktop/release/

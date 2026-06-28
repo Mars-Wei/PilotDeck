@@ -52,6 +52,32 @@ Env injected into the children (all pre-existing flags in the codebase):
 
 Login is already off in desktop/local mode via `DISABLE_LOCAL_AUTH` (default true).
 
+## Packaging (P2a — unpacked `.app`)
+
+```bash
+cd apps/desktop && npm run pack:dir
+```
+
+This (1) builds the backend + UI, (2) stages a self-contained backend payload in
+`.backend-stage/` — build artifacts + `src/` + a **flat `npm install`** node_modules
+(symlink-free, so electron-builder can bundle it; native modules built for the system Node),
+and (3) runs `electron-builder --dir`, producing:
+
+```
+apps/desktop/release/mac-arm64/OPC Brain.app
+```
+
+An `afterPack` hook (`scripts/after-pack.cjs`) copies the staged backend into the app's
+`Contents/Resources/backend` — electron-builder's `extraResources` matcher silently drops
+`node_modules`, so we copy it ourselves. At runtime `server-manager.js` detects the packaged
+layout (`app.isPackaged`) and resolves the backend from `process.resourcesPath/backend`.
+
+Run it: `open "release/mac-arm64/OPC Brain.app"`.
+
+> This `--dir` app still spawns the backend under your **system Node 22+** (it isn't bundled
+> yet) and is unsigned. Bundling a portable Node, pruning to production deps, the real `.dmg`,
+> and code-signing are the next step.
+
 ## Caveats (P1)
 
 - **Voice wake word** relies on Chrome's cloud `webkitSpeechRecognition`, which
@@ -64,10 +90,11 @@ Login is already off in desktop/local mode via `DISABLE_LOCAL_AUTH` (default tru
 
 ## Roadmap
 
-- **P2 — Packaging**: `electron-builder` (.dmg/.exe/AppImage); decide
-  portable-Node vs `electron-rebuild` for `better-sqlite3`/`node:sqlite`; run
-  compiled `dist/` instead of `tsx`; first-run config bootstrap; signing/notarization.
-- **P3 — Native integration**: tray, launch-at-login, native notifications,
-  deep links, auto-update.
-- **P4 — Sidecars & polish**: OpenChronicle/voice install & management UX,
-  local-ASR wake word.
+- **P2a — Packaging-readiness** ✅: `electron-builder --dir` unpacked `.app`; packaged-path
+  resolution; flat-`node_modules` staging + `afterPack` backend copy.
+- **P2b — Real `.dmg`**: bundle a portable Node 22+ and spawn the backend under it (no system
+  Node dependency); prune to production deps + shrink size; `.icns` icon; `dmg` target;
+  code-signing / notarization; then `.exe` / AppImage for cross-platform.
+- **P3 — Native integration**: tray, launch-at-login, native notifications, deep links,
+  auto-update.
+- **P4 — Sidecars & polish**: OpenChronicle/voice install & management UX, local-ASR wake word.
