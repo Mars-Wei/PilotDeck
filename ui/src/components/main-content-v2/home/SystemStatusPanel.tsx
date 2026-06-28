@@ -10,6 +10,7 @@ import type { HomeAlertItem, HomeCostSummary } from '../../../hooks/useHomeDashb
 import type { HomeStatusData } from '../../../hooks/useHomeStatus';
 import { formatCost } from './homeUtils';
 import VoiceConversationZone from '../../voice/VoiceConversationZone';
+import { IS_DESKTOP } from '../../../constants/config';
 
 type SystemStatusPanelProps = {
   isConnected: boolean;
@@ -93,10 +94,19 @@ export default function SystemStatusPanel({
 
   return (
     <aside className="hidden w-72 shrink-0 flex-col border-l border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900 lg:flex">
-      {/* Voice area occupies the top (big button when collapsed, conversation when open). */}
-      <VoiceConversationZone />
-      {/* Status content sits below the voice area; capped + scrollable, bottom-aligned when voice is off. */}
-      <div className="mt-auto max-h-[55%] shrink-0 space-y-4 overflow-y-auto p-4">
+      {/* Voice area occupies the top (big button when collapsed, conversation when open).
+          The desktop build has no voice assistant, so it's omitted there and the
+          status content below fills the panel from the top instead. */}
+      {!IS_DESKTOP && <VoiceConversationZone />}
+      {/* Status content. On web it sits below the voice area (capped + bottom-aligned);
+          on desktop it fills the full height from the top. */}
+      <div
+        className={
+          IS_DESKTOP
+            ? 'flex-1 space-y-4 overflow-y-auto p-4'
+            : 'mt-auto max-h-[55%] shrink-0 space-y-4 overflow-y-auto p-4'
+        }
+      >
         <Panel title="系统状态">
           <StatusRow
             icon={RadioTower}
