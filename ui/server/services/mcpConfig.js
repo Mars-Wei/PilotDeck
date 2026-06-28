@@ -44,6 +44,9 @@ export function normalizeMcpConfig(input) {
     if (server.headers !== undefined && !isStringRecord(server.headers)) {
       throw new Error(`Server "${name}" headers must be an object with string values.`);
     }
+    if (server.instructions !== undefined && typeof server.instructions !== 'string') {
+      throw new Error(`Server "${name}" instructions must be a string.`);
+    }
   }
   return input;
 }
@@ -78,6 +81,25 @@ export async function writeMcpConfigFile(scope, raw, projectPath) {
   await fsPromises.mkdir(path.dirname(filePath), { recursive: true, mode: 0o700 });
   await fsPromises.writeFile(filePath, JSON.stringify(parsed, null, 2) + '\n', { mode: 0o600 });
   return readMcpConfigFile(scope, projectPath);
+}
+
+export async function upsertMcpServer(scope, serverName, serverConfig, projectPath) {
+  if (!serverName || typeof serverName !== 'string') {
+    throw new Error('serverName is required.');
+  }
+  if (!serverConfig || typeof serverConfig !== 'object' || Array.isArray(serverConfig)) {
+    throw new Error('serverConfig must be an object.');
+  }
+
+  const current = await readMcpConfigFile(scope, projectPath);
+  const next = normalizeMcpConfig({
+    ...current.config,
+    mcpServers: {
+      ...(current.config.mcpServers ?? {}),
+      [serverName]: serverConfig,
+    },
+  });
+  return writeMcpConfigFile(scope, JSON.stringify(next), projectPath);
 }
 
 export async function listMcpConfigFiles(projectPath) {

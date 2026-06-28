@@ -50,6 +50,7 @@ export function parsePluginMcpServers(
         env: isStringRecord(v.env) ? (v.env as Record<string, string>) : undefined,
         cwd: typeof v.cwd === "string" ? v.cwd : undefined,
         perSession: v.perSession === true ? true : undefined,
+        instructions: typeof v.instructions === "string" ? v.instructions : undefined,
       });
       continue;
     }
@@ -60,6 +61,7 @@ export function parsePluginMcpServers(
         transport: "streamable_http",
         url,
         headers: isStringRecord(v.headers) ? (v.headers as Record<string, string>) : undefined,
+        instructions: typeof v.instructions === "string" ? v.instructions : undefined,
       });
       continue;
     }

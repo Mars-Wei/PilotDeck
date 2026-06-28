@@ -18,12 +18,14 @@ export type PilotDeckMcpServerSpec =
        * client closes.
        */
       perSession?: boolean;
+      instructions?: string;
     }
   | {
       id: string;
       transport: "streamable_http";
       url: string;
       headers?: Record<string, string>;
+      instructions?: string;
     };
 
 export type PilotDeckMcpToolAnnotations = {

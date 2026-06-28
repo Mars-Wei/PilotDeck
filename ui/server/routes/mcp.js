@@ -11,7 +11,14 @@ import {
   readMcpConfigFile,
   writeMcpConfigFile,
   normalizeMcpConfig,
+  upsertMcpServer,
 } from '../services/mcpConfig.js';
+import {
+  OPENCHRONICLE_DEFAULT_URL,
+  OPENCHRONICLE_SERVER_NAME,
+  buildOpenChronicleMcpServer,
+  getOpenChronicleStatus,
+} from '../services/openChronicle.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -77,6 +84,53 @@ router.put('/config/:scope', async (req, res) => {
     res.json({ success: true, scope, reload, ...saved });
   } catch (error) {
     res.status(400).json({ error: 'Failed to save MCP config', details: error.message });
+  }
+});
+
+router.get('/openchronicle/status', async (req, res) => {
+  try {
+    const url = typeof req.query.url === 'string' ? req.query.url : OPENCHRONICLE_DEFAULT_URL;
+    const status = await getOpenChronicleStatus(url);
+    res.json({ success: true, status });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check OpenChronicle status', details: error.message });
+  }
+});
+
+router.post('/openchronicle/install', async (req, res) => {
+  try {
+    const scope = req.body?.scope === 'project' ? 'project' : 'global';
+    const projectPath = typeof req.body?.projectPath === 'string' ? req.body.projectPath : undefined;
+    if (scope === 'project' && !projectPath) {
+      return res.status(400).json({ error: 'Failed to install OpenChronicle MCP config', details: 'projectPath is required for project scope.' });
+    }
+    const url = typeof req.body?.url === 'string' && req.body.url.trim()
+      ? req.body.url.trim()
+      : OPENCHRONICLE_DEFAULT_URL;
+    const saved = await upsertMcpServer(
+      scope,
+      OPENCHRONICLE_SERVER_NAME,
+      buildOpenChronicleMcpServer(url),
+      projectPath,
+    );
+
+    let reload = null;
+    try {
+      const gateway = await getPilotDeckGateway();
+      reload = gateway.reloadExtensions
+        ? await gateway.reloadExtensions({
+            projectKey: scope === 'project' ? projectPath : undefined,
+            changedPaths: [saved.path],
+          })
+        : await gateway.reloadConfig?.();
+    } catch (error) {
+      reload = { reloaded: false, error: error.message };
+    }
+
+    const status = await getOpenChronicleStatus(url);
+    res.json({ success: true, scope, reload, saved, status });
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to install OpenChronicle MCP config', details: error.message });
   }
 });
 

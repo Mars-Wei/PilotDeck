@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Loader2, Plus, RefreshCw, Save, Server, Trash2 } from 'lucide-react';
+import { Activity, CheckCircle2, Loader2, Plus, RefreshCw, Save, Server, Trash2, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../shared/view/ui';
 import { authenticatedFetch } from '../../../../utils/api';
@@ -37,6 +37,18 @@ type McpServerForm = {
   perSession: boolean;
   url: string;
   headers: KeyValueRow[];
+  instructions: string;
+};
+
+type OpenChronicleStatus = {
+  name: string;
+  url: string;
+  root: string;
+  installed: boolean;
+  reachable: boolean;
+  health: 'ready' | 'reachable' | 'unreachable';
+  httpStatus?: number;
+  error?: string;
 };
 
 const EMPTY_CONFIG = JSON.stringify({ mcpServers: {} }, null, 2);
@@ -74,6 +86,9 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
   const [serverDrafts, setServerDrafts] = useState<Record<Scope, McpServerForm[]>>({ global: [], project: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [openChronicleStatus, setOpenChronicleStatus] = useState<OpenChronicleStatus | null>(null);
+  const [openChronicleLoading, setOpenChronicleLoading] = useState(false);
+  const [openChronicleSaving, setOpenChronicleSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -88,15 +103,22 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
     setError(null);
     try {
       const query = projectPath ? `?projectPath=${encodeURIComponent(projectPath)}` : '';
-      const response = await authenticatedFetch(`/api/mcp/config${query}`);
+      const [response, ocResponse] = await Promise.all([
+        authenticatedFetch(`/api/mcp/config${query}`),
+        authenticatedFetch('/api/mcp/openchronicle/status'),
+      ]);
       const data = await response.json();
       if (!response.ok) throw new Error(data.details || data.error || '加载 MCP 配置失败');
+      const ocData = await ocResponse.json().catch(() => null);
       setConfigs({ global: data.global, project: data.project });
       setDrafts({ global: data.global.raw, project: data.project.raw });
       setServerDrafts({
         global: parseServers(data.global.raw).servers,
         project: parseServers(data.project.raw).servers,
       });
+      if (ocResponse.ok && ocData?.status) {
+        setOpenChronicleStatus(ocData.status);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '加载 MCP 配置失败');
     } finally {
@@ -172,6 +194,42 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
     updateServers(activeServers.filter((server) => server.id !== serverId));
   };
 
+  const refreshOpenChronicle = async () => {
+    setOpenChronicleLoading(true);
+    setError(null);
+    try {
+      const response = await authenticatedFetch('/api/mcp/openchronicle/status');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.details || data.error || '检查 OpenChronicle 状态失败');
+      setOpenChronicleStatus(data.status);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '检查 OpenChronicle 状态失败');
+    } finally {
+      setOpenChronicleLoading(false);
+    }
+  };
+
+  const installOpenChronicle = async () => {
+    setOpenChronicleSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await authenticatedFetch('/api/mcp/openchronicle/install', {
+        method: 'POST',
+        body: JSON.stringify({ scope, projectPath }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.details || data.error || '写入 OpenChronicle MCP 配置失败');
+      setOpenChronicleStatus(data.status);
+      setMessage(t('mcpConfig.openChronicle.installed'));
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '写入 OpenChronicle MCP 配置失败');
+    } finally {
+      setOpenChronicleSaving(false);
+    }
+  };
+
   const updateAdvancedJson = (value: string) => {
     setDrafts((current) => ({ ...current, [scope]: value }));
     const parsed = parseServers(value);
@@ -232,6 +290,16 @@ export default function McpServersTab({ projects = [] }: { projects?: SettingsPr
           </button>
         ))}
       </div>
+
+      <OpenChronicleCard
+        status={openChronicleStatus}
+        configured={isOpenChronicleConfigured(configs)}
+        scope={scope}
+        loading={openChronicleLoading}
+        saving={openChronicleSaving}
+        onRefresh={() => void refreshOpenChronicle()}
+        onInstall={() => void installOpenChronicle()}
+      />
 
       <div className="rounded-lg border border-border bg-card/60">
         <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
@@ -441,6 +509,16 @@ function ServerFormCard({
             />
           </div>
         )}
+
+        <Field label={t('mcpConfig.fields.instructions')}>
+          <textarea
+            value={server.instructions}
+            onChange={(event) => onChange({ instructions: event.target.value })}
+            placeholder={t('mcpConfig.placeholders.instructions')}
+            spellCheck={false}
+            className="min-h-[120px] w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-5 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+          />
+        </Field>
       </div>
 
       <div className="flex justify-end border-t border-border bg-muted/20 px-4 py-3">
@@ -571,6 +649,83 @@ function IconButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+function OpenChronicleCard({
+  status,
+  configured,
+  scope,
+  loading,
+  saving,
+  onRefresh,
+  onInstall,
+}: {
+  status: OpenChronicleStatus | null;
+  configured: boolean;
+  scope: Scope;
+  loading: boolean;
+  saving: boolean;
+  onRefresh: () => void;
+  onInstall: () => void;
+}) {
+  const { t } = useTranslation('settings');
+  const reachable = status?.reachable === true;
+
+  return (
+    <div className="rounded-lg border border-border bg-card/60 p-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <div className={cn(
+            'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border',
+            reachable ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'border-border bg-muted text-muted-foreground',
+          )}>
+            {reachable ? <CheckCircle2 className="h-5 w-5" /> : <Activity className="h-5 w-5" />}
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-foreground">{t('mcpConfig.openChronicle.title')}</div>
+            <div className="mt-1 text-xs leading-5 text-muted-foreground">{t('mcpConfig.openChronicle.description')}</div>
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium">
+              <StatusPill active={configured} label={configured ? t('mcpConfig.openChronicle.configured') : t('mcpConfig.openChronicle.notConfigured')} />
+              <StatusPill active={status?.installed === true} label={status?.installed ? t('mcpConfig.openChronicle.installedStatus') : t('mcpConfig.openChronicle.notInstalled')} />
+              <StatusPill active={reachable} label={reachable ? t('mcpConfig.openChronicle.reachable') : t('mcpConfig.openChronicle.unreachable')} />
+            </div>
+            <div className="mt-2 truncate font-mono text-[11px] text-muted-foreground">
+              {status?.url || 'http://127.0.0.1:8742/mcp'}
+            </div>
+            {status?.error && (
+              <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                <WifiOff className="h-3.5 w-3.5" />
+                <span>{status.error}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+            {t('pilotDeckConfig.actions.refresh')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={onInstall} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            {t('mcpConfig.openChronicle.installToScope', { scope: t(`mcpConfig.scopes.${scope}`) })}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ active, label }: { active: boolean; label: string }) {
+  return (
+    <span className={cn(
+      'rounded-full border px-2 py-0.5',
+      active
+        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+        : 'border-border bg-muted text-muted-foreground',
+    )}>
+      {label}
+    </span>
+  );
+}
+
 function AdvancedJsonEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation('settings');
 
@@ -621,6 +776,7 @@ function formFromRaw(name: string, value: unknown, id = newId()): McpServerForm 
     perSession: raw.perSession === true,
     url: typeof raw.url === 'string' ? raw.url : typeof raw.httpUrl === 'string' ? raw.httpUrl : '',
     headers: toKeyValueRows(raw.headers),
+    instructions: typeof raw.instructions === 'string' ? raw.instructions : '',
   };
 }
 
@@ -639,16 +795,23 @@ function stringifyServers(servers: McpServerForm[]): string {
         ...(server.args.filter(Boolean).length > 0 ? { args: server.args.filter(Boolean) } : {}),
         ...(Object.keys(env).length > 0 ? { env } : {}),
         ...(server.perSession ? { perSession: true } : {}),
+        ...(server.instructions.trim() ? { instructions: server.instructions.trim() } : {}),
       };
     } else {
       const headers = Object.fromEntries(server.headers.filter((row) => row.key.trim()).map((row) => [row.key.trim(), row.value]));
       mcpServers[name] = {
         url: server.url,
         ...(Object.keys(headers).length > 0 ? { headers } : {}),
+        ...(server.instructions.trim() ? { instructions: server.instructions.trim() } : {}),
       };
     }
   }
   return JSON.stringify({ mcpServers }, null, 2);
+}
+
+function isOpenChronicleConfigured(configs: McpConfigResponse | null): boolean {
+  if (!configs) return false;
+  return Boolean(configs.global.config.mcpServers?.openchronicle || configs.project.config.mcpServers?.openchronicle);
 }
 
 function toKeyValueRows(value: unknown): KeyValueRow[] {
