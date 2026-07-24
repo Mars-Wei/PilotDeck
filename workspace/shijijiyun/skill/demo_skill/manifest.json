@@ -1,0 +1,76 @@
+{
+  "name": "city-logistics-dispatch",
+  "version": "1.0.0",
+  "description": "市级集运调度 Skill — 示例定义（含故意埋入的安全问题以供巡检演示）",
+  "inputs": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "description": "运单号",
+      "pattern": "^[A-Z0-9]{8,32}$",
+      "max_length": 32
+    },
+    {
+      "name": "phone",
+      "type": "string",
+      "description": "联系电话",
+      "validation": {
+        "type": "string",
+        "pattern": "^1[3-9]\\d{9}$",
+        "maxLength": 11
+      }
+    },
+    {
+      "name": "address",
+      "type": "string",
+      "description": "配送地址 — ⚠️ 故意未配置 validation 和 max_length"
+    },
+    {
+      "name": "city_id",
+      "type": "string",
+      "description": "城市编码 — ⚠️ 故意未配置 pattern"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "driver_name",
+      "type": "string"
+    },
+    {
+      "name": "driver_phone",
+      "type": "string",
+      "description": "司机电话 — ⚠️ 故意未标记 mask"
+    },
+    {
+      "name": "customer_address",
+      "type": "string",
+      "description": "客户详细地址 — ⚠️ 故意未标记 mask"
+    }
+  ],
+  "pricing_tiers": [
+    {"max_weight": 1.0, "price": 10.0, "description": "首重"},
+    {"min_weight": 1.5, "max_weight": 5.0, "price": 15.0, "description": "续重 — ⚠️ 与首重有间隙"},
+    {"min_weight": 5.0, "max_weight": 20.0, "price": 12.0, "description": "大件"}
+  ],
+  "rules": [
+    {
+      "id": "DISPATCH_001",
+      "condition": "city_id == '330100' AND weight < 5",
+      "action": "assign_warehouse",
+      "warehouse": "WH-HZ01"
+    },
+    {
+      "id": "DISPATCH_002",
+      "condition": "city_id == '330100' AND weight < 5",
+      "action": "assign_warehouse",
+      "warehouse": "WH-HZ02",
+      "note": "⚠️ 故意与 DISPATCH_001 条件完全相同"
+    },
+    {
+      "id": "DISPATCH_003",
+      "condition": "city_id == '330100'",
+      "action": "assign_warehouse",
+      "warehouse": "WH-HZ03"
+    }
+  ]
+}

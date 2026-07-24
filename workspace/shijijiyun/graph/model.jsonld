@@ -1,0 +1,101 @@
+{
+  "@context": {
+    "sjy": "http://shijijiyun.local/schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "http://schema.org/"
+  },
+  "@graph": [
+    {
+      "@id": "sjy:LogisticsNode",
+      "@type": "rdfs:Class",
+      "rdfs:label": { "@language": "zh", "@value": "物流节点" },
+      "rdfs:comment": { "@language": "zh", "@value": "市级集运网络中的物流节点（仓、站、枢纽）" }
+    },
+    {
+      "@id": "sjy:TransportRoute",
+      "@type": "rdfs:Class",
+      "rdfs:label": { "@language": "zh", "@value": "运输线路" },
+      "rdfs:comment": { "@language": "zh", "@value": "节点间的运输通路，支持多式联运" }
+    },
+    {
+      "@id": "sjy:RankEvidence",
+      "@type": "rdfs:Class",
+      "rdfs:label": { "@language": "zh", "@value": "等级校验证据" },
+      "rdfs:comment": { "@language": "zh", "@value": "用于 rank 校验溯源的可验证证据" }
+    },
+    {
+      "@id": "sjy:DialectTerm",
+      "@type": "rdfs:Class",
+      "rdfs:label": { "@language": "zh", "@value": "方言语义项" },
+      "rdfs:comment": { "@language": "zh", "@value": "地方方言或行业俚语对应的语义归一项" }
+    },
+    {
+      "@id": "sjy:PatentKnowledge",
+      "@type": "rdfs:Class",
+      "rdfs:label": { "@language": "zh", "@value": "专利知识单元" },
+      "rdfs:comment": { "@language": "zh", "@value": "与集运工艺、设备、调度算法相关的专利知识" }
+    },
+    {
+      "@id": "sjy:hasParent",
+      "@type": "rdf:Property",
+      "rdfs:domain": { "@id": "sjy:LogisticsNode" },
+      "rdfs:range": { "@id": "sjy:LogisticsNode" },
+      "rdfs:label": { "@language": "zh", "@value": "上级节点" }
+    },
+    {
+      "@id": "sjy:connectsTo",
+      "@type": "rdf:Property",
+      "rdfs:domain": { "@id": "sjy:TransportRoute" },
+      "rdfs:range": { "@id": "sjy:LogisticsNode" },
+      "rdfs:label": { "@language": "zh", "@value": "连接节点" }
+    },
+    {
+      "@id": "sjy:hasEvidence",
+      "@type": "rdf:Property",
+      "rdfs:domain": { "@id": "sjy:LogisticsNode" },
+      "rdfs:range": { "@id": "sjy:RankEvidence" },
+      "rdfs:label": { "@language": "zh", "@value": "持有证据" }
+    },
+    {
+      "@id": "sjy:normalizedTo",
+      "@type": "rdf:Property",
+      "rdfs:domain": { "@id": "sjy:DialectTerm" },
+      "rdfs:range": { "@id": "skos:Concept" },
+      "rdfs:label": { "@language": "zh", "@value": "归一化到" }
+    },
+    {
+      "@id": "sjy:relatesToPatent",
+      "@type": "rdf:Property",
+      "rdfs:domain": { "@id": "sjy:LogisticsNode" },
+      "rdfs:range": { "@id": "sjy:PatentKnowledge" },
+      "rdfs:label": { "@language": "zh", "@value": "关联专利知识" }
+    },
+    {
+      "@id": "sjy:Node_Hub_A",
+      "@type": "sjy:LogisticsNode",
+      "rdfs:label": { "@language": "zh", "@value": "A 市级枢纽" },
+      "sjy:rankScore": { "@type": "xsd:float", "@value": "9.2" },
+      "sjy:hasEvidence": { "@id": "sjy:Evidence_A_001" }
+    },
+    {
+      "@id": "sjy:Evidence_A_001",
+      "@type": "sjy:RankEvidence",
+      "rdfs:label": { "@language": "zh", "@value": "A 枢纽 2024 年度评级报告" },
+      "sjy:sourceUrl": { "@type": "xsd:anyURI", "@value": "https://shijijiyun.local/evidence/2024/hub-a" }
+    },
+    {
+      "@id": "sjy:Dialect_Caocong",
+      "@type": "sjy:DialectTerm",
+      "rdfs:label": { "@language": "zh", "@value": "漕帮（方言）" },
+      "sjy:normalizedTo": { "@id": "http://shijijiyun.local/concept/inland-waterway-transport" }
+    },
+    {
+      "@id": "sjy:Patent_SmartSort",
+      "@type": "sjy:PatentKnowledge",
+      "rdfs:label": { "@language": "zh", "@value": "CN2024XXXXXX 智能分拣调度算法" },
+      "sjy:relatesToPatent": { "@id": "sjy:Node_Hub_A" }
+    }
+  ]
+}

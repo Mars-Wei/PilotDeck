@@ -1,0 +1,25 @@
+# rank_rules.yml — Rank 校验策略
+# 归属：sjy.plugin.rank_traceability
+
+rules:
+  - id: rank_min_evidence
+    description: 任何 Rank >= 8.0 的节点必须绑定至少一条证据
+    predicate: node.rankScore >= 8.0 AND !node.hasEvidence
+    severity: error
+    owner: ops-team
+    last_updated: 2026-07-01
+
+  - id: rank_evidence_ttl
+    description: 证据超过 365 天自动标记为过期
+    predicate: evidence.timestamp < (now - 365d)
+    severity: warning
+    owner: audit-team
+    last_updated: 2026-06-15
+
+  - id: rank_multi_source_bonus
+    description: 多源验证一致的节点 Rank 提升 0.3
+    predicate: count(evidence.sources) >= 3 AND stddev(evidence.ranks) < 0.5
+    severity: info
+    action: node.rankScore += 0.3
+    owner: data-science
+    last_updated: 2026-07-10

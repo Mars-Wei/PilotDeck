@@ -1,0 +1,15 @@
+# dream 长期记忆模块 - 可选依赖
+# 核心功能（存储、向量计算、调度）完全基于 Python 标准库，零必须外部依赖
+
+# 可选：sentence-transformers 提供语义嵌入（推荐安装）
+# pip install sentence-transformers
+sentence-transformers>=2.2.0
+
+# 可选：transformers 提供神经网络摘要（推荐安装）
+# pip install transformers torch
+transformers>=4.30.0
+torch>=2.0.0
+
+# 可选：numpy 仅在 sentence-transformers 内部需要
+# 若安装上述模型库，numpy 会被自动引入
+numpy>=1.24.0

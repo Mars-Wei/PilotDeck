@@ -1,0 +1,31 @@
+# patent_index.yml — 专利知识索引
+# 归属：sjy.plugin.patent_knowledge_link
+
+patents:
+  - id: CN202410000001
+    title: "一种多级集运枢纽动态分级方法"
+    applicant: "市级集运联合实验室"
+    techEffect: ["增效", "降本"]
+    ipcClass: "G06Q10/08"
+    relatedNodeType: ["Hub", "SubHub"]
+
+  - id: CN202410000002
+    title: "基于低轨卫星的偏远物流节点连通调度系统"
+    applicant: "星通集运科技"
+    techEffect: ["降本", "广域覆盖"]
+    ipcClass: "H04B7/185"
+    relatedNodeType: ["RemoteSite"]
+
+  - id: CN202410000003
+    title: "含冷链约束的多式联运路径优化算法"
+    applicant: "市交通研究院"
+    techEffect: ["低碳", "增效"]
+    ipcClass: "G06Q50/28"
+    relatedNodeType: ["ColdChainTerminal"]
+
+  - id: CN202410000004
+    title: "面向县域集运的方言语音交互工单系统"
+    applicant: "方言 AI 实验室"
+    techEffect: ["增效", "人力替代"]
+    ipcClass: "G10L15/00"
+    relatedNodeType: ["CountyStation"]

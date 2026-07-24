@@ -43,6 +43,12 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Python local environments and runtime artifacts
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.db
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 

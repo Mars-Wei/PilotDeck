@@ -1,0 +1,3 @@
+# rules — 规则层
+# 存放业务规则、Rank 校验策略、方言映射表与专利索引
+# 约定：YAML 为主，JSON 为辅；每条规则须标注 owner 与 last_updated

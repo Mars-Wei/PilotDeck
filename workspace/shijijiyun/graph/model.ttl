@@ -1,0 +1,86 @@
+@prefix : <http://shijijiyun.local/schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://shijijiyun.local/schema> rdf:type owl:Ontology ;
+    rdfs:label "市级集运·图谱增强型数据骨架本体"@zh ;
+    owl:versionInfo "0.1.0" .
+
+# ── 核心类 ──────────────────────────────
+:LogisticsNode rdf:type owl:Class ;
+    rdfs:label "物流节点"@zh ;
+    rdfs:comment "市级集运网络中的物流节点（仓、站、枢纽）"@zh .
+
+:TransportRoute rdf:type owl:Class ;
+    rdfs:label "运输线路"@zh ;
+    rdfs:comment "节点间的运输通路，支持多式联运"@zh .
+
+:RankEvidence rdf:type owl:Class ;
+    rdfs:label "等级校验证据"@zh ;
+    rdfs:comment "用于 rank 校验溯源的可验证证据"@zh .
+
+:DialectTerm rdf:type owl:Class ;
+    rdfs:label "方言语义项"@zh ;
+    rdfs:comment "地方方言或行业俚语对应的语义归一项"@zh .
+
+:PatentKnowledge rdf:type owl:Class ;
+    rdfs:label "专利知识单元"@zh ;
+    rdfs:comment "与集运工艺、设备、调度算法相关的专利知识"@zh .
+
+# ── 属性 ────────────────────────────────
+:hasParent rdf:type owl:ObjectProperty ;
+    rdfs:domain :LogisticsNode ;
+    rdfs:range :LogisticsNode ;
+    rdfs:label "上级节点"@zh .
+
+:connectsTo rdf:type owl:ObjectProperty ;
+    rdfs:domain :TransportRoute ;
+    rdfs:range :LogisticsNode ;
+    rdfs:label "连接节点"@zh .
+
+:hasEvidence rdf:type owl:ObjectProperty ;
+    rdfs:domain :LogisticsNode ;
+    rdfs:range :RankEvidence ;
+    rdfs:label "持有证据"@zh .
+
+:normalizedTo rdf:type owl:ObjectProperty ;
+    rdfs:domain :DialectTerm ;
+    rdfs:range skos:Concept ;
+    rdfs:label "归一化到"@zh .
+
+:relatesToPatent rdf:type owl:ObjectProperty ;
+    rdfs:domain :LogisticsNode ;
+    rdfs:range :PatentKnowledge ;
+    rdfs:label "关联专利知识"@zh .
+
+:rankScore rdf:type owl:DatatypeProperty ;
+    rdfs:domain :LogisticsNode ;
+    rdfs:range xsd:float ;
+    rdfs:label "等级评分"@zh .
+
+:sourceUrl rdf:type owl:DatatypeProperty ;
+    rdfs:domain :RankEvidence ;
+    rdfs:range xsd:anyURI ;
+    rdfs:label "来源 URL"@zh .
+
+# ── 示例实例 ────────────────────────────
+:Node_Hub_A rdf:type :LogisticsNode ;
+    rdfs:label "A 市级枢纽"@zh ;
+    :rankScore "9.2"^^xsd:float ;
+    :hasEvidence :Evidence_A_001 .
+
+:Evidence_A_001 rdf:type :RankEvidence ;
+    rdfs:label "A 枢纽 2024 年度评级报告"@zh ;
+    :sourceUrl <https://shijijiyun.local/evidence/2024/hub-a> .
+
+:Dialect_Caocong rdf:type :DialectTerm ;
+    rdfs:label "漕帮（方言）"@zh ;
+    :normalizedTo <http://shijijiyun.local/concept/inland-waterway-transport> .
+
+:Patent_SmartSort rdf:type :PatentKnowledge ;
+    rdfs:label "CN2024XXXXXX 智能分拣调度算法"@zh ;
+    :relatesToPatent :Node_Hub_A .

@@ -1,0 +1,35 @@
+{
+  "_description": "方言语义归一词典 — 方言词 → 标准概念映射",
+  "_owner": "linguistics-team",
+  "_last_updated": "2026-07-14",
+  "entries": [
+    {
+      "term": "漕帮",
+      "region": "江南片区",
+      "normalized": "inland-waterway-transport",
+      "confidence": 0.97,
+      "source": "field_survey_2026Q2"
+    },
+    {
+      "term": "快运",
+      "region": "全国",
+      "normalized": "express-freight",
+      "confidence": 0.99,
+      "source": "industry_standard"
+    },
+    {
+      "term": "飞翼车",
+      "region": "华南",
+      "normalized": "wing-van-truck",
+      "confidence": 0.95,
+      "source": "carrier_interview"
+    },
+    {
+      "term": "暖库",
+      "region": "东北",
+      "normalized": "temperature-controlled-warehouse",
+      "confidence": 0.93,
+      "source": "regional_glossary"
+    }
+  ]
+}

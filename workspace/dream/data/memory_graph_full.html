@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Memory Graph - 完整记忆网络</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --today-glow: rgba(56, 189, 248, 0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 12px 24px;
+    background: var(--panel);
+    border-bottom: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  header .stats { display: flex; gap: 20px; font-size: 13px; color: var(--muted); }
+  header .stats span { color: var(--text); font-weight: 500; }
+  .mode-toggle {
+    display: flex; gap: 8px; background: var(--bg); padding: 4px; border-radius: 6px;
+  }
+  .mode-toggle button {
+    border: none; background: transparent; color: var(--muted); padding: 6px 14px;
+    border-radius: 4px; cursor: pointer; font-size: 13px; transition: all .2s;
+  }
+  .mode-toggle button.active { background: var(--accent); color: #0f172a; font-weight: 600; }
+  .mode-toggle button:hover:not(.active) { color: var(--text); }
+  
+  main { flex: 1; display: flex; overflow: hidden; }
+  
+  #graph-container {
+    flex: 1; position: relative; overflow: hidden;
+  }
+  #graph-container svg { width: 100%; height: 100%; cursor: grab; }
+  #graph-container svg:active { cursor: grabbing; }
+  
+  .sidebar {
+    width: 340px; background: var(--panel); border-left: 1px solid #334155;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 16px 20px; border-bottom: 1px solid #334155;
+  }
+  .sidebar-section h3 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  
+  /* 图例 */
+  .legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 24px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+  
+  /* 时间轴 */
+  .timeline { overflow-y: auto; max-height: 320px; padding-right: 4px; }
+  .timeline::-webkit-scrollbar { width: 4px; }
+  .timeline::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+  .timeline-item {
+    display: flex; gap: 10px; padding: 8px 0; border-left: 2px solid #334155;
+    padding-left: 14px; position: relative; margin-left: 6px; cursor: pointer;
+    transition: background .15s; border-radius: 0 6px 6px 0;
+  }
+  .timeline-item:hover { background: rgba(56,189,248,0.06); }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -5px; top: 12px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--accent); border: 2px solid var(--panel);
+  }
+  .timeline-item.memory_access::before { background: #ef4444; }
+  .timeline-item.memory_strengthen::before { background: #f59e0b; }
+  .timeline-item.edge_coactivation::before { background: #10b981; }
+  .timeline-item.edge_strengthen::before { background: #8b5cf6; }
+  .timeline-item.consolidation::before { background: #3b82f6; }
+  .timeline-icon { font-size: 14px; line-height: 1; margin-top: 2px; }
+  .timeline-body { flex: 1; min-width: 0; }
+  .timeline-time { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .timeline-detail { font-size: 12px; line-height: 1.4; word-break: break-all; }
+  .timeline-delta { font-size: 11px; color: var(--accent); margin-top: 2px; }
+  
+  /* 详情面板 */
+  .detail-panel { min-height: 120px; }
+  .detail-content { font-size: 13px; line-height: 1.6; }
+  .detail-content .label { color: var(--muted); font-size: 11px; margin-top: 8px; }
+  .detail-content .value { color: var(--text); }
+  .detail-heat-bar { height: 6px; background: #334155; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+  .detail-heat-bar-inner { height: 100%; border-radius: 3px; transition: width .3s; }
+  
+  /* 节点脉冲动画 */
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    70% { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(1); opacity: 0; }
+  }
+  .node-pulse {
+    animation: pulse 2.5s ease-out infinite;
+    transform-origin: center;
+    pointer-events: none;
+  }
+  
+  .tooltip {
+    position: absolute; padding: 8px 12px; background: rgba(15,23,42,0.95);
+    border: 1px solid #334155; border-radius: 6px; font-size: 12px;
+    pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 100;
+    max-width: 240px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  
+  .controls {
+    position: absolute; bottom: 16px; left: 16px; display: flex; gap: 6px;
+  }
+  .controls button {
+    width: 32px; height: 32px; border-radius: 6px; border: 1px solid #334155;
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .controls button:hover { background: #334155; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Dream Memory Graph <span style="color:var(--muted);font-weight:400;font-size:14px;">完整记忆网络</span></h1>
+  <div class="stats">
+    <div>节点 <span>17</span></div>
+    <div>连接 <span>21</span></div>
+    <div>事件 <span>63</span></div>
+  </div>
+  <div class="mode-toggle">
+    <button id="btn-today" class="" onclick="switchMode('today')">今日片段</button>
+    <button id="btn-all" class="active" onclick="switchMode('all')">完整网络</button>
+  </div>
+</header>
+
+<main>
+  <div id="graph-container">
+    <div class="tooltip" id="tooltip"></div>
+    <div class="controls">
+      <button onclick="zoomIn()" title="放大">+</button>
+      <button onclick="zoomOut()" title="缩小">−</button>
+      <button onclick="resetZoom()" title="重置">⟲</button>
+    </div>
+  </div>
+  
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3>🔥 热度图例</h3>
+      <div class="legend">
+        <div class="legend-row"><div class="legend-dot" style="background:#ef4444"></div> 高热记忆 (>0.8)</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#f59e0b"></div> 温热记忆 (0.6-0.8)</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#10b981"></div> 常温记忆 (0.4-0.6)</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#06b6d4"></div> 低温记忆 (0.2-0.4)</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#3b82f6"></div> 冷记忆 (&lt;0.2)</div>
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <h3>🔗 权重图例</h3>
+      <div class="legend">
+        <div class="legend-row"><div class="legend-line" style="background:linear-gradient(90deg,#f472b6,#db2777)"></div> 强连接 (>0.8)</div>
+        <div class="legend-row"><div class="legend-line" style="background:linear-gradient(90deg,#fbbf24,#f59e0b)"></div> 中连接 (0.5-0.8)</div>
+        <div class="legend-row"><div class="legend-line" style="background:linear-gradient(90deg,#60a5fa,#3b82f6)"></div> 弱连接 (0.2-0.5)</div>
+      </div>
+    </div>
+    
+    <div class="sidebar-section" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+      <h3>📅 强化事件时间轴</h3>
+      <div class="timeline" id="timeline"></div>
+    </div>
+    
+    <div class="sidebar-section detail-panel">
+      <h3>🔍 节点详情</h3>
+      <div class="detail-content" id="detail-panel">
+        <p style="color:var(--muted); font-size:12px;">点击节点查看详情</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+const nodes = [{"id": "bf9704f3-41bf-4f98-919c-2c8eba749d26", "content": "听了一篇关于海马体记忆巩固的播客", "heat": 0.5, "color": "#10b981", "radius": 27.5, "created_at": "2026-07-16T02:15:07.709365", "last_accessed": "2026-07-16T02:15:07.709365", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "86efa451-c112-4113-87b7-ac0c852a1d3c", "content": "写了一个基于力导向图的可视化组件", "heat": 1.0, "color": "#ef4444", "radius": 40.0, "created_at": "2026-07-16T02:15:07.704933", "last_accessed": "2026-07-16T02:15:07.835320", "access_count": 9, "strengthen_count": 0, "is_today": false}, {"id": "c5c78688-451f-493e-82a8-e12cb2535667", "content": "和朋友讨论了AI记忆系统的设计", "heat": 0.5, "color": "#10b981", "radius": 27.5, "created_at": "2026-07-16T02:15:07.699799", "last_accessed": "2026-07-16T02:15:07.699799", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "318b12a2-8a12-469e-95ca-76f566062750", "content": "晚餐吃了火锅，辣度刚好", "heat": 0.5, "color": "#10b981", "radius": 27.5, "created_at": "2026-07-16T02:15:07.695630", "last_accessed": "2026-07-16T02:15:07.695630", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "content": "阅读了《认知神经科学》第三章", "heat": 0.78, "color": "#f59e0b", "radius": 34.5, "created_at": "2026-07-16T02:15:07.690835", "last_accessed": "2026-07-16T02:15:07.866029", "access_count": 1, "strengthen_count": 1, "is_today": false}, {"id": "b77bffcd-970a-4816-91c5-874780919143", "content": "练习了 Python asyncio 编程", "heat": 0.5, "color": "#10b981", "radius": 27.5, "created_at": "2026-07-16T02:15:07.685688", "last_accessed": "2026-07-16T02:15:07.685688", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "340ba70c-8409-4784-938d-63cd57dd6bc5", "content": "学习了神经可塑性原理：Hebbian学习规则", "heat": 1.0, "color": "#ef4444", "radius": 40.0, "created_at": "2026-07-16T02:15:07.681768", "last_accessed": "2026-07-16T02:15:07.863258", "access_count": 4, "strengthen_count": 1, "is_today": false}, {"id": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "content": "理解了反向传播算法", "heat": 0.668, "color": "#f59e0b", "radius": 31.7, "created_at": "2026-07-10T02:15:07.633185", "last_accessed": "2026-07-16T02:15:07.859590", "access_count": 6, "strengthen_count": 0, "is_today": false}, {"id": "d018a0a6-a2cd-4bb5-8b64-ed2ce1ab9f6e", "content": "读完《黑客与画家》", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-06-28T02:15:07.646966", "last_accessed": "2026-06-27T22:15:07.646966", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "ee476897-adfd-4418-b71f-5d6f430b1972", "content": "去日本旅行，京都的秋天很美", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-06-24T02:15:07.640611", "last_accessed": "2026-06-23T05:15:07.640611", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "88a7c436-bf4c-490d-a8a5-2f0366454a3e", "content": "在 Kaggle 上完成了第一个竞赛", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-06-15T02:15:07.659602", "last_accessed": "2026-06-14T11:15:07.659602", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "content": "第一次用 PyTorch 训练神经网络", "heat": 0.427, "color": "#10b981", "radius": 25.7, "created_at": "2026-06-15T02:15:07.625683", "last_accessed": "2026-07-16T02:15:07.844034", "access_count": 4, "strengthen_count": 0, "is_today": false}, {"id": "df4cbe5b-1edf-4640-954a-9b7117ac43a7", "content": "去年学会了骑自行车", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-06-10T02:15:07.619264", "last_accessed": "2026-06-10T02:15:07.619264", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "bda7e911-e8ea-43c8-95b3-2b227168bb75", "content": "学会了使用 D3.js 做数据可视化", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-05-21T02:15:07.652880", "last_accessed": "2026-05-20T17:15:07.652880", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "a6aab1ce-bb93-4ba6-889d-616e981ab875", "content": "搬家到了新的城市", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-05-19T02:15:07.665110", "last_accessed": "2026-05-18T05:15:07.665110", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "c3d4c9c9-9f05-4633-94f1-471f1d3a8a6a", "content": "看了诺兰的《奥本海默》", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-05-18T02:15:07.675990", "last_accessed": "2026-05-17T14:15:07.675990", "access_count": 1, "strengthen_count": 0, "is_today": false}, {"id": "9bfaaa0a-1d06-4005-a0a5-5d4175fe3251", "content": "养了一只叫汤圆的猫", "heat": 0.05, "color": "#3b82f6", "radius": 16.2, "created_at": "2026-05-17T02:15:07.671006", "last_accessed": "2026-05-16T14:15:07.671006", "access_count": 1, "strengthen_count": 0, "is_today": false}];
+const links = [{"id": "e1609933-478b-4319-a8fd-122e28d9bb8e", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "963b7864-282a-41ea-a6c7-f0f5a70d8c5d", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "340ba70c-8409-4784-938d-63cd57dd6bc5", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "b36c5a9d-855d-4159-b8f1-6f630b526b23", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "ef0a70c8-4f2a-42d3-97fa-40918e810633", "source": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "target": "340ba70c-8409-4784-938d-63cd57dd6bc5", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "5d3f1eaa-247d-493c-aac2-7f9a7a984ccc", "source": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "target": "b77bffcd-970a-4816-91c5-874780919143", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "8a7fd1ec-b69b-4635-b38d-2dbf567332aa", "source": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "target": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "b14c3dde-debf-472a-8bca-cbad56e83a17", "source": "340ba70c-8409-4784-938d-63cd57dd6bc5", "target": "b77bffcd-970a-4816-91c5-874780919143", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "19ee1860-50ae-4262-aaf8-173c997f6202", "source": "340ba70c-8409-4784-938d-63cd57dd6bc5", "target": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "496442db-25a7-4117-a41d-7d7efaf2da51", "source": "b77bffcd-970a-4816-91c5-874780919143", "target": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "f6bf9be3-22ed-4f9d-9728-0a07947d2e09", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "bda7e911-e8ea-43c8-95b3-2b227168bb75", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "00ca269d-bee4-49c8-a195-a09ea916774e", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "b77bffcd-970a-4816-91c5-874780919143", "weight": 0.22, "strokeWidth": 1.9, "opacity": 0.38, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 2}, {"id": "d98956ba-6793-4c22-9922-dd216ff6b123", "source": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "target": "86efa451-c112-4113-87b7-ac0c852a1d3c", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "5e099c52-7073-4648-a2eb-390cbbdf891c", "source": "bda7e911-e8ea-43c8-95b3-2b227168bb75", "target": "b77bffcd-970a-4816-91c5-874780919143", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "ae679f42-a21b-40a5-9900-b5cefe7f78d5", "source": "bda7e911-e8ea-43c8-95b3-2b227168bb75", "target": "86efa451-c112-4113-87b7-ac0c852a1d3c", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "1ed92965-8715-4fe1-b644-f7e81a034db2", "source": "b77bffcd-970a-4816-91c5-874780919143", "target": "86efa451-c112-4113-87b7-ac0c852a1d3c", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "e982c513-8ea5-4d84-984e-c24b0599fb6f", "source": "ee476897-adfd-4418-b71f-5d6f430b1972", "target": "a6aab1ce-bb93-4ba6-889d-616e981ab875", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "438f5b0b-d01b-4861-874e-42b2eab390f7", "source": "ee476897-adfd-4418-b71f-5d6f430b1972", "target": "9bfaaa0a-1d06-4005-a0a5-5d4175fe3251", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "cc9a41a7-a6e6-4e73-b9c9-e88003dd9b20", "source": "ee476897-adfd-4418-b71f-5d6f430b1972", "target": "318b12a2-8a12-469e-95ca-76f566062750", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "5b035d70-1efd-422e-b950-1aaa8d3a133f", "source": "a6aab1ce-bb93-4ba6-889d-616e981ab875", "target": "9bfaaa0a-1d06-4005-a0a5-5d4175fe3251", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "49faf25e-735a-4def-a27d-400619cb5942", "source": "a6aab1ce-bb93-4ba6-889d-616e981ab875", "target": "318b12a2-8a12-469e-95ca-76f566062750", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}, {"id": "0b026938-b906-44a8-82ae-3627ce0e5854", "source": "9bfaaa0a-1d06-4005-a0a5-5d4175fe3251", "target": "318b12a2-8a12-469e-95ca-76f566062750", "weight": 0.16, "strokeWidth": 1.6, "opacity": 0.33, "colorStart": "#94a3b8", "colorEnd": "#64748b", "coActivationCount": 1}];
+const events = [{"id": "8c63d4d2-1d8d-4fa4-877c-045ed745368b", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "consolidation", "typeLabel": "Consolidation", "timestamp": "2026-07-16T02:15:07.882223", "detail": "系统巩固: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.0, "icon": "🧠"}, {"id": "f4de673d-8190-412d-b4b4-594d38d40c3e", "memoryId": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "edgeId": null, "type": "consolidation", "typeLabel": "Consolidation", "timestamp": "2026-07-16T02:15:07.876069", "detail": "系统巩固: 阅读了《认知神经科学》第三章...", "deltaValue": 0.03, "icon": "🧠"}, {"id": "ade12a73-84a8-49f5-8535-c917db7c32e4", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "consolidation", "typeLabel": "Consolidation", "timestamp": "2026-07-16T02:15:07.870733", "detail": "系统巩固: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.0, "icon": "🧠"}, {"id": "346b6232-f870-4a14-810e-c3011b7b15a6", "memoryId": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "edgeId": null, "type": "memory_strengthen", "typeLabel": "Memory Strengthen", "timestamp": "2026-07-16T02:15:07.867487", "detail": "强化记忆: 阅读了《认知神经科学》第三章...", "deltaValue": 0.25, "icon": "💪"}, {"id": "896b26a8-0e5e-499c-a12c-771dfab23e11", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "memory_strengthen", "typeLabel": "Memory Strengthen", "timestamp": "2026-07-16T02:15:07.864425", "detail": "强化记忆: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.1233, "icon": "💪"}, {"id": "63d604b2-00d4-4d45-a67f-6befbfd8f9b8", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.859590", "detail": "访问记忆: 理解了反向传播算法...", "deltaValue": 0.1, "icon": "🔥"}, {"id": "47d9a4a7-1525-41bc-99a2-239cf3512f26", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.855954", "detail": "访问记忆: 理解了反向传播算法...", "deltaValue": 0.1071, "icon": "🔥"}, {"id": "c7f3d938-f171-4a9c-b946-56d992ee9efe", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.852642", "detail": "访问记忆: 理解了反向传播算法...", "deltaValue": 0.1154, "icon": "🔥"}, {"id": "c4da2d83-562d-4396-a58d-fa72d871941d", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.849812", "detail": "访问记忆: 理解了反向传播算法...", "deltaValue": 0.125, "icon": "🔥"}, {"id": "760deea4-6f47-4f00-a584-1a85c1b5ada7", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.847063", "detail": "访问记忆: 理解了反向传播算法...", "deltaValue": -0.2799, "icon": "🔥"}, {"id": "f87a5b53-1468-4b52-ad30-c7523b10b126", "memoryId": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.844034", "detail": "访问记忆: 第一次用 PyTorch 训练神经网络...", "deltaValue": 0.1154, "icon": "🔥"}, {"id": "b66104e9-60ec-46df-b4ae-6421d481e818", "memoryId": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.840858", "detail": "访问记忆: 第一次用 PyTorch 训练神经网络...", "deltaValue": 0.125, "icon": "🔥"}, {"id": "93bd2d4c-b8f8-4aa0-b7b3-9831cd82349f", "memoryId": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.838152", "detail": "访问记忆: 第一次用 PyTorch 训练神经网络...", "deltaValue": -0.3136, "icon": "🔥"}, {"id": "cbe8671a-9ee4-4d0e-aa4f-eb91a8dea1a4", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.835320", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.0, "icon": "🔥"}, {"id": "c615d283-b479-4706-ac6d-8e62a8694e0a", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.831285", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.0, "icon": "🔥"}, {"id": "3b4634fa-0466-4a2b-ae3a-7ad10ec62ad8", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.827506", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.0, "icon": "🔥"}, {"id": "265e6347-be17-48cd-a24d-7fed33f9b59a", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.824729", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.0161, "icon": "🔥"}, {"id": "49b7d56b-8c13-41bb-9476-730dcef22471", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.821930", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.1071, "icon": "🔥"}, {"id": "b15d862e-4a17-45e4-a6dc-19da01a2d6d0", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.818779", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.1154, "icon": "🔥"}, {"id": "5b878435-63fa-4b32-87a5-b0e098dbbd99", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.815741", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.125, "icon": "🔥"}, {"id": "d1008caa-efec-4f68-82ff-43abd4b35b76", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.813068", "detail": "访问记忆: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.1364, "icon": "🔥"}, {"id": "6c18a501-f7e2-4af6-a493-9dd0b6dc12bf", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.810219", "detail": "访问记忆: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.1154, "icon": "🔥"}, {"id": "affac270-2abc-4803-912a-217fa94d76ba", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.807047", "detail": "访问记忆: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.125, "icon": "🔥"}, {"id": "dbe1df37-dbe8-445b-b7c4-7f917820894e", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.803408", "detail": "访问记忆: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.1364, "icon": "🔥"}, {"id": "5586c0aa-4d2e-46f9-ae6c-8492af7b8a72", "memoryId": null, "edgeId": "0b026938-b906-44a8-82ae-3627ce0e5854", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.799470", "detail": "共激活: 养了一只叫汤圆的猫... <-> 晚餐吃了火锅，辣度刚好...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "4594247d-7e0a-4642-99b8-919e33bad015", "memoryId": null, "edgeId": "49faf25e-735a-4def-a27d-400619cb5942", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.793061", "detail": "共激活: 搬家到了新的城市... <-> 晚餐吃了火锅，辣度刚好...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "7a500c8d-968d-45d9-b658-3a391d32f41e", "memoryId": null, "edgeId": "5b035d70-1efd-422e-b950-1aaa8d3a133f", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.789571", "detail": "共激活: 搬家到了新的城市... <-> 养了一只叫汤圆的猫...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "d25ba2eb-5b88-4e69-9b9b-36fcda5bb11b", "memoryId": null, "edgeId": "cc9a41a7-a6e6-4e73-b9c9-e88003dd9b20", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.786259", "detail": "共激活: 去日本旅行，京都的秋天很美... <-> 晚餐吃了火锅，辣度刚好...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "068d7d8d-1df6-4d1c-b93c-9f0c594af915", "memoryId": null, "edgeId": "438f5b0b-d01b-4861-874e-42b2eab390f7", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.782458", "detail": "共激活: 去日本旅行，京都的秋天很美... <-> 养了一只叫汤圆的猫...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "fe2422c2-d2e1-4b31-af16-3c92f6f8b9cd", "memoryId": null, "edgeId": "e982c513-8ea5-4d84-984e-c24b0599fb6f", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.779258", "detail": "共激活: 去日本旅行，京都的秋天很美... <-> 搬家到了新的城市...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "23759768-f248-44ae-acc6-d76463e74ff5", "memoryId": null, "edgeId": "1ed92965-8715-4fe1-b644-f7e81a034db2", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.775842", "detail": "共激活: 练习了 Python asyncio 编... <-> 写了一个基于力导向图的可视化组件...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "052c7b5b-6fc7-4a46-9d5d-e4a7d64eb809", "memoryId": null, "edgeId": "ae679f42-a21b-40a5-9900-b5cefe7f78d5", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.772519", "detail": "共激活: 学会了使用 D3.js 做数据可视化... <-> 写了一个基于力导向图的可视化组件...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "ca50ae49-67c9-465d-9028-32feaa39f20b", "memoryId": null, "edgeId": "5e099c52-7073-4648-a2eb-390cbbdf891c", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.768689", "detail": "共激活: 学会了使用 D3.js 做数据可视化... <-> 练习了 Python asyncio 编...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "05446146-308f-4434-8582-b9965342e441", "memoryId": null, "edgeId": "d98956ba-6793-4c22-9922-dd216ff6b123", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.765505", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 写了一个基于力导向图的可视化组件...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "0ce90195-fc25-4906-8b94-4244495f14f4", "memoryId": null, "edgeId": "00ca269d-bee4-49c8-a195-a09ea916774e", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.762283", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 练习了 Python asyncio 编...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "a49fd50a-6399-49b4-b967-9e228a09a04d", "memoryId": null, "edgeId": "f6bf9be3-22ed-4f9d-9728-0a07947d2e09", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.758800", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 学会了使用 D3.js 做数据可视化...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "9d358186-b908-4221-b853-60260938b674", "memoryId": null, "edgeId": "496442db-25a7-4117-a41d-7d7efaf2da51", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.754061", "detail": "共激活: 练习了 Python asyncio 编... <-> 阅读了《认知神经科学》第三章...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "4b7c614b-5780-4fc4-8dea-c379de1b9c93", "memoryId": null, "edgeId": "19ee1860-50ae-4262-aaf8-173c997f6202", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.749557", "detail": "共激活: 学习了神经可塑性原理：Hebbian学习... <-> 阅读了《认知神经科学》第三章...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "47d9c12e-4e67-40ce-895b-e53bd0fe3be5", "memoryId": null, "edgeId": "b14c3dde-debf-472a-8bca-cbad56e83a17", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.746150", "detail": "共激活: 学习了神经可塑性原理：Hebbian学习... <-> 练习了 Python asyncio 编...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "677904b1-dee6-49da-b272-a35a1726eef4", "memoryId": null, "edgeId": "8a7fd1ec-b69b-4635-b38d-2dbf567332aa", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.742765", "detail": "共激活: 理解了反向传播算法... <-> 阅读了《认知神经科学》第三章...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "83f8f269-0870-4d79-8171-297eca155872", "memoryId": null, "edgeId": "5d3f1eaa-247d-493c-aac2-7f9a7a984ccc", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.736702", "detail": "共激活: 理解了反向传播算法... <-> 练习了 Python asyncio 编...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "79dfe9e0-4548-4e4e-a8f0-5a377841af0f", "memoryId": null, "edgeId": "ef0a70c8-4f2a-42d3-97fa-40918e810633", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.731233", "detail": "共激活: 理解了反向传播算法... <-> 学习了神经可塑性原理：Hebbian学习...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "7c0db300-d5e7-4a88-8735-c3d96d054bb1", "memoryId": null, "edgeId": "b36c5a9d-855d-4159-b8f1-6f630b526b23", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.727153", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 阅读了《认知神经科学》第三章...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "634e58f1-462a-4bcb-9266-486226fbd8ea", "memoryId": null, "edgeId": "00ca269d-bee4-49c8-a195-a09ea916774e", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.722728", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 练习了 Python asyncio 编...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "d5ebe028-43d4-40ea-8b75-0fa38fc9177b", "memoryId": null, "edgeId": "963b7864-282a-41ea-a6c7-f0f5a70d8c5d", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.718558", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 学习了神经可塑性原理：Hebbian学习...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "d2f8a0a6-1605-4493-9215-15a1b2aadcca", "memoryId": null, "edgeId": "e1609933-478b-4319-a8fd-122e28d9bb8e", "type": "edge_coactivation", "typeLabel": "Edge Coactivation", "timestamp": "2026-07-16T02:15:07.714888", "detail": "共激活: 第一次用 PyTorch 训练神经网络... <-> 理解了反向传播算法...", "deltaValue": 0.06, "icon": "🔗"}, {"id": "08d8687c-9577-4c29-84ab-bb23b1e7b5c3", "memoryId": "bf9704f3-41bf-4f98-919c-2c8eba749d26", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.709365", "detail": "新记忆存入: 听了一篇关于海马体记忆巩固的播客...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "34a9abc0-33a8-4c5d-a347-1b9d734fe796", "memoryId": "86efa451-c112-4113-87b7-ac0c852a1d3c", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.704933", "detail": "新记忆存入: 写了一个基于力导向图的可视化组件...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "b5fc22c5-8608-4725-b1cb-f7379ec1089b", "memoryId": "c5c78688-451f-493e-82a8-e12cb2535667", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.699799", "detail": "新记忆存入: 和朋友讨论了AI记忆系统的设计...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "53cfee25-347f-4e3d-9492-00152ae359c1", "memoryId": "318b12a2-8a12-469e-95ca-76f566062750", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.695630", "detail": "新记忆存入: 晚餐吃了火锅，辣度刚好...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "89dcde4f-e5f4-4449-b02e-3dcef6de171b", "memoryId": "616ea95f-866b-4c7c-ae72-c0dc33e8f924", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.690835", "detail": "新记忆存入: 阅读了《认知神经科学》第三章...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "a52437b3-c45f-4373-8685-82af6e7fd9c9", "memoryId": "b77bffcd-970a-4816-91c5-874780919143", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.685688", "detail": "新记忆存入: 练习了 Python asyncio 编程...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "74f31cd9-1306-480e-b298-740efc71c47c", "memoryId": "340ba70c-8409-4784-938d-63cd57dd6bc5", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.681768", "detail": "新记忆存入: 学习了神经可塑性原理：Hebbian学习规则...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "345bff65-a405-4887-9dd5-3cb342a8efab", "memoryId": "c3d4c9c9-9f05-4633-94f1-471f1d3a8a6a", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.675992", "detail": "新记忆存入: 看了诺兰的《奥本海默》...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "342a51de-b69c-488f-8ed3-2304a228ab5b", "memoryId": "9bfaaa0a-1d06-4005-a0a5-5d4175fe3251", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.671009", "detail": "新记忆存入: 养了一只叫汤圆的猫...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "834c3894-74a2-451d-a15c-41b8b3a86de3", "memoryId": "a6aab1ce-bb93-4ba6-889d-616e981ab875", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.665114", "detail": "新记忆存入: 搬家到了新的城市...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "71a583ee-d4ab-4079-8ee2-3e91aecac8af", "memoryId": "88a7c436-bf4c-490d-a8a5-2f0366454a3e", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.659606", "detail": "新记忆存入: 在 Kaggle 上完成了第一个竞赛...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "4918ada3-dec3-49bb-972b-7afe329dae8c", "memoryId": "bda7e911-e8ea-43c8-95b3-2b227168bb75", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.652883", "detail": "新记忆存入: 学会了使用 D3.js 做数据可视化...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "f918f987-90b4-41d5-ae77-776e5b6b87a8", "memoryId": "d018a0a6-a2cd-4bb5-8b64-ed2ce1ab9f6e", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.646969", "detail": "新记忆存入: 读完《黑客与画家》...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "cecf092b-7ba2-4929-b809-c742541031f4", "memoryId": "ee476897-adfd-4418-b71f-5d6f430b1972", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.640614", "detail": "新记忆存入: 去日本旅行，京都的秋天很美...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "fb16d06b-d8bd-49a3-9081-e025dbe9e4c7", "memoryId": "a825cafe-ecbc-4243-8341-e7b6ff6b2728", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.633188", "detail": "新记忆存入: 理解了反向传播算法...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "e5ff267d-568d-4afb-80eb-ba85b81e7bfe", "memoryId": "d1d84165-82e8-499e-884e-de4bd5f9edc8", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.625687", "detail": "新记忆存入: 第一次用 PyTorch 训练神经网络...", "deltaValue": 0.5, "icon": "🔥"}, {"id": "3ada7b1f-f03e-4822-9202-3005bbff21f2", "memoryId": "df4cbe5b-1edf-4640-954a-9b7117ac43a7", "edgeId": null, "type": "memory_access", "typeLabel": "Memory Access", "timestamp": "2026-07-16T02:15:07.619293", "detail": "新记忆存入: 去年学会了骑自行车...", "deltaValue": 0.5, "icon": "🔥"}];
+
+const container = document.getElementById('graph-container');
+const width = container.clientWidth;
+const height = container.clientHeight;
+
+// 创建 SVG
+const svg = d3.select('#graph-container')
+  .append('svg')
+  .attr('viewBox', [0, 0, width, height]);
+
+// 定义渐变
+defs = svg.append('defs');
+
+links.forEach((d, i) => {
+  const gradId = `grad-${d.id}`;
+  const grad = defs.append('linearGradient')
+    .attr('id', gradId)
+    .attr('gradientUnits', 'userSpaceOnUse');
+  grad.append('stop').attr('offset', '0%').attr('stop-color', d.colorStart);
+  grad.append('stop').attr('offset', '100%').attr('stop-color', d.colorEnd);
+  d.gradientId = gradId;
+});
+
+// 缩放行为
+const zoom = d3.zoom()
+  .scaleExtent([0.2, 4])
+  .on('zoom', (e) => g.attr('transform', e.transform));
+svg.call(zoom);
+
+const g = svg.append('g');
+
+// 力导向模拟
+const simulation = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(d => 120 - d.weight * 40).strength(d => d.weight * 0.8))
+  .force('charge', d3.forceManyBody().strength(-300))
+  .force('center', d3.forceCenter(width / 2, height / 2))
+  .force('collision', d3.forceCollide().radius(d => d.radius + 8));
+
+// 绘制边
+const link = g.append('g')
+  .selectAll('line')
+  .data(links)
+  .join('line')
+  .attr('stroke', d => `url(#${d.gradientId})`)
+  .attr('stroke-width', d => d.strokeWidth)
+  .attr('opacity', d => d.opacity)
+  .attr('stroke-linecap', 'round');
+
+// 脉冲圈（今日节点）
+const pulse = g.append('g')
+  .selectAll('circle')
+  .data(nodes.filter(d => d.is_today))
+  .join('circle')
+  .attr('class', 'node-pulse')
+  .attr('r', d => d.radius)
+  .attr('fill', 'none')
+  .attr('stroke', '#38bdf8')
+  .attr('stroke-width', 2);
+
+// 绘制节点
+const node = g.append('g')
+  .selectAll('circle')
+  .data(nodes)
+  .join('circle')
+  .attr('r', d => d.radius)
+  .attr('fill', d => d.color)
+  .attr('stroke', d => d.is_today ? '#38bdf8' : '#0f172a')
+  .attr('stroke-width', d => d.is_today ? 3 : 2)
+  .style('cursor', 'pointer')
+  .style('filter', d => d.is_today ? 'drop-shadow(0 0 8px rgba(56,189,248,0.5))' : 'none')
+  .call(d3.drag()
+    .on('start', dragstarted)
+    .on('drag', dragged)
+    .on('end', dragended));
+
+// 节点文字标签
+const label = g.append('g')
+  .selectAll('text')
+  .data(nodes)
+  .join('text')
+  .text(d => d.content.length > 12 ? d.content.slice(0, 12) + '...' : d.content)
+  .attr('font-size', d => 10 + d.heat * 3)
+  .attr('fill', '#e2e8f0')
+  .attr('text-anchor', 'middle')
+  .attr('dy', d => d.radius + 14)
+  .style('pointer-events', 'none')
+  .style('text-shadow', '0 1px 3px rgba(0,0,0,0.8)');
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+
+node.on('mouseover', (e, d) => {
+  tooltip.style.opacity = 1;
+  tooltip.innerHTML = `
+    <div style="font-weight:600;margin-bottom:4px;">${d.content.slice(0,40)}${d.content.length>40?'...':''}</div>
+    <div>🔥 热度: ${(d.heat*100).toFixed(1)}%</div>
+    <div>👁 访问: ${d.access_count} 次</div>
+    <div>💪 强化: ${d.strengthen_count} 次</div>
+    <div style="color:var(--muted);margin-top:4px;">${d.is_today?'✨ 今日存入':''}</div>
+  `;
+})
+.on('mousemove', (e) => {
+  tooltip.style.left = (e.pageX + 12) + 'px';
+  tooltip.style.top = (e.pageY + 12) + 'px';
+})
+.on('mouseout', () => { tooltip.style.opacity = 0; })
+.on('click', (e, d) => { showDetail(d); highlightNode(d); });
+
+// 动态更新渐变坐标
+simulation.on('tick', () => {
+  link
+    .attr('x1', d => d.source.x)
+    .attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x)
+    .attr('y2', d => d.target.y);
+  
+  defs.selectAll('linearGradient').each(function(d) {
+    const l = links.find(x => x.id === d.id);
+    if (!l) return;
+    d3.select(this)
+      .attr('x1', l.source.x)
+      .attr('y1', l.source.y)
+      .attr('x2', l.target.x)
+      .attr('y2', l.target.y);
+  });
+  
+  node.attr('cx', d => d.x).attr('cy', d => d.y);
+  pulse.attr('cx', d => d.x).attr('cy', d => d.y);
+  label.attr('x', d => d.x).attr('y', d => d.y);
+});
+
+function dragstarted(e, d) {
+  if (!e.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x; d.fy = d.y;
+}
+function dragged(e, d) { d.fx = e.x; d.fy = e.y; }
+function dragended(e, d) {
+  if (!e.active) simulation.alphaTarget(0);
+  d.fx = null; d.fy = null;
+}
+
+// 缩放控制
+function zoomIn() { svg.transition().call(zoom.scaleBy, 1.3); }
+function zoomOut() { svg.transition().call(zoom.scaleBy, 1 / 1.3); }
+function resetZoom() { svg.transition().call(zoom.transform, d3.zoomIdentity); }
+
+// 详情面板
+function showDetail(d) {
+  const panel = document.getElementById('detail-panel');
+  const heatColor = d.color;
+  panel.innerHTML = `
+    <div class="value" style="font-size:14px;font-weight:500;margin-bottom:6px;">${d.content}</div>
+    <div class="label">热度</div>
+    <div class="detail-heat-bar"><div class="detail-heat-bar-inner" style="width:${d.heat*100}%;background:${heatColor}"></div></div>
+    <div class="label">访问次数</div>
+    <div class="value">${d.access_count}</div>
+    <div class="label">强化次数</div>
+    <div class="value">${d.strengthen_count}</div>
+    <div class="label">存入时间</div>
+    <div class="value">${new Date(d.created_at).toLocaleString('zh-CN')}</div>
+    <div class="label">最后访问</div>
+    <div class="value">${d.last_accessed ? new Date(d.last_accessed).toLocaleString('zh-CN') : '无'}</div>
+  `;
+}
+
+function highlightNode(target) {
+  node.transition().duration(300).style('opacity', d => d.id === target.id || links.some(l => 
+    (l.source.id === target.id && l.target.id === d.id) || 
+    (l.target.id === target.id && l.source.id === d.id)
+  ) ? 1 : 0.15);
+  link.transition().duration(300).style('opacity', d => 
+    d.source.id === target.id || d.target.id === target.id ? d.opacity : 0.05
+  );
+  label.transition().duration(300).style('opacity', d => d.id === target.id ? 1 : 0.3);
+  
+  setTimeout(() => {
+    node.transition().duration(500).style('opacity', 1);
+    link.transition().duration(500).style('opacity', d => d.opacity);
+    label.transition().duration(500).style('opacity', 1);
+  }, 2000);
+}
+
+// 渲染时间轴
+function renderTimeline() {
+  const timeline = document.getElementById('timeline');
+  if (!events.length) {
+    timeline.innerHTML = '<p style="color:var(--muted);font-size:12px;">暂无事件</p>';
+    return;
+  }
+  timeline.innerHTML = events.map(ev => {
+    const time = new Date(ev.timestamp);
+    const timeStr = time.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    return `
+      <div class="timeline-item ${ev.type}" onclick="focusEvent('${ev.memoryId || ev.edgeId}')">
+        <div class="timeline-icon">${ev.icon}</div>
+        <div class="timeline-body">
+          <div class="timeline-time">${timeStr} · ${ev.typeLabel}</div>
+          <div class="timeline-detail">${ev.detail}</div>
+          ${ev.deltaValue ? `<div class="timeline-delta">Δ ${ev.deltaValue > 0 ? '+' : ''}${ev.deltaValue.toFixed(3)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function focusEvent(id) {
+  if (!id) return;
+  const target = nodes.find(n => n.id === id);
+  if (target) {
+    showDetail(target);
+    highlightNode(target);
+    svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity.translate(width/2, height/2).scale(1.5).translate(-target.x, -target.y));
+  }
+}
+
+function switchMode(mode) {
+  document.getElementById('btn-today').classList.toggle('active', mode === 'today');
+  document.getElementById('btn-all').classList.toggle('active', mode === 'all');
+  const url = new URL(window.location.href);
+  url.searchParams.set('mode', mode);
+  window.location.href = url.toString();
+}
+
+renderTimeline();
+</script>
+</body>
+</html>
