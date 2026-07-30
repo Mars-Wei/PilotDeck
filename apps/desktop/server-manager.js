@@ -59,7 +59,15 @@ function resolveNodeBin() {
 }
 
 const GATEWAY_PORT_BASE = 18789;
-const SERVER_PORT_BASE = 3001;
+// Keep the packaged desktop renderer on its own port range. Older releases
+// reused :3001, so Chromium can have both an HTTP cache and a PWA worker tied
+// to that origin even after the app bundle is upgraded.
+const SERVER_PORT_BASE = 43101;
+// The desktop UI is only consumed by the local Electron window. Binding it to
+// loopback also keeps port probing and the eventual listen() call on the exact
+// same interface. This matters on macOS where Docker Desktop can hold an IPv6
+// wildcard port while a temporary IPv4 loopback probe still succeeds.
+const UI_HOST = '127.0.0.1';
 const MAX_PORT_TRIES = 20;
 const READY_TIMEOUT_MS = 45_000;
 const STOP_GRACE_MS = 4_000;
@@ -168,13 +176,22 @@ async function start(crashHandler) {
 
   spawnChild('ui-server', ['--import', 'tsx', 'server/index.js'], uiDir, {
     SERVER_PORT: String(serverPort),
+    HOST: UI_HOST,
     OPCBRAIN_GATEWAY_URL: `ws://127.0.0.1:${gatewayPort}/ws`,
     OPCBRAIN_DESKTOP: '1',
     OPCBRAIN_SKIP_BROWSER_OPEN: '1',
   });
 
   await waitForHttp(serverPort);
-  return { serverPort, gatewayPort, url: `http://127.0.0.1:${serverPort}` };
+  // Use a desktop-only origin. Legacy releases used 127.0.0.1, where an old
+  // PWA service worker may still control navigation before Electron can purge
+  // it. localhost reaches the same loopback server without inheriting that
+  // stale worker scope.
+  return {
+    serverPort,
+    gatewayPort,
+    url: `http://opcbrain-desktop.localhost:${serverPort}/?desktop=1`,
+  };
 }
 
 function killChild(name, child) {

@@ -851,7 +851,6 @@ function SplitBody(props: SplitBodyProps) {
           selectedProject={selectedProject}
           onSelectProject={(projectName) => {
             onSelectProjectByName?.(projectName);
-            setActiveTab('sessions');
           }}
           onCreateProject={onCreateProject}
         />
@@ -917,16 +916,20 @@ function SplitBody(props: SplitBodyProps) {
       {/* Full-screen tool surface (Memory, Dashboard, Always-On, etc.) */}
       {showFullScreenTool && activeTab === 'home' ? (
         <div className="flex h-full w-full min-w-0 flex-col overflow-hidden">
-          {renderTool()}
+          <ErrorBoundary showDetails resetKeys={[activeTab, selectedProject?.name]}>
+            {renderTool()}
+          </ErrorBoundary>
         </div>
       ) : null}
 
       {showUnifiedFrame ? (
         <ConsolePageFrame meta={pageMeta} centered={shouldCenterToolFrame}>
           <div className="h-full min-h-0 overflow-hidden">
-            <Suspense fallback={<PaneFallback />}>
-              {renderTool()}
-            </Suspense>
+            <ErrorBoundary showDetails resetKeys={[activeTab, selectedProject?.name]}>
+              <Suspense fallback={<PaneFallback />}>
+                {renderTool()}
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </ConsolePageFrame>
       ) : null}

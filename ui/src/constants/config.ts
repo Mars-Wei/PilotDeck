@@ -17,4 +17,8 @@ export const DISABLE_LOCAL_AUTH = import.meta.env.VITE_DISABLE_LOCAL_AUTH === 't
  */
 export const IS_DESKTOP =
   typeof window !== 'undefined' &&
-  Boolean((window as unknown as { opcbrainDesktop?: { isDesktop?: boolean } }).opcbrainDesktop?.isDesktop);
+  (
+    Boolean((window as unknown as { opcbrainDesktop?: { isDesktop?: boolean } }).opcbrainDesktop?.isDesktop)
+    || (typeof navigator !== 'undefined' && /\bElectron\//.test(navigator.userAgent))
+    || new URLSearchParams(window.location.search).get('desktop') === '1'
+  );

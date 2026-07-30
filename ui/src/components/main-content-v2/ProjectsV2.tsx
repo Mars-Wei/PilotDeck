@@ -179,7 +179,7 @@ function ProjectCard({
       <div className="mt-4 flex items-center justify-between gap-3 text-xs text-surface-400 dark:text-surface-500">
         <span>最近: {formatShortDate(lastActivity)}</span>
         <span className="font-medium text-brand-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-brand-400">
-          查看会话 →
+          打开项目 →
         </span>
       </div>
     </button>

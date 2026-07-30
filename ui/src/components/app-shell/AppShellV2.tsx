@@ -1,8 +1,11 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
+import { VoiceAssistantProvider } from '../../contexts/VoiceAssistantContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
+import { useHomeDashboardData } from '../../hooks/useHomeDashboardData';
+import { useRoutingDashboard } from '../../hooks/useRoutingDashboard';
 import { useSessionProtection } from '../../hooks/useSessionProtection';
 import { useProjectsState } from '../../hooks/useProjectsState';
 import { normalizeProjectForSettings } from '../../lib/projectSettings';
@@ -12,10 +15,7 @@ import {
   type ProjectSession,
 } from '../../types/app';
 import HomeChrome from '../main-content-v2/home/HomeChrome';
-import { useHomeDashboardData } from '../../hooks/useHomeDashboardData';
-import { useRoutingDashboard } from '../../hooks/useRoutingDashboard';
 import MainAreaV2 from './MainAreaV2';
-import { VoiceAssistantProvider } from '../../contexts/VoiceAssistantContext';
 
 const SettingsComponent = lazy(() => import('../settings/view/Settings'));
 const ProjectCreationWizard = lazy(() => import('../project-creation-wizard'));
@@ -430,6 +430,8 @@ export default function AppShellV2() {
       navigate(`/p/${encodeURIComponent(nextProject.name)}`);
       if (fullPath) {
         setActiveTab('dashboard');
+      } else {
+        setActiveTab('chat');
       }
     },
     [navigate, setActiveTab, setSelectedProject, setSelectedSession, sidebarSharedProps.projects],
